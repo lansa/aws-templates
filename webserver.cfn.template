@@ -1,0 +1,202 @@
+{
+    "AWSTemplateFormatVersion" : "2010-09-09",
+    "Description": "Deploy a LANSA WAM application into an auto scaling group. This template is designed to be executed by the parent lansa-master.cfn.template stack.",
+    "Parameters"               : {
+        "LansaType" : {
+            "Type"        : "String"
+        },
+        "KeyName" : {
+            "Type"        : "String"
+        },
+        "InstanceType" : {
+            "Type"        : "String"
+        },
+        "DBEndPoint"       : {
+            "Type"        : "String"
+        },
+        "DBName"       : {
+            "Type"        : "String"
+        },
+        "DBUsername"   : {
+            "NoEcho"  : "true",
+            "Type"        : "String"
+        },
+        "DBPassword"   : {
+            "NoEcho"  : "true",
+            "Type"        : "String"
+        },
+        "WebServerCapacity" : {
+            "Type"        : "Number"
+        },
+        "SSHLocation"        : {
+            "Type"        : "String"
+        },
+        "ELBTimeout"         : {
+            "Type"        : "Number"
+        },
+        "AMI"  : {
+            "Type"        : "String"
+        },
+        "SecurityGroup": {
+            "Type"        : "String"
+        },
+        "LoadBalancer": {
+            "Type"        : "String"
+        },
+        "AccessKeyId": {
+            "Type"        : "String"
+        },
+        "SecretKey": {
+            "Type"        : "String"
+        }
+    },
+     "Conditions" : {
+       "IsWebServer" : {"Fn::Equals" : [{"Ref" : "LansaType"}, "WebServer"]}
+     },
+    "Resources"                : {
+         "WebServerGroup"      : {
+            "Type" : "AWS::AutoScaling::AutoScalingGroup",
+            "Properties" : {
+                "AvailabilityZones" : {
+                    "Fn::GetAZs" : ""
+                },
+                "LaunchConfigurationName" : {
+                    "Ref" : "LaunchWebServer"
+                },
+                "MinSize"                 : "1",
+                "MaxSize"                 : { "Fn::If" : [ "IsWebServer", "50", "1" ]},
+                "DesiredCapacity"         : { "Ref" : "WebServerCapacity" },
+                "LoadBalancerNames"       : [ { "Ref" : "LoadBalancer" } ],
+                "Tags" : [ {
+                        "Key" : "Name",
+                        "Value" : { "Fn::If" : [ "IsWebServer", "Web Server Instance", "Compile Instance" ]},
+                        "PropagateAtLaunch" : "true"
+                     } ]
+
+            }
+        },
+         "LaunchWebServer"     : {
+            "Type" : "AWS::AutoScaling::LaunchConfiguration",
+            "Metadata" : {
+                "AWS::CloudFormation::Init" : {
+                    "config" : {
+                        "packages" : {
+                            "yum" : {
+                                "httpd" : [],
+                                "git"   : [],
+                                "php"   : [],
+                                "mysql-connector-odbc.x86_64" : []
+                            }
+                        },
+                        "groups"  : {
+                           "lansa" : {}
+                        },
+
+                        "sources"  : {
+                        },
+
+                        "files"    : {
+                          "/etc/odbc.ini" : {
+                            "content" : { "Fn::Join" : ["", [
+                                 "[myodbc]\n",
+                                 "Driver         = MySQL\n",
+                                 "Description  = Connector/ODBC 3.51 Driver DSN\n",
+                                 "SERVER      = ", { "Ref" : "DBEndPoint" }, "\n",
+                                 "PORT          = 3306\n",
+                                 "USER          = ", { "Ref" : "DBUsername" }, "\n",
+                                 "Password      = ", { "Ref" : "DBPassword" }, "\n",
+                                 "Database      = ", { "Ref" : "DBName" }, "\n",
+                                 "OPTION        =\n",
+                                 "SOCKET        =\n"
+                              ]]},
+                            "mode"  : "000644",
+                            "owner" : "root",
+                            "group" : "root"
+                          },
+		                    "/etc/lansa/userdata.pl" : { 
+		                     "source" : { "Fn::Join" : ["", ["https://s3-ap-southeast-2.amazonaws.com/lansa/scripts/userdata.pl"]]},
+                            "mode"   : "000777", 
+		                      "owner"  : "root",
+		                      "group"  : "root",
+	                         "authentication" : "S3AccessCreds"		                    
+                          }
+                        },
+                        "commands"  : {
+                        },
+                        "Metadata" : {
+                            "Comment1" : "Sendmail is required for acknowledging the status of the auto-pull request, if a WebServer"
+                        },
+                        "services" : {
+                            "sysvinit" : {
+                                "httpd" : {
+                                    "enabled" : "true",
+                                    "ensureRunning" : "true"
+                                },
+                                "sendmail" : {
+                                    "enabled"         : { "Fn::If" : [ "IsWebServer", "true", "false" ]},
+                                    "ensureRunning"   : { "Fn::If" : [ "IsWebServer", "true", "false" ]}
+                                }
+                            }
+                        }
+                    }
+                },
+
+               "AWS::CloudFormation::Authentication" : {
+                    "S3AccessCreds" : {
+		               "type" : "S3",
+		               "accessKeyId"  : { "Ref" : "AccessKeyId" },
+		               "secretKey"    : { "Ref" : "SecretKey"},
+		               "buckets"      : [ "lansa" ]
+                     }
+               }
+            },
+            "Properties" : {
+                "ImageId" : { "Ref" : "AMI" },
+                "InstanceType" : { "Ref" : "InstanceType" },
+                "SecurityGroups" : [ { "Ref" : "SecurityGroup" } ],
+                "KeyName"        : { "Ref" : "KeyName" },
+                "UserData"       : {
+                    "Fn::Base64" : {
+                        "Fn::Join" : [
+                            "",
+                            [
+                                "#!/bin/bash -v\n",
+                                "yum update -y aws-cfn-bootstrap\n",
+                                "/opt/aws/bin/cfn-init -s ", { "Ref" : "AWS::StackId" },
+                                " -r LaunchWebServer ",
+                                "         --region ", { "Ref" : "AWS::Region" }, "\n",
+                                "perl /etc/lansa/userdata.pl",
+                                    " -d ", { "Ref" : "DBName" },
+                                    " -p ", { "Ref" : "DBPassword" },
+                                    " -r ", { "Ref" : "AWS::Region" },
+                                    " -s ", { "Ref" : "AWS::StackId" },
+                                    " -t ", { "Ref" : "LansaType" },
+                                    " -u ", { "Ref" : "DBUsername" },
+                                    " -w \"", { "Ref" : "WaitHandle" }, "\"\n"
+                            ]
+                        ]
+                    }
+                }
+            }
+         },
+         "WaitHandle"          : {
+            "Type" : "AWS::CloudFormation::WaitConditionHandle"
+        },
+         "WaitCondition"       : {
+            "Type" : "AWS::CloudFormation::WaitCondition",
+            "DependsOn" : "WebServerGroup",
+            "Properties" : {
+                "Handle"   : { "Ref" : "WaitHandle" },
+                "Timeout"  : "3000",
+                "Count"    : { "Ref" : "WebServerCapacity" }
+            }
+        }
+
+    },
+    "Outputs"                  : {
+         "WebServerResult" : {
+            "Value" : { "Fn::GetAtt" : [ "WaitCondition", "Data" ]},
+            "Description" : "The data passed back as part of signalling the WaitCondition."
+        }
+    }
+}
