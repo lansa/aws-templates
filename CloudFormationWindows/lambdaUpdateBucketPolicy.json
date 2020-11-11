@@ -1,0 +1,30 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Parameters" : {
+  		"Bucketname" : {
+    		"Type" : "String",
+    		"Default" : "lansa-secure",
+    		"Description" : "BucketName"
+  		},
+  		"IamString" : {
+    		"Type" : "String",
+    		"Default" : "1234567890",
+    		"Description" : "The string that will be added to userid in the buckect policy"
+  		},
+  		"lambda":{
+    		"Type" : "String",
+    		"Default" : "arn:aws:lambda:eu-west-1:325116150727:function:mytest",
+    		"Description" : "Change this to your own lambda ARN"	
+  		}
+	},
+    "Resources": {
+		"MyCustomResource" : {
+  			"Type" : "Custom::TestLambda",
+  			"Properties" : {
+   				"ServiceToken": {"Ref":"lambda"},
+    			"bucketname": {"Ref":"Bucketname"},
+    			"iam": {"Ref":"IamString"}
+  			}
+		}
+	}
+}

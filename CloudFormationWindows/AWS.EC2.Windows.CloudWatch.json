@@ -1,0 +1,239 @@
+﻿{
+    "EngineConfiguration": {
+        "PollInterval": "00:00:15",
+        "Components": [
+            {
+                "Id": "ApplicationEventLog",
+                "FullName": "AWS.EC2.Windows.CloudWatch.EventLog.EventLogInputComponent,AWS.EC2.Windows.CloudWatch",
+                "Parameters": {
+                    "LogName": "Application",
+                    "Levels": "1"
+                }
+            },
+            {
+                "Id": "SystemEventLog",
+                "FullName": "AWS.EC2.Windows.CloudWatch.EventLog.EventLogInputComponent,AWS.EC2.Windows.CloudWatch",
+                "Parameters": {
+                    "LogName": "System",
+                    "Levels": "7"
+                }
+            },
+            {
+                "Id": "SecurityEventLog",
+                "FullName": "AWS.EC2.Windows.CloudWatch.EventLog.EventLogInputComponent,AWS.EC2.Windows.CloudWatch",
+                "Parameters": {
+                "LogName": "Security",
+                "Levels": "7"
+                }
+            },
+            {
+                "Id": "CloudWatchLogsSystem",
+                "FullName": "AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch",
+                "Parameters": {
+                    "AccessKey": "",
+                    "SecretKey": "",
+                    "Region": "ap-southeast-2",
+                    "LogGroup": "event-logs",
+                    "LogStream": "stack_id-{instance_id}"
+                }
+            },
+            {
+                "Id": "ETW",
+                "FullName": "AWS.EC2.Windows.CloudWatch.EventLog.EventLogInputComponent,AWS.EC2.Windows.CloudWatch",
+                "Parameters": {
+                    "LogName": "Microsoft-Windows-WinINet/Analytic",
+                    "Levels": "7"
+                }
+            },
+            {
+                "Id": "EventTraceLog",
+                "FullName": "AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch",
+                "Parameters": {
+                    "AccessKey": "",
+                    "SecretKey": "",
+                    "Region": "ap-southeast-2",
+                    "LogGroup": "etw-logs",
+                    "LogStream": "stack_id-{instance_id}"
+                }
+            },
+            {
+                "Id": "IISLogDef",
+                "FullName": "AWS.EC2.Windows.CloudWatch.CustomLog.CustomLogInputComponent,AWS.EC2.Windows.CloudWatch",
+                "Parameters": {
+                "LogDirectoryPath": "C:\\inetpub\\logs\\LogFiles\\W3SVC1",
+                "TimestampFormat": "yyyy-MM-dd HH:mm:ss",
+                "Encoding": "UTF-8",
+                "Filter": "",
+                "CultureName": "",
+                "TimeZoneKind": "UTC",
+                "LineCount": "3"
+                }
+            },
+            {
+                "Id": "IISLog",
+                "FullName": "AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch",
+                "Parameters": {
+                    "AccessKey": "",
+                    "SecretKey": "",
+                    "Region": "ap-southeast-2",
+                    "LogGroup": "iis-logs",
+                    "LogStream": "stack_id-{instance_id}"
+                }
+            },
+            {
+                "Id": "CfnLogDef",
+                "FullName": "AWS.EC2.Windows.CloudWatch.CustomLog.CustomLogInputComponent,AWS.EC2.Windows.CloudWatch",
+                "Parameters": {
+                    "LogDirectoryPath": "C:\\Cfn\\log\\",
+                    "TimestampFormat": "yyyy-MM-dd HH:mm:ss,fff",
+                    "Encoding": "utf-8",
+                    "Filter": "cfn*.log",
+                    "CultureName": "en-US",
+                    "TimeZoneKind": "UTC"
+                }
+            },
+            {
+                "Id": "CfnLog",
+                "FullName": "AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch",
+                "Parameters": {
+                    "AccessKey": "",
+                    "SecretKey": "",
+                    "Region": "ap-southeast-2",
+                    "LogGroup": "cfn-logs",
+                    "LogStream": "stack_id-{instance_id}"
+                }
+            },
+            {
+                "Id": "ApplicationPerfLogsDef",
+                "FullName": "AWS.EC2.Windows.CloudWatch.CustomLog.CustomLogInputComponent,AWS.EC2.Windows.CloudWatch",
+                "Parameters": {
+                    "LogDirectoryPath": "C:\\Program Files (x86)\\LANSA\\log\\",
+                    "TimestampFormat": "'[ 'yyyy-MM-dd HH:mm:ss.fff' ]'",
+                    "Encoding": "utf-8",
+                    "Filter": "lx_perf*.log",
+                    "CultureName": "",
+                    "TimeZoneKind": "UTC"
+                }
+            },
+            {
+                "Id": "ApplicationPerfLog",
+                "FullName": "AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch",
+                "Parameters": {
+                    "AccessKey": "",
+                    "SecretKey": "",
+                    "Region": "ap-southeast-2",
+                    "LogGroup": "lx_perf-logs",
+                    "LogStream": "stack_id-{instance_id}"
+                }
+            },            
+            {
+                "Id": "WinUpdateLogDef",
+                "FullName": "AWS.EC2.Windows.CloudWatch.CustomLog.CustomLogInputComponent,AWS.EC2.Windows.CloudWatch",
+                "Parameters": {
+                    "LogDirectoryPath": "C:\\Windows\\temp\\",
+                    "TimestampFormat": "yyyy-MM-dd'T'HH:mm:ss",
+                    "Encoding": "utf-8",
+                    "Filter": "win-updates.log",
+                    "CultureName": "",
+                    "TimeZoneKind": "UTC"
+                }
+            },
+            {
+                "Id": "WinUpdateLog",
+                "FullName": "AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch",
+                "Parameters": {
+                    "AccessKey": "",
+                    "SecretKey": "",
+                    "Region": "ap-southeast-2",
+                    "LogGroup": "win-update-logs",
+                    "LogStream": "stack_id-{instance_id}"
+                }
+            },
+            {
+                "Id": "LansaWebLogDef",
+                "FullName": "AWS.EC2.Windows.CloudWatch.CustomLog.CustomLogInputComponent,AWS.EC2.Windows.CloudWatch",
+                "Parameters": {
+                    "LogDirectoryPath": "C:\\Windows\\temp\\",
+                    "TimestampFormat": "",
+                    "Encoding": "utf-8",
+                    "Filter": "lansaweb.log",
+                    "CultureName": "",
+                    "TimeZoneKind": "UTC"
+                }
+            },
+            {
+                "Id": "LansaWebLog",
+                "FullName": "AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch",
+                "Parameters": {
+                    "AccessKey": "",
+                    "SecretKey": "",
+                    "Region": "ap-southeast-2",
+                    "LogGroup": "lansaweb-logs",
+                    "LogStream": "stack_id-{instance_id}"
+                }
+            },
+            {
+                "Id": "Ec2ConfigDef",
+                "FullName": "AWS.EC2.Windows.CloudWatch.CustomLog.CustomLogInputComponent,AWS.EC2.Windows.CloudWatch",
+                "Parameters": {
+                    "LogDirectoryPath": "C:\\Program Files\\Amazon\\Ec2ConfigService\\Logs",
+                    "TimestampFormat": "yyyy-MM-dd HH:mm:ss:",
+                    "Encoding": "utf-8",
+                    "Filter": "ec2configlog.txt",
+                    "CultureName": "",
+                    "TimeZoneKind": "UTC",
+                    "LineCount" : "1"
+                }
+            },
+            {
+                "Id": "Ec2Config",
+                "FullName": "AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch",
+                "Parameters": {
+                    "AccessKey": "",
+                    "SecretKey": "",
+                    "Region": "ap-southeast-2",
+                    "LogGroup": "ec2configlogs",
+                    "LogStream": "stack_id-{instance_id}"
+                }
+            },            
+            {
+                "Id": "PerformanceCounterDef",
+                "FullName": "AWS.EC2.Windows.CloudWatch.PerformanceCounterComponent.PerformanceCounterInputComponent,AWS.EC2.Windows.CloudWatch",
+                "Parameters": {
+                    "CategoryName": "Memory",
+                    "CounterName": "Available MBytes",
+                    "InstanceName": "",
+                    "MetricName": "Memory",
+                    "Unit": "Megabytes",
+                    "DimensionName": "",
+                    "DimensionValue": ""
+                }
+            },
+            {
+                "Id": "PerformanceCounter",
+                "FullName": "AWS.EC2.Windows.CloudWatch.CloudWatch.CloudWatchOutputComponent,AWS.EC2.Windows.CloudWatch",
+                "Parameters": 
+                {
+                    "AccessKey": "",
+                    "SecretKey": "",
+                    "Region": "ap-southeast-2",
+                    "NameSpace": "Windows/Default"
+                }
+            }
+        ],
+        "Flows": {
+            "Flows": 
+            [
+                "(ApplicationEventLog,SystemEventLog,SecurityEventLog),CloudWatchLogsSystem",
+                "ETW,EventTraceLog",
+                "WinUpdateLogDef,WinUpdateLog",
+                "LansaWebLogDef,LansaWebLog",
+                "CfnLogDef,CfnLog",
+                "ApplicationPerfLogsDef,ApplicationPerfLog",
+                "PerformanceCounterDef,PerformanceCounter",
+                "Ec2ConfigDef,Ec2Config",
+                "IISLogDef,IISLog"
+            ]
+        }
+    } 
+}

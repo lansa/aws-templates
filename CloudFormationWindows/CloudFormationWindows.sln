@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{22325025-CDA3-4736-83CB-2D32D2FCC215}") = "CloudFormationWindows", "CloudFormationWindows.cfproj", "{4DD7B654-513F-48F4-894C-554014C2EBC9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4DD7B654-513F-48F4-894C-554014C2EBC9}.Debug|x86.ActiveCfg = Debug|x86
+		{4DD7B654-513F-48F4-894C-554014C2EBC9}.Debug|x86.Build.0 = Debug|x86
+		{4DD7B654-513F-48F4-894C-554014C2EBC9}.Release|x86.ActiveCfg = Release|x86
+		{4DD7B654-513F-48F4-894C-554014C2EBC9}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

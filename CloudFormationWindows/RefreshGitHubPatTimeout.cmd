@@ -1,0 +1,2 @@
+@REM Require this script to wrap the powershell script in order to capture all the output when run from the Scheduler. Go figure!
+%SystemRoot%\system32\WindowsPowerShell\v1.0\powershell.exe -NonInteractive -NoProfile -ExecutionPolicy unrestricted -command "& {cmd /c exit -2;Write-Host $env:processor_architecture; &'C:\lansa\cookbooks\CloudFormationWindows\RefreshGitHubPatTimeout.ps1' -SendMail ;exit $LastExitCode}"
