@@ -1,0 +1,47 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{4dd7b654-513f-48f4-894c-554014c2ebc9}</ProjectGuid>
+    <AssemblyName>CloudFormationWindows</AssemblyName>
+    <Name>CloudFormationWindows</Name>
+    <RootNamespace>CloudFormationWindows</RootNamespace>
+  </PropertyGroup>
+  <PropertyGroup>
+    <!-- Experimental LocalAppData -->
+    <CloudFormationPath Condition=" '$(CloudFormationPath)' == '' AND Exists('$(LocalAppData)\Microsoft\VisualStudio\10.0Exp\Extensions\Amazon Web Services\AWSToolkit.VS2010.Core\0.5.0.0\cloudformation.targets')">$(LocalAppData)\Microsoft\VisualStudio\10.0Exp\Extensions\Amazon Web Services\AWSToolkit.VS2010.Core\0.5.0.0</CloudFormationPath>
+    <!-- Integrated Shell -->
+    <CloudFormationPath Condition=" '$(CloudFormationPath)' == '' AND Exists('$(MSBuildExtensionsPath)\Amazon Web Services LLC\AWSToolkit.VS2010\cloudformation.targets')">$(MSBuildExtensionsPath)\Amazon Web Services LLC\AWSToolkit.VS2010</CloudFormationPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="dummy.template">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="lansa-master-win.cfn.template">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="lansa-win-custom.cfn.template">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="lansa-win-paas.cfn.template">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="mp.template">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="webserver-win.cfn.template">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="AWS.EC2.Windows.CloudWatch.json">
+      <SubType>Content</SubType>
+    </Content>
+  </ItemGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+  </PropertyGroup>
+  <Import Project="$(CloudFormationPath)\cloudformation.targets" />
+</Project>
