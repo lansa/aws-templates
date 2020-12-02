@@ -1,55 +1,97 @@
 {
-    "AWSTemplateFormatVersion" : "2010-09-09",
-    "Description": "Deploy a LANSA WAM application into an auto scaling group. This template is designed to be executed by the parent lansa-master-win.cfn.template stack. Parameters described as Update Stack: are only modified after the stack has been created",
-    "Parameters"               : {
-        "LansaType" : {
-            "Type"        : "String",
-            "Default" : "WebServer"
+	"AWSTemplateFormatVersion" : "2010-09-09",
+
+	"Description" : "Deploy a LANSA WAM application into an auto scaling group. This template is designed to be executed by the parent lansa-master-win.cfn.template stack. Parameters described as Update Stack: are only modified after the stack has been created",
+
+	"Parameters" : {
+        "AMI"  : {
+            "Type": "String",
+            "Default": "ami-e1c0b3db"
         },
-        "1LansaMSI" : {
-            "Type"        : "String",
-            "Default"     : "https://s3-ap-southeast-2.amazonaws.com/lansa/app/Test/AWAMAPP_v1.0.0_en-us.msi",
-            "Description" : "URL of the LANSA MSI to install. The MSI must have been previously uploaded to the specified location in Amazon S3 BLOB storage."
+        "DBEndPoint": {
+            "Type": "String",
+            "Default": "tdgxg1ddiuto85.cemy5sqefsvw.ap-southeast-2.rds.amazonaws.com"
         },
-        "2LansaMSIBitness" : {
+        "DummyRef"    : {
+            "Type"    : "String",
+            "Default" : "DummyValue",
+            "Description" : "Allows one ASG to be sequenced after another. See master template use of this parameter. It is not used withing this template"
+        },
+        "IAMRoleInstanceProfile": {
+            "Type": "String",
+            "Description": "IAM Instance Role"
+        },
+        "LansaSecurityGroup": {
+            "Type" : "String",
+            "Default" : "test-win-3-LansaSecurityGroup-132Y0YU59S9WI"
+        },
+        "Sudb": {
+            "Type": "String",
             "Default" : "1",
-            "Description" : "Set to 1 if the MSI is a 32-bit application. Set to 0 if the MSI is a 64-bit application.",
-            "Type"        : "String",
-            "AllowedValues" : [
+            "Description": "Set to 1 for DbWebServer and 0 for WebServer as a parameter for install-lansa-msi."
+        },
+        "TemplateRoot" : {
+            "Type"    : "String",
+            "Default" : "https://s3-ap-southeast-2.amazonaws.com/lansa/templates/",
+            "Description" : "Root location in S3 of the templates"
+        },
+        "WebServerELB": {
+            "Type": "String",
+            "Description": "The Load Balancer used for the WebServer.",
+            "Default" : "test-win-WebServe-1DMYEQVA42DWE"
+        },
+        "WebServerName": {
+            "Type": "String",
+            "Default" : "DB Web Server Instance",
+            "Description": "The Load Balancer used for the DbWebServer and WebServer."
+        },
+        "01LansaMSI": {
+            "Type": "String",
+            "Default": "https://s3-ap-southeast-2.amazonaws.com/lansa/app/Test/AWAMAPP_v14.2.1_en-us.msi",
+            "Description": "URL of the LANSA MSI to install. The MSI must have been previously uploaded to the specified location in Amazon S3 BLOB storage."
+        },
+        "02LansaMSIBitness": {
+            "Type": "String",
+            "Default": "1",
+            "Description": "Set to 1 if the MSI is a 32-bit application. Set to 0 if the MSI is a 64-bit application.",
+            "AllowedValues": [
                 "1",
                 "0"
             ],
-            "ConstraintDescription" : "Must be either 1 (true) or 0 (false)."
+            "ConstraintDescription": "Must be either 1 (true) or 0 (false)."
         },
-        "3DBUsername"   : {
-            "Default" : "admin",
-            "Description" : "The LANSA database administrator account username. Must begin with a letter and contain only alphanumeric characters. Maximum length 16.",
-            "Type"        : "String",
-            "MinLength"   : "1",
-            "MaxLength"   : "16",
-            "AllowedPattern" : "[a-zA-Z][a-zA-Z0-9]*"
+        "03DBUsername": {
+            "Default": "admin",
+            "Description": "The LANSA database administrator account username. Must begin with a letter and contain only alphanumeric characters. Maximum length 16.",
+            "Type": "String",
+            "MinLength": "1",
+            "MaxLength": "16",
+            "AllowedPattern": "[a-zA-Z][a-zA-Z0-9]*"
         },
-        "4DBPassword"   : {
-            "NoEcho"  : "true",
-            "Description" : "The LANSA database administrator account password. Minimum length 8, maximum length 41. This password must conform to Account Policy rules. E.g. The whole user name must not be in the password. With user name 'lansa', 'lansa!@#$abc' will NOT be accepted as a password. With user name 'lansa2', 'lansa!123' will be accepted as a password. See https://technet.microsoft.com/en-au/library/cc786468(v=ws.10).aspx for more information.",
-            "Type"        : "String",
-            "MinLength"   : "8",
-            "MaxLength"   : "41"
+        "04DBPassword": {
+            "NoEcho": "true",
+            "Description": "The LANSA database administrator account password. Minimum length 8, maximum length 41. There must be at least one character from each of the following character classes: uppercase letters, lowercase letters and numeric digits. Only printable ASCII characters, not including '/', '@', '\"', and space, may be used.",
+            "Type": "String",
+            "MinLength": "8",
+            "MaxLength": "41",
+            "AllowedPattern": "(?!.*[/\"@\\s])(?=.*\\d)(?=.*[A-Z])(?=.*[a-z]).{8,41}"
         },
-        "5WebUser"   : {
-            "Type"    : "String",
-            "Default" : "PCXUSER2",
-            "Description" : "User to use for running web jobs."
+        "05WebUser": {
+            "Type": "String",
+            "Default": "PCXUSER2",
+            "Description": "User to use for running web jobs."
         },
-        "6WebPassword"   : {
-            "NoEcho"  : "true",
-            "Type"    : "String",
-            "Description" : "Password for WebUser. Minimum length 8, maximum length 41. This password must conform to Account Policy rules. E.g. The whole user name must not be in the password. With user name 'lansa', 'lansa!@#$abc' will NOT be accepted as a password. With user name 'lansa2', 'lansa!123' will be accepted as a password. See https://technet.microsoft.com/en-au/library/cc786468(v=ws.10).aspx for more information."
+        "06WebPassword": {
+            "Type": "String",
+            "NoEcho": "true",
+            "Description": "Password for WebUser. Minimum length 8, maximum length 41. There must be at least one character from each of the following character classes: uppercase letters, lowercase letters and numeric digits. A space must not be used. This password must conform to Account Policy rules. E.g. The whole user name must not be in the password. With user name 'lansa', 'lansa!@#$abc' will NOT be accepted as a password. With user name 'lansa2', 'lansa!123' will be accepted as a password. See https://technet.microsoft.com/en-au/library/cc786468(v=ws.10).aspx for more information.",
+            "MinLength": "8",
+            "MaxLength": "41",
+            "AllowedPattern": "(?!.*[\\s])(?=.*\\d)(?=.*[A-Z])(?=.*[a-z]).{8,41}"
         },
-        "7KeyName" : {
-            "Default" : "Linux-keypair",
-            "Description" : "Name of an existing EC2 KeyPair to enable remote access to the instances via RDP (case sensitive).",
-            "Type"        : "AWS::EC2::KeyPair::KeyName"
+        "07KeyName": {
+            "Type": "AWS::EC2::KeyPair::KeyName",
+            "Description": "Name of an existing EC2 KeyPair to enable remote access to the instances via RDP (case sensitive). e.g. linux-keypair"
         },
         "8RemoteAccessLocation"        : {
             "Description" : "The IP address range that may be used to remotely access the EC2 instances. Must be a valid IP CIDR range of the form x.x.x.x/x. This is a security feature which limits remote access to your EC2 instances.",
@@ -67,649 +109,925 @@
             ],
             "ConstraintDescription" : "Must be R (Release)."
         },        
-        "91LansaGitRepoBranch" : {
-            "Default" : "master",
-            "Description" : "Git branch to checkout from Lansa Git repository. This pulls in the script files which are used to assemble the Icing. This is performed during the initial launch and also everytime a Trigger is fired.",
-            "Type"        : "String"
+        "10LansaGitRepoBranch": {
+            "Type": "String",
+            "Default": "debug/paas",
+            "Description": "Git branch to checkout from Lansa Git repository. This pulls in the script files which are used to assemble the Icing. This is performed during the initial launch and also everytime a Trigger is fired."
         },
-        "InstanceType" : {
-            "Type"        : "String"
+        "11WebServerInstanceTyp": {
+            "Description": "WebServer EC2 instance type. See http://aws.amazon.com/ec2/instance-types/ for more information.",
+            "Type": "String",
+            "Default": "t3.medium",
+            "AllowedValues": [
+                "c5.large",
+                "c5.xlarge",
+                "c5.2xlarge",
+                "c5.4xlarge",
+                "c5.9xlarge",
+                "c5.18xlarge",
+                "c5d.large",
+                "c5d.xlarge",
+                "c5d.2xlarge",
+                "c5d.4xlarge",
+                "c5d.9xlarge",
+                "c5d.18xlarge",
+                "c5n.large",
+                "c5n.xlarge",
+                "c5n.2xlarge",
+                "c5n.4xlarge",
+                "c5n.9xlarge",
+                "c5n.18xlarge",
+                "d2.xlarge",
+                "d2.2xlarge",
+                "d2.4xlarge",
+                "d2.8xlarge",
+                "g2.2xlarge",
+                "g2.8xlarge",
+                "g3.4xlarge",
+                "g3.8xlarge",                "i2.xlarge",
+                "g3.16xlarge",                "i2.xlarge",
+                "i2.2xlarge",
+                "i2.4xlarge",
+                "i2.8xlarge",
+                "i3.large",
+                "i3.xlarge",
+                "i3.2xlarge",
+                "i3.4xlarge",
+                "i3.8xlarge",
+                "i3.16xlarge",                "m5.large",
+                "i3.metal",                "m5.large",
+                "m5.xlarge",
+                "m5.2xlarge",
+                "m5.4xlarge",
+                "m5.12xlarge",
+                "m5.24xlarge",
+                "m5.metal",
+                "m5a.large",
+                "m5a.xlarge",
+                "m5a.2xlarge",
+                "m5a.4xlarge",
+                "m5a.12xlarge",
+                "m5a.24xlarge",                "m5d.large",
+                "m5d.xlarge",
+                "m5d.2xlarge",
+                "m5d.4xlarge",
+                "m5d.12xlarge",
+                "m5d.24xlarge",
+                "m5d.metal",
+                "p2.xlarge",
+                "p2.8xlarge",
+                "p2.16xlarge",
+                "p3.2xlarge",
+                "p3.8xlarge",
+                "p3.16xlarge",
+                "t2.nano",
+                "t2.micro",
+                "t2.small",
+                "t2.medium",
+                "t2.large",
+                "t2.xlarge",
+                "t2.2xlarge",
+                "t3.nano",
+                "t3.micro",
+                "t3.small",
+                "t3.medium",
+                "t3.large",
+                "t3.xlarge",
+                "t3.2xlarge",
+                "r4.large",
+                "r4.xlarge",
+                "r4.2xlarge",
+                "r4.4xlarge",
+                "r4.8xlarge",
+                "r4.16xlarge",
+                "r5.large",
+                "r5.xlarge",
+                "r5.2xlarge",
+                "r5.4xlarge",
+                "r5.12xlarge",
+                "r5.24xlarge",
+                "r5d.metal",
+                "r5d.large",
+                "r5d.xlarge",
+                "r5d.2xlarge",
+                "r5d.4xlarge",
+                "r5d.12xlarge",
+                "r5d.24xlarge",
+                "r5d.metal",
+                "x1.16xlarge",
+                "x1.32xlarge",
+                "x1e.xlarge",
+                "x1e.2xlarge",
+                "x1e.4xlarge",
+                "x1e.8xlarge",
+                "x1e.16xlarge",
+                "x1e.32xlarge"
+            ]
         },
-        "DBEndPoint"       : {
-            "Type"        : "String",
-            "Default" : "tdgxg1ddiuto85.cemy5sqefsvw.ap-southeast-2.rds.amazonaws.com"
+        "12WebServerMaxConnec": {
+            "Type": "Number",
+            "Default": 20,
+            "Description": "The maximum number of LANSA jobs to run on each Web Server. Setting TriggerWebConfig will cause this value to be updated."
         },
-        "DBName"       : {
-            "Type"        : "String",
-            "Default" : "lansadb"
+        "14DBName": {
+            "Type": "String",
+            "Default": "lansa",
+            "Description": "LANSA database name. Must begin with a letter and contain only alphanumeric characters. Maximum length 64.",
+            "MinLength": "1",
+            "MaxLength": "64",
+            "AllowedPattern": "[a-zA-Z][a-zA-Z0-9]*"
         },
-        "WebServerCapacity" : {
-            "Type"        : "Number",
-            "Default" : 1
+        "17UserScriptHook": {
+            "Type": "String",
+            "Default": "https://s3-ap-southeast-2.amazonaws.com/lansa/scripts/user-script.ps1",
+            "Description": "URL of a Powershell script to execute after installing the LANSA MSI. The script must have been previously uploaded to the specified location in Amazon S3 BLOB storage."
         },
-        "WebServerMaxConnect" : {
-            "Type"        : "Number",
-            "Default" : 20
-        },        
-        "RemoteAccessLocation"        : {
-            "Type"        : "String",
-            "Default" : "103.231.159.65/32"
+        "18WebServerCapacity": {
+            "Type": "Number",
+            "Default": "1",
+            "Description": "The initial number of EXTRA WebServer EC2 instances. Must be between at least 1. Default maximum allowed by AWS in an account is 50.",
+            "MinValue": "1"
         },
-        "ELBTimeout"         : {
-            "Type"        : "Number"
+        "18WebServerCapacityMaxSize": {
+            "Type": "Number",
+            "Default": "1",
+            "Description": "The maximum number of EXTRA WebServer EC2 instances. Generally set to 1 for DbWebServer and 150 for WebServer.",
+            "MinValue": "1"
         },
-        "AMI"  : {
-            "Default"     : "ami-e1c0b3db",
-            "Type"        : "String"
+        "21ELBTimeout"         : {
+            "Type": "Number"
         },
-        "SecurityGroup": {
-            "Type"        : "String",
-            "Default" : "test-win-3-LansaSecurityGroup-132Y0YU59S9WI"
+        "22TriggerCakeUpdate": {
+            "Type": "String",
+            "Default": "1",
+            "Description": "Update Stack: Increment this by one to update the supporting software and trigger a Windows Update. This is the same as triggerring both a ChefUpdate and a WindowsUpdate. Mainly to ensure that Windows Updates have been applied."
         },
-        "LoadBalancer": {
-            "Type"        : "String",
-            "Default" : "test-win-WebServe-1DMYEQVA42DWE"
+        "23TriggerChefUpdate": {
+            "Type": "String",
+            "Default": "1",
+            "Description": "Update Stack: Increment this by one to update the supporting software."
         },
-        "DummyRef"    : {
-            "Type"    : "String",
-            "Default" : "DummyValue",
-            "Description" : "Allows one ASG to be sequenced after another. See master template use of this parameter. It is not used withing this template"
+        "24TriggerWinUpdate": {
+            "Type": "String",
+            "Default": "1",
+            "Description": "Update Stack: Increment this by one to trigger a Windows Update."
+        },
+        "25TriggerWebConfig": {
+            "Type": "String",
+            "Default": "1",
+            "Description": "Update Stack: Increment this by one to trigger an update to the web configuration"
+        },
+        "26TriggerIcingUpdate": {
+            "Type": "String",
+            "Default": "1",
+            "Description": "Update Stack: Increment this by one to trigger an MSI Upgrade. Obtains the specified MSI and installs it. Ensure the LansaMSI parameter is set correctly."
+        },
+        "27TriggerPatchInstall": {
+            "Type": "String",
+            "Default": "1",
+            "Description": "Update Stack: Increment this by one to trigger patches to be installed.  Obtains all MSPs from the PatchBucket and PatchFolder and applies those not already applied. The PatchFolder is usually specified as just the folder in which the patches are located. e.g. 'app/Test'. Its also possible to limit it to a particular file match e.g. to limit it to just install the patches for a particular version - 'app/Test/AWAMAPP_v1.0.0.' N.B. ensure there is a '.' on the end of the name to ensure that only patches for this version are applied."
+        },
+        "28PatchBucketName": {
+            "Type": "String",
+            "Default": "lansa",
+            "Description": "Update Stack: S3 Bucket which will contain the patches. (case sensitive). See TriggerPatchInstall parameter for more details."
+        },
+        "29PatchFolderName": {
+            "Type": "String",
+            "Default": "/change me",
+            "Description": "Update Stack: S3 folder which will contain the patches. (case sensitive). Note that ALL sub-directories are searched so ensure the directory used to store the patches has no sub directories. For the demo use app/test-patches. See TriggerPatchInstall parameter for more details."
+        }
+	},
+    "Conditions" : {
+        "IsReleaseLevel" : {"Fn::Equals" : [{"Ref" : "90LansaTemplateLevel"}, "R"]},
+        "DoesNotHaveUserScript" : {"Fn::Equals" : [{"Ref" : "17UserScriptHook"}, ""]},
+        "HasUserScript" : {"Fn::Not" : [{"Condition" : "DoesNotHaveUserScript"}]}
+    },
+	"Resources" : {
+		"WebServerGroup" : {
+		    "Type": "AWS::AutoScaling::AutoScalingGroup",
+            "Properties": {
+                "AvailabilityZones": {
+                    "Fn::GetAZs": ""
+                },
+                "LaunchConfigurationName": {
+                    "Ref": "LaunchWebServer"
+                },
+                "MinSize": {"Ref" : "18WebServerCapacity"},
+                "MaxSize": {"Ref" : "18WebServerCapacityMaxSize"},
+                "DesiredCapacity": { "Ref": "18WebServerCapacity" },
+                "HealthCheckType": "ELB",
+                "HealthCheckGracePeriod": 2400,
+                "LoadBalancerNames": [ { "Ref": "WebServerELB" } ],
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": { "Ref" : "WebServerName" },
+                        "PropagateAtLaunch": "true"
+                    }
+                ]
+
+            }
+		},
+        "LaunchWebServer": {
+            "Type": "AWS::AutoScaling::LaunchConfiguration",
+            "Metadata": {
+                "TriggerCakeUpdate": { "Ref": "22TriggerCakeUpdate" },
+                "TriggerChefUpdate": { "Ref": "23TriggerChefUpdate" },
+                "TriggerWindowsUpdate": { "Ref": "24TriggerWinUpdate" },
+                "TriggerWebConfig": { "Ref": "25TriggerWebConfig" },
+                "TriggerIcingUpdate": { "Ref": "26TriggerIcingUpdate" },
+                "TriggerPatchInstall": { "Ref": "27TriggerPatchInstall" },
+                "AWS::CloudFormation::Init": {
+                    "configSets": {
+                        "icing-install": [ "installing", "install-cfn", "git-pull", "install-logging", "config-windows-update", "install-msi", "install-patches", "run-webconfig", "ready" ],
+                        "cfn-update": [ "installing", "install-cfn", "ready" ],
+                        "cake-update": [ "installing", "git-pull", "restart-ifneeded", "run-chef", "run-windows-update", "ready" ],
+                        "chef-update": [ "installing", "git-pull", "restart-ifneeded", "run-chef", "ready" ],
+                        "windows-update": [ "installing", "git-pull", "restart-ifneeded", "run-windows-update", "ready" ],
+                        "webconfig": [ "installing", "git-pull", "run-webconfig", "ready" ],
+                        "icing-update": [ "installing", "git-pull", "restart-ifneeded", "install-cfn", "upgrade-msi", "ready" ],
+                        "apply-patches": [ "installing", "git-pull", "restart-ifneeded", "install-patches", "ready" ]
+                    },
+                    "install-cfn": {
+                        "files": {
+                            "c:\\cfn\\cfn-hup.conf": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "[main]\n",
+                                            "stack=",
+                                            { "Ref": "AWS::StackId" },
+                                            "\n",
+                                            "region=",
+                                            { "Ref": "AWS::Region" },
+                                            "\n",
+                                            "interval=1\n",
+                                            "verbose=true\n"
+                                        ]
+                                    ]
+                                }
+                            },
+                            "c:\\cfn\\hooks.d\\cfn-auto-reloader.conf": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "[cfn-auto-reloader-hook]\n",
+                                            "triggers=post.update\n",
+                                            "path=Resources.LaunchWebServer.Metadata.AWS::CloudFormation::Init\n",
+                                            "action=cfn-init.exe -v -s ",
+                                            { "Ref": "AWS::StackId" },
+                                            " -r LaunchWebServer",
+                                            " --configsets cfn-update ",
+                                            " --region ",
+                                            { "Ref": "AWS::Region" },
+                                            "\n"
+                                        ]
+                                    ]
+                                }
+                            },
+                            "c:\\cfn\\hooks.d\\cfn-cake.conf": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "[cfn-cake-hook]\n",
+                                            "triggers=post.update\n",
+                                            "path=Resources.LaunchWebServer.Metadata.TriggerCakeUpdate\n",
+                                            "action=cfn-init.exe -v -s ",
+                                            { "Ref": "AWS::StackId" },
+                                            " -r LaunchWebServer",
+                                            " --configsets cake-update ",
+                                            " --region ",
+                                            { "Ref": "AWS::Region" },
+                                            "\n"
+                                        ]
+                                    ]
+                                }
+                            },
+                            "c:\\cfn\\hooks.d\\cfn-chef.conf": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "[cfn-chef-hook]\n",
+                                            "triggers=post.update\n",
+                                            "path=Resources.LaunchWebServer.Metadata.TriggerChefUpdate\n",
+                                            "action=cfn-init.exe -v -s ",
+                                            { "Ref": "AWS::StackId" },
+                                            " -r LaunchWebServer",
+                                            " --configsets chef-update ",
+                                            " --region ",
+                                            { "Ref": "AWS::Region" },
+                                            "\n"
+                                        ]
+                                    ]
+                                }
+                            },
+                            "c:\\cfn\\hooks.d\\cfn-windows.conf": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "[cfn-windows-hook]\n",
+                                            "triggers=post.update\n",
+                                            "path=Resources.LaunchWebServer.Metadata.TriggerWindowsUpdate\n",
+                                            "action=cfn-init.exe -v -s ",
+                                            { "Ref": "AWS::StackId" },
+                                            " -r LaunchWebServer",
+                                            " --configsets windows-update ",
+                                            " --region ",
+                                            { "Ref": "AWS::Region" },
+                                            "\n"
+                                        ]
+                                    ]
+                                }
+                            },
+                            "c:\\cfn\\hooks.d\\cfn-webconfig.conf": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "[cfn-webconfig-hook]\n",
+                                            "triggers=post.update\n",
+                                            "path=Resources.LaunchWebServer.Metadata.TriggerWebConfig\n",
+                                            "action=cfn-init.exe -v -s ",
+                                            { "Ref": "AWS::StackId" },
+                                            " -r LaunchWebServer",
+                                            " --configsets webconfig ",
+                                            " --region ",
+                                            { "Ref": "AWS::Region" },
+                                            "\n"
+                                        ]
+                                    ]
+                                }
+                            },
+                            "c:\\cfn\\hooks.d\\cfn-icing.conf": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "[cfn-icing-hook]\n",
+                                            "triggers=post.update\n",
+                                            "path=Resources.LaunchWebServer.Metadata.TriggerIcingUpdate\n",
+                                            "action=cfn-init.exe -v -s ",
+                                            { "Ref": "AWS::StackId" },
+                                            " -r LaunchWebServer",
+                                            " --configsets icing-update ",
+                                            " --region ",
+                                            { "Ref": "AWS::Region" },
+                                            "\n"
+                                        ]
+                                    ]
+                                }
+                            },
+                            "c:\\cfn\\hooks.d\\cfn-patch.conf": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "[cfn-patch-hook]\n",
+                                            "triggers=post.update\n",
+                                            "path=Resources.LaunchWebServer.Metadata.TriggerPatchInstall\n",
+                                            "action=cfn-init.exe -v -s ",
+                                            { "Ref": "AWS::StackId" },
+                                            " -r LaunchWebServer",
+                                            " --configsets apply-patches ",
+                                            " --region ",
+                                            { "Ref": "AWS::Region" },
+                                            "\n"
+                                        ]
+                                    ]
+                                }
+                            }
+                        },
+                        "services": {
+                            "windows": {
+                                "cfn-hup": {
+                                    "enabled": "true",
+                                    "ensureRunning": "true",
+                                    "files": [
+                                        "c:\\cfn\\cfn-hup.conf",
+                                        "c:\\cfn\\hooks.d\\cfn-auto-reloader.conf",
+                                        "c:\\cfn\\hooks.d\\cfn-cake.conf",
+                                        "c:\\cfn\\hooks.d\\cfn-chef.conf",
+                                        "c:\\cfn\\hooks.d\\cfn-windows.conf",
+                                        "c:\\cfn\\hooks.d\\cfn-icing.conf",
+                                        "c:\\cfn\\hooks.d\\cfn-webconfig.conf",
+                                        "c:\\cfn\\hooks.d\\cfn-patch.conf",
+                                        "C:\\LANSA\\lansa.msi"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "git-install": {
+                        "commands": {
+                            "01_git_install": {
+                                "command": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "@powershell -NoProfile -ExecutionPolicy unrestricted -command \"& {",
+                                            "choco -y install git.install -version 1.9.4.20140929;",
+                                            "cd \\ ;",
+                                            "$env:Path += ';C:\\Program Files (x86)\\Git\\cmd';",
+                                            "cmd /C git clone https://github.com/robe070/cookbooks.git lansa '2>&1';",
+                                            "if ($LASTEXITCODE -ne 0 -and $LASTEXITCODE -ne 128) {Write-Error ('Git clone failed');exit $LastExitCode};",
+                                            "cd \\lansa;",
+                                            "cmd /C git checkout windows-stack '2>&1';if ($LASTEXITCODE -ne 0) {Write-Error ('Git checkout failed');exit $LastExitCode};",
+                                            "exit 0",
+                                            "}\""
+                                        ]
+                                    ]
+                                },
+                                "waitAfterCompletion": "0"
+                            }
+                        }
+                    },
+                    "git-pull": {
+                        "commands": {
+                            "01_git_pull": {
+                                "command": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "@powershell -NoProfile -ExecutionPolicy unrestricted -command \"& {",
+                                            "$newPath = 'C:\\Program Files (x86)\\Git\\cmd';",
+                                            "$oldPath = [Environment]::GetEnvironmentVariable('PATH', 'Machine');",
+                                            "$match = '*' + $newpath + '*';",
+                                            "$replace = $newPath + ';' + $oldPath;",
+                                            "if ( $oldpath -notlike $match )",
+                                            "{[Environment]::SetEnvironmentVariable('PATH', $replace, 'Machine');$env:Path += ';' + $newpath;}",
+                                            "$env:Path;",
+                                            "cd \\lansa;",
+                                            "cmd /C git fetch '2>&1';if ($LASTEXITCODE -ne 0) {Write-Error ('Git fetch failed');exit $LastExitCode};",
+                                            "cmd /C git checkout -f ",
+                                            { "Ref": "10LansaGitRepoBranch" },
+                                            "  '2>&1';if ($LASTEXITCODE -ne 0) {Write-Error ('Git checkout failed');exit $LastExitCode};",
+                                            "cmd /C git pull origin '2>&1';if ($LASTEXITCODE -ne 0) {Write-Error ('Git pull failed');exit $LastExitCode};",
+                                            "exit 0",
+                                            "}\""
+                                        ]
+                                    ]
+                                },
+                                "waitAfterCompletion": "0"
+                            }
+                        }
+                    },
+                    "installing": {
+                        "commands": {
+                            "01_installing": {
+                                "command": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "@powershell -NoProfile -ExecutionPolicy unrestricted -command \"& {",
+                                            "Set-ItemProperty -Path \"HKLM:\\Software\\lansa\" -Name \"Installing\" -Value 1",
+                                            ";exit $LastExitCode",
+                                            "}\""
+                                        ]
+                                    ]
+                                },
+                                "waitAfterCompletion": "0"
+                            }
+                        }
+                    },
+                    "ready": {
+                        "commands": {
+                            "01_ready": {
+                                "command": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "@powershell -NoProfile -ExecutionPolicy unrestricted -command \"& {",
+                                            "Set-ItemProperty -Path \"HKLM:\\Software\\lansa\" -Name \"Installing\" -Value 0",
+                                            ";exit $LastExitCode",
+                                            "}\""
+                                        ]
+                                    ]
+                                },
+                                "waitAfterCompletion": "0"
+                            }
+                        }
+                    },
+                    "restart-ifneeded": {
+                        "commands": {
+                            "01_restart-ifneeded": {
+                                "command": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "@powershell -NoProfile -ExecutionPolicy unrestricted -command \"& {",
+                                            "C:\\LANSA\\scripts\\Restart-IfNeeded.ps1",
+                                            ";exit $LastExitCode",
+                                            "}\""
+                                        ]
+                                    ]
+                                },
+                                "waitAfterCompletion": "90"
+                            }
+                        }
+                    },
+                    "install-logging": {
+                        "files"    : {
+                            "c:\\program files\\Amazon\\Ec2ConfigService\\Settings\\AWS.EC2.Windows.CloudWatch.json" : {
+                               "source" : { "Fn::If" : [ "IsReleaseLevel", 
+                                              { "Fn::Join" : ["", [
+                                                       { "Ref" : "TemplateRoot" },
+                                                       { "Ref" : "10LansaGitRepoBranch" },
+                                                       "/AWS.EC2.Windows.CloudWatch.json"
+                                              ]]},
+                                              { "Fn::Join" : ["", [
+                                                       { "Ref" : "TemplateRoot" },
+                                                       { "Ref" : "10LansaGitRepoBranch" },
+                                                       "/beta/AWS.EC2.Windows.CloudWatch.json"
+                                              ]]}
+                                           ]}
+                            }
+                         },
+                        "commands": {
+                            "01_install_logging": {
+                                "command": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "@powershell -NoProfile -ExecutionPolicy unrestricted -command \"& {",
+                                            "C:\\LANSA\\scripts\\install-logging.ps1",
+                                            " -stack ",
+                                            { "Ref": "AWS::StackName" },
+                                            " -region ",
+                                            { "Ref": "AWS::Region" },
+                                            " -f32bit ",
+                                            { "Ref": "02LansaMSIBitness" },
+                                            ";exit $LastExitCode",
+                                            "}\""
+                                        ]
+                                    ]
+                                },
+                                "waitAfterCompletion": "0"
+                            }
+                        }
+                    },
+                    "config-windows-update": {
+                        "commands": {
+                            "01_config_windows_update": {
+                                "command": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "@powershell -NoProfile -ExecutionPolicy unrestricted -command \"& {",
+                                            "C:\\lansa\\scripts\\WindowsUpdatesSettings.ps1",
+                                            ";exit $LastExitCode",
+                                            "}\""
+                                        ]
+                                    ]
+                                },
+                                "waitAfterCompletion": "0"
+                            }
+                        }
+                    },
+                    "install-msi": {
+                        "files": {
+                            "C:\\LANSA\\lansa.msi": {
+                                "source": { "Ref": "01LansaMSI" }
+                            }
+                        },
+                        "commands": {
+                            "01_install_msi": {
+                                "command": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "@powershell -NoProfile -ExecutionPolicy unrestricted -command \"& {",
+                                            "C:\\LANSA\\scripts\\install-lansa-msi.ps1",
+                                            " -server_name ",
+                                            { "Ref" : "DBEndPoint" },
+                                            " -dbname ",
+                                            { "Ref": "14DBName" },
+                                            " -dbuser ",
+                                            { "Ref": "03DBUsername" },
+                                            " -dbpassword ",
+                                            { "Ref": "04DBPassword" },
+                                            " -webuser ",
+                                            { "Ref": "05WebUser" },
+                                            " -webpassword ",
+                                            { "Ref": "06WebPassword" },
+                                            " -f32bit ",
+                                            { "Ref": "02LansaMSIBitness" },
+                                            " -SUDB ",
+                                            { "Ref": "Sudb" },
+                                            " -UPGD false",
+                                            { "Fn::If": [ "HasUserScript", " -userscripthook ", "" ] },
+                                            {
+                                                "Fn::If": [
+                                                    "HasUserScript",
+                                                    { "Ref": "17UserScriptHook" },
+                                                    ""
+                                                ]
+                                            },
+                                            " -Wait ",
+                                            { "Fn::Base64": { "Ref": "WaitHandle" } },
+                                            ";exit $LastExitCode",
+                                            "}\""
+                                        ]
+                                    ]
+                                },
+                                "waitAfterCompletion": "0"
+                            }
+                        }
+                    },
+                    "upgrade-msi": {
+                        "files": {
+                            "C:\\LANSA\\lansa.msi": {
+                                "source": { "Ref": "01LansaMSI" }
+                            }
+                        },
+                        "commands": {
+                            "01_upgrade_msi": {
+                                "command": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "@powershell -NoProfile -ExecutionPolicy unrestricted -command \"& {",
+                                            "C:\\LANSA\\scripts\\install-lansa-msi.ps1",
+                                            " -server_name ",
+                                            { "Ref" : "DBEndPoint" },
+                                            " -dbname ",
+                                            { "Ref": "14DBName" },
+                                            " -dbuser ",
+                                            { "Ref": "03DBUsername" },
+                                            " -dbpassword ",
+                                            { "Ref": "04DBPassword" },
+                                            " -webuser ",
+                                            { "Ref": "05WebUser" },
+                                            " -webpassword ",
+                                            { "Ref": "06WebPassword" },
+                                            " -f32bit ",
+                                            { "Ref": "02LansaMSIBitness" },
+                                            " -SUDB ",
+                                            { "Ref": "Sudb" },
+                                            " -UPGD true",
+                                            { "Fn::If": [ "HasUserScript", " -userscripthook ", "" ] },
+                                            {
+                                                "Fn::If": [
+                                                    "HasUserScript",
+                                                    { "Ref": "17UserScriptHook" },
+                                                    ""
+                                                ]
+                                            },
+                                            ";exit $LastExitCode",
+                                            "}\""
+                                        ]
+                                    ]
+                                },
+                                "waitAfterCompletion": "0"
+                            }
+                        }
+                    },
+                    "install-patches": {
+                        "commands": {
+                            "01_install_patches": {
+                                "command": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "@powershell -NoProfile -ExecutionPolicy unrestricted -command \"& {",
+                                            "C:\\LANSA\\scripts\\copy-s3-install-patches.ps1",
+                                            " -dbpassword ",
+                                            { "Ref": "04DBPassword" },
+                                            " -webpassword ",
+                                            { "Ref": "06WebPassword" },
+                                            " -SUDB ",
+                                            { "Ref": "Sudb" },
+                                            " -bucket_name ",
+                                            { "Ref": "28PatchBucketName" },
+                                            " -region ",
+                                            { "Ref": "AWS::Region" },
+                                            " -folder ",
+                                            { "Ref": "29PatchFolderName" },
+                                            ";exit $LastExitCode",
+                                            "}\""
+                                        ]
+                                    ]
+                                },
+                                "waitAfterCompletion": "0"
+                            }
+                        }
+                    },
+                    "cloud-watch-config": {
+                        "commands": {
+                            "01_cloud_watch_config": {
+                                "command": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "@powershell -NoProfile -ExecutionPolicy unrestricted -command \"& {",
+                                            "C:\\LANSA\\scripts\\cloud-watch-config.ps1",
+                                            ";exit $LastExitCode",
+                                            "}\""
+                                        ]
+                                    ]
+                                },
+                                "waitAfterCompletion": "0"
+                            }
+                        }
+                    },
+                    "jit": {
+                        "commands": {
+                            "01_jit": {
+                                "command": "C:\\program files (x86)\\lansa\\x_win95\\x_lansa\\execute\\x_run.exe proc=*INSTALL APPL=AWAMAPP",
+                                "waitAfterCompletion": "0"
+                            }
+                        }
+                    },
+                    "run-windows-update": {
+                        "commands": {
+                            "01_windows_updates": {
+                                "command": "@powershell -NoProfile -ExecutionPolicy unrestricted -command \"& {C:\\lansa\\scripts\\win-updates.ps1;exit $LastExitCode}\"",
+                                "waitAfterCompletion": "90"
+                            }
+                        }
+                    },
+                    "run-webconfig": {
+                        "commands": {
+                            "01_webconfig": {
+                                "command": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "@powershell -NoProfile -ExecutionPolicy unrestricted -command \"& {",
+                                            "C:\\LANSA\\scripts\\webconfig.ps1",
+                                            " -server_name ",
+                                            { "Ref" : "DBEndPoint" },
+                                            " -dbname ",
+                                            { "Ref": "14DBName" },
+                                            " -dbuser ",
+                                            { "Ref": "03DBUsername" },
+                                            " -dbpassword ",
+                                            { "Ref": "04DBPassword" },
+                                            " -webuser ",
+                                            { "Ref": "05WebUser" },
+                                            " -webpassword ",
+                                            { "Ref": "06WebPassword" },
+                                            " -f32bit ",
+                                            { "Ref": "02LansaMSIBitness" },
+                                            " -SUDB ",
+                                            { "Ref": "Sudb" },
+                                            " -UPGD true",
+                                            " -maxconnections ",
+                                            { "Ref": "12WebServerMaxConnec" },
+                                            { "Fn::If": [ "HasUserScript", " -userscripthook ", "" ] },
+                                            {
+                                                "Fn::If": [
+                                                    "HasUserScript",
+                                                    { "Ref": "17UserScriptHook" },
+                                                    ""
+                                                ]
+                                            },
+                                            ";exit $LastExitCode",
+                                            "}\""
+                                        ]
+                                    ]
+                                },
+                                "waitAfterCompletion": "0"
+                            }
+                        }
+                    },
+                    "run-chef": {
+                        "commands": {
+                            "01_run_chef_client": {
+                                "command": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "@powershell -NoProfile -ExecutionPolicy unrestricted -command \"& {",
+                                            "C:\\LANSA\\scripts\\run-chef.ps1 ",
+                                            "-cookbook VLWebServer::MainRecipe ",
+                                            "-WorkingDirectory C:\\recipes\\chef-repo\\cookbooks",
+                                            ";exit $LastExitCode",
+                                            "}\""
+                                        ]
+                                    ]
+                                },
+                                "waitAfterCompletion": "90"
+                            }
+                        }
+                    }
+                }
             },
-        "TriggerCakeUpdate" : {
-            "Type"    : "String",
-            "Default" : "1",
-            "Description" : "Update Stack: Increment this by one to trigger a Cake update. This is the sdame as triggerring both a ChefUpdate and a WindowsUpdate. Mainly to ensure that Windows Updates have been applied. The same script is executed that baked the Cake in the first place. (The Cake is the AMI from which this instance was instantiated)"
+            "Properties": {
+                "ImageId":  { "Ref" : "AMI" },
+                "InstanceType": { "Ref": "11WebServerInstanceTyp" },
+                "IamInstanceProfile": { "Ref": "IAMRoleInstanceProfile" },
+                "SecurityGroups": [ { "Ref": "LansaSecurityGroup" } ],
+                "KeyName": { "Ref": "07KeyName" },
+                "UserData": {
+                    "Fn::Base64": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "<script>\n",
+
+                                "cfn-init.exe -v ",
+                                "  --stack ",
+                                { "Ref": "AWS::StackId" },
+                                "  --resource LaunchWebServer",
+                                "  --configsets icing-install ",
+                                "  --region ",
+                                { "Ref": "AWS::Region" },
+                                "\n",
+
+                                "cfn-signal.exe -e %ERRORLEVEL% ",
+                                { "Fn::Base64": { "Ref": "WaitHandle" } },
+                                "\n",
+
+                                "</script>\n"
+                            ]
+                        ]
+                    }
+                }
+            }
         },
-        "TriggerChefUpdate" : {
-            "Type"    : "String",
-            "Default" : "1",
-            "Description" : "Update Stack: Increment this by one to run a Chef update. The same script is executed that baked the Cake in the first place. (The Cake is the AMI from which this instance was instantiated)"
+        "WaitHandle": {
+            "Type": "AWS::CloudFormation::WaitConditionHandle"
         },
-        "TriggerWindowsUpdate" : {
-            "Type"    : "String",
-            "Default" : "1",
-            "Description" : "Update Stack: Increment this by one to trigger a Windows Update. The same script is executed that baked the Cake in the first place. (The Cake is the AMI from which this instance was instantiated)"
+        "WaitCondition": {
+            "Type": "AWS::CloudFormation::WaitCondition",
+            "DependsOn": "WebServerGroup",
+            "Properties": {
+                "Handle": { "Ref": "WaitHandle" },
+                "Timeout": "3000",
+                "Count": { "Ref" : "18WebServerCapacity" }
+            }
         },
-        "TriggerWebConfig" : {
-            "Type"    : "String",
-            "Default" : "1",
-            "Description" : "Update Stack: Increment this by one to trigger an update to the web configuration"
+        "ScaleOutPolicy": {
+            "Type": "AWS::AutoScaling::ScalingPolicy",
+            "Properties": {
+                "AdjustmentType": "PercentChangeInCapacity",
+                "AutoScalingGroupName": { "Ref": "WebServerGroup" },
+                "Cooldown": "300",
+                "ScalingAdjustment": "10"
+            }
         },
-        "TriggerIcingUpdate" : {
-            "Type"    : "String",
-            "Default" : "1",
-            "Description" : "Update Stack: Increment this by one to trigger an MSI Upgrade. Obtains the specified MSI and installs it. Ensure the LansaMSI parameter is set correctly."
+        "ScaleInPolicy": {
+            "Type": "AWS::AutoScaling::ScalingPolicy",
+            "Properties": {
+                "AdjustmentType": "PercentChangeInCapacity",
+                "AutoScalingGroupName": { "Ref": "WebServerGroup" },
+                "Cooldown": "300",
+                "ScalingAdjustment": "-10"
+            }
         },
-        "TriggerPatchInstall" : {
-            "Type"    : "String",
-            "Default" : "1",
-            "Description" : "Update Stack: Increment this by one to trigger patches to be installed. Obtains all MSPs and applies those not already applied."
+        "CPUAlarmHigh": {
+            "Type": "AWS::CloudWatch::Alarm",
+            "Properties": {
+                "AlarmDescription": "Alarm if CPU too high or metric disappears indicating instance is down",
+                "AlarmActions": [ { "Ref": "ScaleOutPolicy" } ],
+                "Namespace": "AWS/EC2",
+                "MetricName": "CPUUtilization",
+                "EvaluationPeriods": "1",
+                "Statistic": "Average",
+                "Period": "900",
+                "Unit": "Percent",
+                "Threshold": "70",
+                "ComparisonOperator": "GreaterThanThreshold",
+                "Dimensions": [
+                    {
+                        "Name": "AutoScalingGroupName",
+                        "Value": { "Ref": "WebServerGroup" }
+                    }
+                ]
+            }
         },
-        "PatchBucketName" : {
-            "Type"    : "String",
-            "Default" : "1",
-            "Description" : "Update Stack: S3 Bucket which will contain the patches. (case sensitive)"
-        },
-        "PatchFolderName" : {
-            "Type"    : "String",
-            "Default" : "1",
-            "Description" : "Update Stack: S3 folder which will contain the patches. (case sensitive)"
-        },
-        "UserScriptHook" : {
-            "Type"    : "String",
-            "Default" : "",
-            "Description" : "URL of a Powershell script to execute after installing the LANSA MSI. The script must have been previously uploaded to the specified location in Amazon S3 BLOB storage."
-        },
-        "SetConnectTrace" : {
-            "Type"    : "String",
-            "Default" : "N"
-        },
-        "SetIISTrace" : {
-            "Type"    : "String",
-            "Default" : "N"
-        },
-        "SetXRUNEnvVar" : {
-            "Type"    : "String",
-            "Default" : "ITRO=N ITRL=4 ITRM=9999999999",
-            "Description" : "Set tracing parameters for the LANSA jobs in the x_run system environment variable. Overwrites existing value. Restarts web jobs"
-        },
-        "IAMRoleInstanceProfile" : {
-            "Type"    : "String",
-            "Description" : "IAM Instance Role"
-        },
-        "TemplateRoot" : {
-            "Type"    : "String",
-            "Default" : "https://s3-ap-southeast-2.amazonaws.com/lansa/templates/",
-            "Description" : "Root location in S3 of the templates"
+        "CPUAlarmLow": {
+            "Type": "AWS::CloudWatch::Alarm",
+            "Properties": {
+                "AlarmDescription": "Alarm if CPU too low",
+                "AlarmActions": [ { "Ref": "ScaleInPolicy" } ],
+                "Namespace": "AWS/EC2",
+                "MetricName": "CPUUtilization",
+                "EvaluationPeriods": "1",
+                "Statistic": "Average",
+                "Period": "900",
+                "Unit": "Percent",
+                "Threshold": "30",
+                "ComparisonOperator": "LessThanThreshold",
+                "Dimensions": [
+                    {
+                        "Name": "AutoScalingGroupName",
+                        "Value": { "Ref": "WebServerGroup" }
+                    }
+                ]
+            }
         }
     },
-    "Conditions" : {
-       "IsReleaseLevel" : {"Fn::Equals" : [{"Ref" : "90LansaTemplateLevel"}, "R"]},
-       "IsWebServer" : {"Fn::Equals" : [{"Ref" : "LansaType"}, "WebServer"]},
-       "DoesNotHaveUserScript" : {"Fn::Equals" : [{"Ref" : "UserScriptHook"}, ""]},
-       "HasUserScript" : {"Fn::Not" : [{"Condition" : "DoesNotHaveUserScript"}]}
-     },
-    "Resources"                : {
-         "WebServerGroup"      : {
-            "Type" : "AWS::AutoScaling::AutoScalingGroup",
-            "Properties" : {
-                "AvailabilityZones" : {
-                    "Fn::GetAZs" : ""
-                },
-                "LaunchConfigurationName" : {
-                    "Ref" : "LaunchWebServer"
-                },
-                "MinSize"                 : { "Fn::If" : [ "IsWebServer", {"Ref" : "WebServerCapacity"}, "1" ]},
-                "MaxSize"                 : { "Fn::If" : [ "IsWebServer", "150", "1" ]},
-                "DesiredCapacity"         : { "Ref" : "WebServerCapacity" },
-                "HealthCheckType"         : "ELB",
-                "HealthCheckGracePeriod"  : 2400,
-                "LoadBalancerNames"       : [ { "Ref" : "LoadBalancer" } ],
-                "Tags" : [ {
-                        "Key" : "Name",
-                        "Value" : { "Fn::If" : [ "IsWebServer", "Web Server Instance", "DB Web Server Instance" ]},
-                        "PropagateAtLaunch" : "true"
-                     } ]
-
-                 }
-         },
-         "LaunchWebServer"     : {
-            "Type" : "AWS::AutoScaling::LaunchConfiguration",
-            "Metadata" : {
-               "TriggerCakeUpdate"    : { "Ref" : "TriggerCakeUpdate" },
-               "TriggerChefUpdate"    : { "Ref" : "TriggerChefUpdate" },
-               "TriggerWindowsUpdate" : { "Ref" : "TriggerWindowsUpdate" },
-               "TriggerWebConfig"     : { "Ref" : "TriggerWebConfig" },
-               "TriggerIcingUpdate"   : { "Ref" : "TriggerIcingUpdate" },
-               "TriggerPatchInstall"  : { "Ref" : "TriggerPatchInstall" },
-               "SetConnectTrace"      : { "Ref" : "SetConnectTrace"},
-               "SetIISTrace"          : { "Ref" : "SetIISTrace"},
-               "SetXRUNEnvVar"        : { "Ref" : "SetXRUNEnvVar"},
-               "AWS::CloudFormation::Init" : {
-                  "configSets" : {
-                     "icing-install"   : ["install-cfn", "git-pull", "install-logging", "config-windows-update", "install-msi", "install-patches", "run-webconfig"],
-                     "cfn-update"      : ["install-cfn"],
-                     "cake-update"     : ["git-pull", "restart-ifneeded", "run-chef", "run-windows-update"],
-                     "chef-update"     : ["git-pull", "restart-ifneeded", "run-chef"],
-                     "windows-update"  : ["git-pull", "restart-ifneeded", "run-windows-update"],
-                     "webconfig"       : ["git-pull", "run-webconfig"],
-                     "icing-update"    : ["git-pull", "restart-ifneeded", "install-cfn", "upgrade-msi"],
-                     "apply-patches"   : ["git-pull", "restart-ifneeded", "install-patches"],
-                     "SetXRUNEnvVar"   : ["git-pull", "SetXRUNEnvVar"]
-                     },
-                  "install-cfn" : {
-                     "files"    : {
-                        "c:\\cfn\\cfn-hup.conf" : {
-                           "content" : { "Fn::Join" : ["", [
-                              "[main]\n",
-                              "stack=",  { "Ref" : "AWS::StackId" }, "\n",
-                              "region=", { "Ref" : "AWS::Region" }, "\n",
-                              "interval=1\n",
-                              "verbose=true\n"
-                           ]]}
-                        },
-                        "c:\\cfn\\hooks.d\\cfn-auto-reloader.conf" : {
-                           "content": { "Fn::Join" : ["", [
-                              "[cfn-auto-reloader-hook]\n",
-                              "triggers=post.update\n",
-                              "path=Resources.LaunchWebServer.Metadata.AWS::CloudFormation::Init\n",
-                              "action=cfn-init.exe -v -s ", { "Ref" : "AWS::StackId" },
-                                                            " -r LaunchWebServer",
-                                                            " --configsets cfn-update ",
-                                                            " --region ", { "Ref" : "AWS::Region" }, "\n"
-                           ]]}
-                        },
-                        "c:\\cfn\\hooks.d\\cfn-cake.conf" : {
-                           "content": { "Fn::Join" : ["", [
-                              "[cfn-cake-hook]\n",
-                              "triggers=post.update\n",
-                              "path=Resources.LaunchWebServer.Metadata.TriggerCakeUpdate\n",
-                              "action=cfn-init.exe -v -s ", { "Ref" : "AWS::StackId" },
-                                                            " -r LaunchWebServer",
-                                                            " --configsets cake-update ",
-                                                            " --region ", { "Ref" : "AWS::Region" }, "\n"
-                           ]]}
-                        },
-                        "c:\\cfn\\hooks.d\\cfn-chef.conf" : {
-                           "content": { "Fn::Join" : ["", [
-                              "[cfn-chef-hook]\n",
-                              "triggers=post.update\n",
-                              "path=Resources.LaunchWebServer.Metadata.TriggerChefUpdate\n",
-                              "action=cfn-init.exe -v -s ", { "Ref" : "AWS::StackId" },
-                                                            " -r LaunchWebServer",
-                                                            " --configsets chef-update ",
-                                                            " --region ", { "Ref" : "AWS::Region" }, "\n"
-                           ]]}
-                        },
-                        "c:\\cfn\\hooks.d\\cfn-windows.conf" : {
-                           "content": { "Fn::Join" : ["", [
-                              "[cfn-windows-hook]\n",
-                              "triggers=post.update\n",
-                              "path=Resources.LaunchWebServer.Metadata.TriggerWindowsUpdate\n",
-                              "action=cfn-init.exe -v -s ", { "Ref" : "AWS::StackId" },
-                                                            " -r LaunchWebServer",
-                                                            " --configsets windows-update ",
-                                                            " --region ", { "Ref" : "AWS::Region" }, "\n"
-                           ]]}
-                        },
-                        "c:\\cfn\\hooks.d\\cfn-webconfig.conf" : {
-                           "content": { "Fn::Join" : ["", [
-                              "[cfn-webconfig-hook]\n",
-                              "triggers=post.update\n",
-                              "path=Resources.LaunchWebServer.Metadata.TriggerWebConfig\n",
-                              "action=cfn-init.exe -v -s ", { "Ref" : "AWS::StackId" },
-                                                            " -r LaunchWebServer",
-                                                            " --configsets webconfig ",
-                                                            " --region ", { "Ref" : "AWS::Region" }, "\n"
-                           ]]}
-                        },
-                        "c:\\cfn\\hooks.d\\cfn-icing.conf" : {
-                           "content": { "Fn::Join" : ["", [
-                              "[cfn-icing-hook]\n",
-                              "triggers=post.update\n",
-                              "path=Resources.LaunchWebServer.Metadata.TriggerIcingUpdate\n",
-                              "action=cfn-init.exe -v -s ", { "Ref" : "AWS::StackId" },
-                                                            " -r LaunchWebServer",
-                                                            " --configsets icing-update ",
-                                                            " --region ", { "Ref" : "AWS::Region" }, "\n"
-                           ]]}
-                        },
-                        "c:\\cfn\\hooks.d\\cfn-patch.conf" : {
-                           "content": { "Fn::Join" : ["", [
-                              "[cfn-patch-hook]\n",
-                              "triggers=post.update\n",
-                              "path=Resources.LaunchWebServer.Metadata.TriggerPatchInstall\n",
-                              "action=cfn-init.exe -v -s ", { "Ref" : "AWS::StackId" },
-                                                            " -r LaunchWebServer",
-                                                            " --configsets apply-patches ",
-                                                            " --region ", { "Ref" : "AWS::Region" }, "\n"
-                           ]]}
-                        },
-                        "c:\\cfn\\hooks.d\\cfn-SetXRUNEnvVar.conf" : {
-                           "content": { "Fn::Join" : ["", [
-                              "[cfn-setxrunenvvar-hook]\n",
-                              "triggers=post.update\n",
-                              "path=Resources.LaunchWebServer.Metadata.SetXRUNEnvVar\n",
-                              "action=cfn-init.exe -v -s ", { "Ref" : "AWS::StackId" },
-                                                            " -r LaunchWebServer",
-                                                            " --configsets SetXRUNEnvVar ",
-                                                            " --region ", { "Ref" : "AWS::Region" }, "\n"
-                           ]]}
-                        }
-                     },
-                     "services" : {
-                        "windows" : {
-                           "cfn-hup" : {
-                              "enabled" : "true",
-                              "ensureRunning" : "true",
-                              "files" : [
-                                 "c:\\cfn\\cfn-hup.conf", 
-                                 "c:\\cfn\\hooks.d\\cfn-auto-reloader.conf", 
-                                 "c:\\cfn\\hooks.d\\cfn-cake.conf", 
-                                 "c:\\cfn\\hooks.d\\cfn-chef.conf", 
-                                 "c:\\cfn\\hooks.d\\cfn-windows.conf", 
-                                 "c:\\cfn\\hooks.d\\cfn-icing.conf",
-                                 "c:\\cfn\\hooks.d\\cfn-webconfig.conf",
-                                 "c:\\cfn\\hooks.d\\cfn-patch.conf", 
-                                 "c:\\cfn\\hooks.d\\cfn-SetXRUNEnvVar.conf",
-                                 "C:\\LANSA\\MyApp.msi"]
-                           }
-                        }
-                     }
-                  },
-                  "git-install" : {
-                     "commands" : {
-                        "01_git_install" : {
-                           "command" : { "Fn::Join" : ["", [
-                                 "@powershell -NoProfile -ExecutionPolicy unrestricted -command \"& {",
-                                 "choco -y install git.install -version 1.9.4.20140929;", 
-                                 "cd \\ ;",
-                                 "$env:Path += ';C:\\Program Files (x86)\\Git\\cmd';",
-                                 "cmd /C git clone https://github.com/robe070/cookbooks.git lansa '2>&1';", 
-                                 "if ($LASTEXITCODE -ne 0 -and $LASTEXITCODE -ne 128) {Write-Error ('Git clone failed');exit $LastExitCode};",
-                                 "cd \\lansa;",
-                                 "cmd /C git checkout windows-stack '2>&1';if ($LASTEXITCODE -ne 0) {Write-Error ('Git checkout failed');exit $LastExitCode};",
-                                 "exit 0",
-                                 "}\""
-                              ]]},
-                           "waitAfterCompletion" : "0"
-                        }
-                     }
-                  },
-                  "git-pull" : {
-                     "commands" : {
-                        "01_git_pull" : {
-                           "command" : { "Fn::Join" : ["", [
-                                 "@powershell -NoProfile -ExecutionPolicy unrestricted -command \"& {",
-                                 "$newPath = 'C:\\Program Files (x86)\\Git\\cmd';",
-                                 "$oldPath = [Environment]::GetEnvironmentVariable('PATH', 'Machine');",
-                                 "$match = '*' + $newpath + '*';",
-                                 "$replace = $newPath + ';' + $oldPath;",
-                                 "if ( $oldpath -notlike $match )",
-                                 "{[Environment]::SetEnvironmentVariable('PATH', $replace, 'Machine');$env:Path += ';' + $newpath;}",
-                                 "$env:Path;",
-                                 "cd \\lansa;",
-                                 "cmd /C git fetch '2>&1';if ($LASTEXITCODE -ne 0) {Write-Error ('Git fetch failed');exit $LastExitCode};", 
-                                 "cmd /C git checkout -f ", { "Ref" : "91LansaGitRepoBranch" },"  '2>&1';if ($LASTEXITCODE -ne 0) {Write-Error ('Git checkout failed');exit $LastExitCode};",
-                                 "cmd /C git pull origin '2>&1';if ($LASTEXITCODE -ne 0) {Write-Error ('Git pull failed');exit $LastExitCode};", 
-                                 "exit 0",
-                                 "}\""
-                              ]]},
-                           "waitAfterCompletion" : "0"
-                        }
-                     }
-                  },
-                  "restart-ifneeded" : {
-                     "commands" : {
-                        "01_restart-ifneeded" : {
-                           "command" : { "Fn::Join" : ["", [
-                                 "@powershell -NoProfile -ExecutionPolicy unrestricted -command \"& {",
-                                 "C:\\LANSA\\scripts\\Restart-IfNeeded.ps1",
-                                 ";exit $LastExitCode",
-                                 "}\""
-                              ]]},
-                           "waitAfterCompletion" : "90"
-                        }
-                     }
-                  },
-                  "install-logging" : {
-                     "files"    : {
-                        "c:\\program files\\Amazon\\Ec2ConfigService\\Settings\\AWS.EC2.Windows.CloudWatch.json" : {
-                           "source" : { "Fn::If" : [ "IsReleaseLevel", 
-                                          { "Fn::Join" : ["", [
-                                                   { "Ref" : "TemplateRoot" },
-                                                   { "Ref" : "91LansaGitRepoBranch" },
-                                                   "/AWS.EC2.Windows.CloudWatch.json"
-                                          ]]},
-                                          { "Fn::Join" : ["", [
-                                                   { "Ref" : "TemplateRoot" },
-                                                   { "Ref" : "91LansaGitRepoBranch" },
-                                                   "/beta/AWS.EC2.Windows.CloudWatch.json"
-                                          ]]}
-                                       ]}
-                        }
-                     },
-                     "commands" : {
-                        "01_install_logging" : {
-                           "command" : { "Fn::Join" : ["", [
-                                 "@powershell -NoProfile -ExecutionPolicy unrestricted -command \"& {",
-                                 "C:\\LANSA\\scripts\\install-logging.ps1", 
-                                 " -stack ", { "Ref" : "AWS::StackName" },
-                                 " -region ", { "Ref" : "AWS::Region" },
-                                 " - ", 
-                                 " -f32bit ", { "Ref" : "2LansaMSIBitness" },
-                                 ";exit $LastExitCode",
-                                 "}\""
-                              ]]},
-                           "waitAfterCompletion" : "forever"
-                        }
-                     }
-                  },
-                  "config-windows-update" : {
-                     "commands" : {
-                        "01_config_windows_update" : {
-                           "command" : { "Fn::Join" : ["", [
-                                 "@powershell -NoProfile -ExecutionPolicy unrestricted -command \"& {",
-                                 "C:\\lansa\\scripts\\WindowsUpdatesSettings.ps1",
-                                 ";exit $LastExitCode",
-                                 "}\""
-                              ]]},
-                           "waitAfterCompletion" : "0"
-                        }
-                     }
-                  },
-                  "install-msi" : {
-                     "files"    : {
-                        "C:\\LANSA\\MyApp.msi" : {
-                           "source" : { "Ref" : "1LansaMSI" }
-                        }
-                     },
-                     "commands" : {
-                        "01_install_msi" : {
-                           "command" : { "Fn::Join" : ["", [
-                                 "@powershell -NoProfile -ExecutionPolicy unrestricted -command \"& {",
-                                 "C:\\LANSA\\scripts\\install-lansa-msi.ps1", 
-                                 " -server_name ", { "Ref" : "DBEndPoint" },
-                                 " -dbname ", { "Ref" : "DBName" },
-                                 " -dbuser ", { "Ref" : "3DBUsername" },
-                                 " -dbpassword ", { "Ref" : "4DBPassword" },
-                                 " -webuser ", { "Ref" : "5WebUser" },
-                                 " -webpassword ", { "Ref" : "6WebPassword" },
-                                 " -f32bit ", { "Ref" : "2LansaMSIBitness" },
-                                 " -SUDB ", { "Fn::If" : [ "IsWebServer", "0", "1" ]},
-                                 " -UPGD false",
-                                 { "Fn::If" : [ "HasUserScript",  " -userscripthook ", "" ]},
-                                 { "Fn::If" : [ "HasUserScript", { "Ref" : "UserScriptHook" }, "" ]},
-                                 " -Wait ", { "Fn::Base64" : { "Ref" : "WaitHandle" }},
-                                 ";exit $LastExitCode",
-                                 "}\""
-                              ]]},
-                           "waitAfterCompletion" : "0"
-                        }
-                     }
-                  },
-                  "upgrade-msi" : {
-                     "files"    : {
-                        "C:\\LANSA\\MyApp.msi" : {
-                           "source" : { "Ref" : "1LansaMSI" }
-                        }
-                     },
-                     "commands" : {
-                        "01_upgrade_msi" : {
-                           "command" : { "Fn::Join" : ["", [
-                                 "@powershell -NoProfile -ExecutionPolicy unrestricted -command \"& {",
-                                 "C:\\LANSA\\scripts\\install-lansa-msi.ps1", 
-                                 " -server_name ", { "Ref" : "DBEndPoint" },
-                                 " -dbname ", { "Ref" : "DBName" },
-                                 " -dbuser ", { "Ref" : "3DBUsername" },
-                                 " -dbpassword ", { "Ref" : "4DBPassword" },
-                                 " -webuser ", { "Ref" : "5WebUser" },
-                                 " -webpassword ", { "Ref" : "6WebPassword" },
-                                 " -f32bit ", { "Ref" : "2LansaMSIBitness" },
-                                 " -SUDB ", { "Fn::If" : [ "IsWebServer", "0", "1" ]},
-                                 " -UPGD true",
-                                 { "Fn::If" : [ "HasUserScript",  " -userscripthook ", "" ]},
-                                 { "Fn::If" : [ "HasUserScript", { "Ref" : "UserScriptHook" }, "" ]},
-                                 ";exit $LastExitCode",
-                                 "}\""
-                              ]]},
-                           "waitAfterCompletion" : "0"
-                        }
-                     }
-                  },
-                  "install-patches" : {
-                     "commands" : {
-                        "01_install_patches" : {
-                           "command" : { "Fn::Join" : ["", [
-                                 "@powershell -NoProfile -ExecutionPolicy unrestricted -command \"& {", 
-                                 "C:\\LANSA\\scripts\\copy-s3-install-patches.ps1", 
-                                 " -dbpassword ", { "Ref" : "4DBPassword" },
-                                 " -webpassword ", { "Ref" : "6WebPassword" },
-                                 " -SUDB ", { "Fn::If" : [ "IsWebServer", "0", "1" ]},
-                                 " -bucket_name ", { "Ref" : "PatchBucketName" },
-                                 " -region ",      { "Ref" : "AWS::Region" },
-                                 " -folder ",      { "Ref" : "PatchFolderName" },
-                                 ";exit $LastExitCode",
-                                 "}\""
-                              ]]},
-                           "waitAfterCompletion" : "0"
-                        }
-                     }
-                  },
-                  "cloud-watch-config" : {
-                     "commands" : {
-                        "01_cloud_watch_config" : {
-                           "command" : { "Fn::Join" : ["", [
-                                 "@powershell -NoProfile -ExecutionPolicy unrestricted -command \"& {",
-                                 "C:\\LANSA\\scripts\\cloud-watch-config.ps1", 
-                                 ";exit $LastExitCode",
-                                 "}\""
-                              ]]},
-                           "waitAfterCompletion" : "0"
-                        }
-                     }
-                  },
-                  "jit" : {
-                     "commands" : {
-                        "01_jit" : {
-                           "command" : "C:\\program files (x86)\\lansa\\x_win95\\x_lansa\\execute\\x_run.exe proc=*INSTALL APPL=AWAMAPP",
-                           "waitAfterCompletion" : "0"
-                        }
-                     }
-                  },
-                  "run-windows-update" : {
-                     "commands" : {
-                        "01_windows_updates" : {
-                           "command" : "@powershell -NoProfile -ExecutionPolicy unrestricted -command \"& {C:\\lansa\\scripts\\win-updates.ps1;exit $LastExitCode}\"",
-                           "waitAfterCompletion" : "90"
-                        }
-                     }
-                  },
-                  "run-webconfig" : {
-                     "commands" : {
-                        "01_webconfig" : {
-                           "command" : { "Fn::Join" : ["", [
-                                 "@powershell -NoProfile -ExecutionPolicy unrestricted -command \"& {",
-                                 "C:\\LANSA\\scripts\\webconfig.ps1", 
-                                 " -server_name ", { "Ref" : "DBEndPoint" },
-                                 " -dbname ", { "Ref" : "DBName" },
-                                 " -dbuser ", { "Ref" : "3DBUsername" },
-                                 " -dbpassword ", { "Ref" : "4DBPassword" },
-                                 " -webuser ", { "Ref" : "5WebUser" },
-                                 " -webpassword ", { "Ref" : "6WebPassword" },
-                                 " -f32bit ", { "Ref" : "2LansaMSIBitness" },
-                                 " -SUDB ", { "Fn::If" : [ "IsWebServer", "0", "1" ]},
-                                 " -UPGD true",
-                                 " -maxconnections ", { "Ref" : "WebServerMaxConnect"},
-                                 { "Fn::If" : [ "HasUserScript",  " -userscripthook ", "" ]},
-                                 { "Fn::If" : [ "HasUserScript", { "Ref" : "UserScriptHook" }, "" ]},
-                                 ";exit $LastExitCode",
-                                 "}\""
-                              ]]},
-                           "waitAfterCompletion" : "0"
-                        }
-                     }
-                  },
-                  "SetXRUNEnvVar" : {
-                     "commands" : {
-                        "01_SetXRUNEnvVar" : {
-                           "command" : "@powershell -NoProfile -ExecutionPolicy unrestricted -command \"& {C:\\LANSA\\scripts\\SetXRUNEnvVar.ps1;exit $LastExitCode}\"",
-                           "waitAfterCompletion" : "0"
-                        }
-                     }
-                  },
-                  "run-chef" : {
-                     "commands" : {
-                        "01_run_chef_client" : {
-                           "command" : { "Fn::Join" : ["", [
-                                 "@powershell -NoProfile -ExecutionPolicy unrestricted -command \"& {",
-                                 "C:\\LANSA\\scripts\\run-chef.ps1 ",
-                                 "-cookbook VLWebServer::MainRecipe ",
-                                 "-WorkingDirectory C:\\recipes\\chef-repo\\cookbooks",
-                                 ";exit $LastExitCode",
-                                 "}\""
-                              ]]},
-                           "waitAfterCompletion" : "90"
-                        }
-                     }
-                  }
-               }
-            },
-            "Properties" : {
-               "ImageId" : { "Ref" : "AMI" },
-               "InstanceType" : { "Ref" : "InstanceType" },
-               "IamInstanceProfile" : { "Ref" : "IAMRoleInstanceProfile" },
-               "SecurityGroups" : [ { "Ref" : "SecurityGroup" } ],
-               "KeyName"        : { "Ref" : "7KeyName" },
-               "UserData"       : { "Fn::Base64" : { "Fn::Join" : ["", [
-                              "<script>\n",
-
-                              "cfn-init.exe -v ",
-                              "  --stack ", { "Ref" : "AWS::StackId" }, 
-                              "  --resource LaunchWebServer",
-                              "  --configsets icing-install ",
-                              "  --region ", { "Ref" : "AWS::Region" }, "\n",
-
-                              "cfn-signal.exe -e %ERRORLEVEL% ", { "Fn::Base64" : { "Ref" : "WaitHandle" }}, "\n",
-          
-                              "</script>\n"
-               ]]}}
-            }
-         },
-         "WaitHandle"          : {
-            "Type" : "AWS::CloudFormation::WaitConditionHandle"
-         },
-         "WaitCondition"       : {
-            "Type" : "AWS::CloudFormation::WaitCondition",
-            "DependsOn" : "WebServerGroup",
-            "Properties" : {
-                  "Handle"   : { "Ref" : "WaitHandle" },
-                  "Timeout"  : "3000",
-                  "Count"    : { "Ref" : "WebServerCapacity" }
-            }
-         },
-         "ScaleOutPolicy" : {
-            "Type" : "AWS::AutoScaling::ScalingPolicy",
-            "Properties" : {
-               "AdjustmentType" : "PercentChangeInCapacity",
-               "AutoScalingGroupName" : { "Ref" : "WebServerGroup" },
-               "Cooldown" : "300",
-               "ScalingAdjustment" : "10"
-            }
-         },
-         "ScaleInPolicy" : {
-            "Type" : "AWS::AutoScaling::ScalingPolicy",
-            "Properties" : {
-               "AdjustmentType" : "PercentChangeInCapacity",
-               "AutoScalingGroupName" : { "Ref" : "WebServerGroup" },
-               "Cooldown" : "300",
-               "ScalingAdjustment" : "-10"
-            }
-         },
-         "CPUAlarmHigh": {
-            "Type": "AWS::CloudWatch::Alarm",
-            "Properties": {
-               "AlarmDescription": "Alarm if CPU too high or metric disappears indicating instance is down",
-               "AlarmActions": [ { "Ref": "ScaleOutPolicy" } ],
-               "Namespace": "AWS/EC2",
-               "MetricName": "CPUUtilization",
-               "EvaluationPeriods": "1",
-               "Statistic": "Average",
-               "Period": "900",
-               "Unit" : "Percent",
-               "Threshold": "70",
-               "ComparisonOperator": "GreaterThanThreshold",
-               "Dimensions": [ {
-                  "Name": "AutoScalingGroupName",
-                  "Value": { "Ref": "WebServerGroup" }
-               } ]
-            }
-         },
-         "CPUAlarmLow": {
-            "Type": "AWS::CloudWatch::Alarm",
-            "Properties": {
-               "AlarmDescription": "Alarm if CPU too low",
-               "AlarmActions": [ { "Ref": "ScaleInPolicy" } ],
-               "Namespace": "AWS/EC2",
-               "MetricName": "CPUUtilization",
-               "EvaluationPeriods": "1",
-               "Statistic": "Average",
-               "Period": "900",
-               "Unit" : "Percent",
-               "Threshold": "30",
-               "ComparisonOperator": "LessThanThreshold",
-               "Dimensions": [ {
-                  "Name": "AutoScalingGroupName",
-                  "Value": { "Ref": "WebServerGroup" }
-               } ]
-            }
-         }
-
-    },
-    "Outputs"                  : {
-         "WebServerResult" : {
+	"Outputs" : {
+        "WebServerResult" : {
             "Value" : { "Fn::GetAtt" : [ "WaitCondition", "Data" ]},
             "Description" : "The data passed back as part of signalling the WaitCondition."
         }
-    }
+	}
 }
