@@ -47,7 +47,7 @@
         },
         "01LansaMSI": {
             "Type": "String",
-            "Default": "https://s3-ap-southeast-2.amazonaws.com/lansa/app/Test/AWAMAPP_v14.2.1_en-us.msi",
+            "Default": "https://s3-ap-southeast-2.amazonaws.com/lansa/app/Test/AWAMAPP_v14.2.20715_en-us.msi",
             "Description": "URL of the LANSA MSI to install. The MSI must have been previously uploaded to the specified location in Amazon S3 BLOB storage."
         },
         "02LansaMSIBitness": {
@@ -632,22 +632,6 @@
                         }
                     },
                     "install-logging": {
-                        "files"    : {
-                            "c:\\program files\\Amazon\\Ec2ConfigService\\Settings\\AWS.EC2.Windows.CloudWatch.json" : {
-                               "source" : { "Fn::If" : [ "IsReleaseLevel", 
-                                              { "Fn::Join" : ["", [
-                                                       { "Ref" : "TemplateRoot" },
-                                                       { "Ref" : "10LansaGitRepoBranch" },
-                                                       "/AWS.EC2.Windows.CloudWatch.json"
-                                              ]]},
-                                              { "Fn::Join" : ["", [
-                                                       { "Ref" : "TemplateRoot" },
-                                                       { "Ref" : "10LansaGitRepoBranch" },
-                                                       "/beta/AWS.EC2.Windows.CloudWatch.json"
-                                              ]]}
-                                           ]}
-                            }
-                         },
                         "commands": {
                             "01_install_logging": {
                                 "command": {
