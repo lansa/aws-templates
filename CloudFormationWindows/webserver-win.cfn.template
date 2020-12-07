@@ -221,7 +221,7 @@
                 "m5.8xlarge",
                 "m5.12xlarge",
                 "m5.16xlarge",
-                "m5.24xlarge"
+                "m5.24xlarge",
                 "m5.metal",
                 "m5a.large",
                 "m5a.xlarge",
@@ -340,7 +340,7 @@
                 "t4g.medium",
                 "t4g.large",
                 "t4g.xlarge",
-                "t4g.2xlarge"
+                "t4g.2xlarge",
                 "x1.16xlarge",
                 "x1.32xlarge",
                 "x1e.xlarge",
