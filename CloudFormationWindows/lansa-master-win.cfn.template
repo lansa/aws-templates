@@ -526,11 +526,13 @@
        "CustomVariable" : {
          "TemplateRoot"      : { "Value" : "https://s3-ap-southeast-2.amazonaws.com/lansa/templates/" },
          "WebServerTemplate" : { "Value" : "webserver-win.cfn.template"},
-         "TemplateLevel"     : { "Value" : "R"}
+         "TemplateLevel"     : { "Value" : "R"},
+         "Namespace"         : { "Value" : "" }
        }
     },
     "Conditions" : {
        "IsReleaseLevel" : {"Fn::Equals" : [{ "Fn::FindInMap" : [ "CustomVariable", "TemplateLevel", "Value" ] }, "R"]},
+       "IsEmptyNameSpace" : {"Fn::Equals" : [{ "Fn::FindInMap" : ["CustomVariable", "Namespace", "Value" ]},""]},
        "DoesNotHaveUserScript" : {"Fn::Equals" : [{"Ref" : "17UserScriptHook"}, ""]},
        "HasUserScript" : {"Fn::Not" : [{"Condition" : "DoesNotHaveUserScript"}]}     },
     "Resources": {
@@ -731,18 +733,42 @@
             "Type" : "AWS::CloudFormation::Stack",
             "Properties" : {
                 "TemplateURL" : { "Fn::If" : [ "IsReleaseLevel", 
-                                    { "Fn::Join" : ["", [
-                                        { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
-                                        { "Ref" : "10LansaGitRepoBranch" },
-                                        "/",
-                                        { "Fn::FindInMap" : [ "CustomVariable", "WebServerTemplate", "Value" ] }
-                                    ]]}  ,                                              
-                                    { "Fn::Join" : ["", [
-                                        { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
-                                        { "Ref" : "10LansaGitRepoBranch" },
-                                        "/beta/",
-                                        { "Fn::FindInMap" : [ "CustomVariable", "WebServerTemplate", "Value" ] }
-                                    ]]}
+                                    { "Fn::If" : [ "IsEmptyNameSpace",
+                                        {
+                                            "Fn::Join" : ["", [
+                                                { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
+                                                { "Ref" : "10LansaGitRepoBranch" },
+                                                "/",
+                                                { "Fn::FindInMap" : [ "CustomVariable", "WebServerTemplate", "Value" ] }
+                                        ]]},
+                                        {
+                                            "Fn::Join" : ["", [
+                                                { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
+                                                { "Ref" : "10LansaGitRepoBranch" },
+                                                "/",
+                                                { "Fn::FindInMap" : [ "CustomVariable", "Namespace", "Value" ] },
+                                                "/",
+                                                { "Fn::FindInMap" : [ "CustomVariable", "WebServerTemplate", "Value" ] }
+                                        ]]}
+                                    ]},
+                                    { "Fn::If" : [ "IsEmptyNameSpace",
+                                        {
+                                            "Fn::Join" : ["", [
+                                                { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
+                                                { "Ref" : "10LansaGitRepoBranch" },
+                                                "/beta/",
+                                                { "Fn::FindInMap" : [ "CustomVariable", "WebServerTemplate", "Value" ] }
+                                        ]]},
+                                        {
+                                            "Fn::Join" : ["", [
+                                                { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
+                                                { "Ref" : "10LansaGitRepoBranch" },
+                                                "/beta/",
+                                                { "Fn::FindInMap" : [ "CustomVariable", "Namespace", "Value" ] },
+                                                "/",
+                                                { "Fn::FindInMap" : [ "CustomVariable", "WebServerTemplate", "Value" ] }
+                                        ]]}
+                                    ]}
                                 ]},
                 "Parameters" : {
                     "AMI"                         : { "Fn::FindInMap" : [ "AWSRegionArch2AMI", { "Ref" : "AWS::Region" }, { "Ref": "11WebserverOSVersion" } ] },
@@ -777,7 +803,8 @@
                     "26TriggerIcingUpdate"        : { "Ref" : "26TriggerIcingUpdate"},
                     "27TriggerPatchInstall"       : { "Ref" : "27TriggerPatchInstall"},
                     "28PatchBucketName"           : { "Ref" : "28PatchBucketName"},
-                    "29PatchFolderName"           : { "Ref" : "29PatchFolderName"}
+                    "29PatchFolderName"           : { "Ref" : "29PatchFolderName"},
+                    "MaxInstanceLifetime"         : 5270400
                 }
             }
         },
@@ -785,18 +812,42 @@
             "Type" : "AWS::CloudFormation::Stack",
             "Properties" : {
                 "TemplateURL" : { "Fn::If" : [ "IsReleaseLevel", 
-                                    { "Fn::Join" : ["", [
-                                        { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
-                                        { "Ref" : "10LansaGitRepoBranch" },
-                                        "/",
-                                        { "Fn::FindInMap" : [ "CustomVariable", "WebServerTemplate", "Value" ] }
-                                    ]]}  ,                                              
-                                    { "Fn::Join" : ["", [
-                                        { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
-                                        { "Ref" : "10LansaGitRepoBranch" },
-                                        "/beta/",
-                                        { "Fn::FindInMap" : [ "CustomVariable", "WebServerTemplate", "Value" ] }
-                                    ]]}
+                                    { "Fn::If" : [ "IsEmptyNameSpace",
+                                        {
+                                            "Fn::Join" : ["", [
+                                                { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
+                                                { "Ref" : "10LansaGitRepoBranch" },
+                                                "/",
+                                                { "Fn::FindInMap" : [ "CustomVariable", "WebServerTemplate", "Value" ] }
+                                        ]]},
+                                        {
+                                            "Fn::Join" : ["", [
+                                                { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
+                                                { "Ref" : "10LansaGitRepoBranch" },
+                                                "/",
+                                                { "Fn::FindInMap" : [ "CustomVariable", "Namespace", "Value" ] },
+                                                "/",
+                                                { "Fn::FindInMap" : [ "CustomVariable", "WebServerTemplate", "Value" ] }
+                                        ]]}
+                                    ]},
+                                    { "Fn::If" : [ "IsEmptyNameSpace",
+                                        {
+                                            "Fn::Join" : ["", [
+                                                { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
+                                                { "Ref" : "10LansaGitRepoBranch" },
+                                                "/beta/",
+                                                { "Fn::FindInMap" : [ "CustomVariable", "WebServerTemplate", "Value" ] }
+                                        ]]},
+                                        {
+                                            "Fn::Join" : ["", [
+                                                { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
+                                                { "Ref" : "10LansaGitRepoBranch" },
+                                                "/beta/",
+                                                { "Fn::FindInMap" : [ "CustomVariable", "Namespace", "Value" ] },
+                                                "/",
+                                                { "Fn::FindInMap" : [ "CustomVariable", "WebServerTemplate", "Value" ] }
+                                        ]]}
+                                    ]}
                                 ]},
                 "Parameters" : {
                     "AMI"                         : { "Fn::FindInMap" : [ "AWSRegionArch2AMI", { "Ref" : "AWS::Region" }, { "Ref": "11WebserverOSVersion" } ] },
@@ -832,7 +883,8 @@
                     "26TriggerIcingUpdate"        : { "Ref" : "26TriggerIcingUpdate"},
                     "27TriggerPatchInstall"       : { "Ref" : "27TriggerPatchInstall"},
                     "28PatchBucketName"           : { "Ref" : "28PatchBucketName"},
-                    "29PatchFolderName"           : { "Ref" : "29PatchFolderName"}
+                    "29PatchFolderName"           : { "Ref" : "29PatchFolderName"},
+                    "MaxInstanceLifetime"         : 5788800
                 }
             }
         }
