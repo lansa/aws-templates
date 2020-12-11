@@ -25,7 +25,7 @@
             "Type" : "String",
             "Default" : "test-win-3-LansaSecurityGroup-132Y0YU59S9WI"
         },
-        "MaxInstanceLifetime": {
+        "MaxInstanceLifeTime": {
             "Type" : "Number",
             "Description" : "Maximum Life time of instances after which it will automatically terminate the instances and re-create them"
         },
@@ -376,7 +376,7 @@
                 "DesiredCapacity": { "Ref": "18WebServerCapacity" },
                 "HealthCheckType": "ELB",
                 "HealthCheckGracePeriod": 2400,
-                "MaxInstanceLifetime" : {"Ref": "MaxInstanceLifetime"},
+                "MaxInstanceLifeTime" : {"Ref": "MaxInstanceLifeTime"},
                 "LoadBalancerNames": [ { "Ref": "WebServerELB" } ],
                 "Tags": [
                     {

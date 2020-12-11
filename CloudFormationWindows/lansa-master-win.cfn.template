@@ -800,7 +800,7 @@
                     "27TriggerPatchInstall"       : { "Ref" : "27TriggerPatchInstall"},
                     "28PatchBucketName"           : { "Ref" : "28PatchBucketName"},
                     "29PatchFolderName"           : { "Ref" : "29PatchFolderName"},
-                    "MaxInstanceLifetime"         : 5270400
+                    "MaxInstanceLifeTime"         : 5270400
                 }
             }
         },
@@ -876,7 +876,7 @@
                     "27TriggerPatchInstall"       : { "Ref" : "27TriggerPatchInstall"},
                     "28PatchBucketName"           : { "Ref" : "28PatchBucketName"},
                     "29PatchFolderName"           : { "Ref" : "29PatchFolderName"},
-                    "MaxInstanceLifetime"         : 5788800
+                    "MaxInstanceLifeTime"         : 5788800
                 }
             }
         }
