@@ -120,28 +120,6 @@
             "MinValue": "1000",
             "MaxValue": "10000"
         },
-        "21ELBTimeout": {
-            "Description": "Time to wait for a response from the application. Must be between 2 and 60. Health check interval and IIS timeouts are based on this time too.",
-            "Type": "Number",
-            "MinValue": "2",
-            "MaxValue": "60",
-            "Default": "30"
-        },
-        "22TriggerCakeUpdate": {
-            "Type": "String",
-            "Default": "1",
-            "Description": "Update Stack: Increment this by one to update the supporting software and trigger a Windows Update. This is the same as triggerring both a ChefUpdate and a WindowsUpdate. Mainly to ensure that Windows Updates have been applied."
-        },
-        "23TriggerChefUpdate": {
-            "Type": "String",
-            "Default": "1",
-            "Description": "Update Stack: Increment this by one to update the supporting software."
-        },
-        "24TriggerWinUpdate": {
-            "Type": "String",
-            "Default": "1",
-            "Description": "Update Stack: Increment this by one to trigger a Windows Update."
-        },
         "25TriggerWebConfig": {
             "Type": "String",
             "Default": "1",
@@ -219,15 +197,11 @@
          "11WebServerInstanceTyp" : { "default" : "Instance Type" },
          "12WebServerMaxConnec" : { "default" : "Maximum Web Jobs" },
          "18WebServerCapacity" : { "default" : "Minimum Number of Instances" },
-         "22TriggerCakeUpdate" : { "default" : "Trigger Cake Update" },
-         "23TriggerChefUpdate" : { "default" : "Trigger Chef Update" },
-         "24TriggerWinUpdate" : { "default" : "Trigger Win Update" },
          "25TriggerWebConfig" : { "default" : "Trigger Web Config" },
          "26TriggerIcingUpdate" : { "default" : "Trigger Icing Update" },
          "27TriggerPatchInstall" : { "default" : "Trigger Patch Install" },
          "28PatchBucketName" : { "default" : "Patch Bucket Name" },
          "29PatchFolderName" : { "default" : "Patch Folder Name" },
-         "21ELBTimeout" : { "default" : "Load Balancer Timeout" },
          "17UserScriptHook" : { "default" : "User Script Hook" },
          "10LansaGitRepoBranch" : { "default" : "Git Repository Branch" }
        }
@@ -283,10 +257,6 @@
                     "18WebServerCapacity": { "Ref" : "18WebServerCapacity" },
                     "19DBAllocatedStorage": { "Ref" : "19DBAllocatedStorage" },
                     "20DBIops": { "Ref" : "20DBIops" },
-                    "21ELBTimeout": { "Ref" : "21ELBTimeout" },
-                    "22TriggerCakeUpdate": { "Ref" : "22TriggerCakeUpdate" },
-                    "23TriggerChefUpdate": { "Ref" : "23TriggerChefUpdate" },
-                    "24TriggerWinUpdate": { "Ref" : "24TriggerWinUpdate" },
                     "25TriggerWebConfig": { "Ref" : "25TriggerWebConfig" },
                     "26TriggerIcingUpdate": { "Ref" : "26TriggerIcingUpdate" },
                     "27TriggerPatchInstall": { "Ref" : "27TriggerPatchInstall" },
@@ -295,5 +265,11 @@
                 }
             }
         }
-    }
+    },
+    "Outputs"                  : {
+        "WebsiteURL" : {
+           "Value" : { "Fn::GetAtt": ["MasterStackApp", "Outputs.WebsiteURL"] },
+           "Description" : "LANSA App Website"
+        }
+     }
 }
