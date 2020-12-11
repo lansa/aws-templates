@@ -1,0 +1,16 @@
+project:
+  name: lansa-workshop
+  regions:
+    - ap-southeast-2
+tests:
+  default:
+    template: ./CloudFormationWindows/lansa-master-win.cfn.template
+    s3_bucket: 'lansa'
+    regions:
+      - ap-southeast-2
+    parameters:
+      04DBPassword: "$(DBPasswordValue)"
+      06WebPassword: "$(WebPasswordValue)"
+      07KeyName: "$(KeyNameValue)"
+      08RemoteAccessLocation: "$(RemoteAccessLocationValue)"
+      KeyPair: templates/debug/paas/lansa-master-win.cfn.template
