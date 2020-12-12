@@ -589,7 +589,8 @@
        "IsReleaseLevel" : {"Fn::Equals" : [{ "Fn::FindInMap" : [ "CustomVariable", "TemplateLevel", "Value" ] }, "R"]},
        "DoesNotHaveUserScript" : {"Fn::Equals" : [{"Ref" : "17UserScriptHook"}, ""]},
        "HasUserScript" : {"Fn::Not" : [{"Condition" : "DoesNotHaveUserScript"}]},
-       "IsLansaVersion142": {"Fn::Equals" : [{"Ref" : "LansaVersion"}, "V14 SP2"]}
+       "IsLansaVersion142": {"Fn::Equals" : [{"Ref" : "LansaVersion"}, "V14 SP2"]},
+       "IsAMIIdEmpty": {"Fn::Equals" : [{"Ref": "AMIId"}, ""]}
     },
     "Resources": {
        "CloudWatchLogGroup":  {
@@ -803,7 +804,7 @@
                                     ]]}
                                 ]},
                 "Parameters" : {
-                    "AMI"                         : { "Fn::FindInMap" : [ "AWSRegionArch2AMI", { "Ref" : "AWS::Region" }, { "Ref": "11WebserverOSVersion" } ] },
+                    "AMI"                         : { "Fn:If" : ["IsLansaVersion142", { "Fn::FindInMap" : [ "AWSRegionArch2AMI14-2", { "Ref" : "AWS::Region" }, { "Ref": "11WebserverOSVersion" } ] }, {"Fn::If": [ "ISAMIIdEmpty", { "Fn::FindInMap" : [ "AWSRegionArch2AMI15-0", { "Ref" : "AWS::Region" }, { "Ref": "11WebserverOSVersion" }]}, { "Ref" : "AMIId" } ] }]},
                     "DBEndPoint"                  : { "Fn::GetAtt" : ["DBInstance", "Endpoint.Address"] },
                     "IAMRoleInstanceProfile"      : { "Ref" : "IAMRoleInstanceProfile" },
                     "LansaSecurityGroup"          : { "Ref" : "LansaSecurityGroup" },
@@ -857,7 +858,7 @@
                                     ]]}
                                 ]},
                 "Parameters" : {
-                    "AMI"                         : { "Fn:If" : ["IsLansaVersion142", { "Fn::FindInMap" : [ "AWSRegionArch2AMI14-2", { "Ref" : "AWS::Region" }, { "Ref": "11WebserverOSVersion" } ] }, { "Fn::FindInMap" : [ "AWSRegionArch2AMI15-0", { "Ref" : "AWS::Region" }, { "Ref": "11WebserverOSVersion" } ] }]},
+                    "AMI"                         : { "Fn:If" : ["IsLansaVersion142", { "Fn::FindInMap" : [ "AWSRegionArch2AMI14-2", { "Ref" : "AWS::Region" }, { "Ref": "11WebserverOSVersion" } ] }, {"Fn::If": [ "ISAMIIdEmpty", { "Fn::FindInMap" : [ "AWSRegionArch2AMI15-0", { "Ref" : "AWS::Region" }, { "Ref": "11WebserverOSVersion" }]}, { "Ref" : "AMIId" } ] }]},
                     "DBEndPoint"                  : { "Fn::GetAtt" : ["DBInstance", "Endpoint.Address"] },
                     "DummyRef"                    : { "Ref" : "DBWebServerApp" },
                     "IAMRoleInstanceProfile"      : { "Ref" : "IAMRoleInstanceProfile" },
