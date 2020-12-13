@@ -800,7 +800,8 @@
                     "27TriggerPatchInstall"       : { "Ref" : "27TriggerPatchInstall"},
                     "28PatchBucketName"           : { "Ref" : "28PatchBucketName"},
                     "29PatchFolderName"           : { "Ref" : "29PatchFolderName"},
-                    "MaxInstanceLifeTime"         : 5270400
+                    "MaxInstanceLifetime"         : "The value 5,270,400 seconds = 61 days. This is a prime number(close to 2 months i.e., 62 days) to reduce the likelihood that this instance will be unavailable when the Web ASG instance is also unavailable",
+                    "MaxInstanceLifetime"         : 5270400
                 }
             }
         },
@@ -876,7 +877,8 @@
                     "27TriggerPatchInstall"       : { "Ref" : "27TriggerPatchInstall"},
                     "28PatchBucketName"           : { "Ref" : "28PatchBucketName"},
                     "29PatchFolderName"           : { "Ref" : "29PatchFolderName"},
-                    "MaxInstanceLifeTime"         : 5788800
+                    "MaxInstanceLifetime"         : "The value 5,788,800 seconds = 67 days. This is a prime number(close to 2 months i.e., 62 days) to reduce the likelihood that this instance will be unavailable when the DB ASG instance is also unavailable",
+                    "MaxInstanceLifetime"         : 5788800
                 }
             }
         }
