@@ -155,25 +155,30 @@
        ],
        "ParameterLabels" : {
         "01LansaMSI" : { "default" : "Lansa MSI URL" },
-        "03DBUsername" : { "default" : "Database User Name" },
-        "04DBPassword" : { "default" : "Database Password" },
-        "05WebUser" : { "default" : "Web Server User" },
-        "06WebPassword" : { "default" : "Web Server Password" },
-        "07KeyName" : { "default" : "Keypair Name" },
-        "08RemoteAccessLocation" : { "default" : "Remote Access Location CIDR" },
-        "13DBInstanceClass" : { "default" : "Instance Class" },
-        "14DBName" : { "default" : "Name" },
-        "15DBEngine" : { "default" : "SQL Server Engine Type" },
-        "19DBAllocatedStorage" : { "default" : "Maximum Size" },
-        "20DBIops" : { "default" : "I/O OPS" },
-        "11WebserverOSVersion" :  { "default" :  "OS Version"},
-        "11WebServerInstanceTyp" : { "default" : "Instance Type" },
-        "12WebServerMaxConnec" : { "default" : "Maximum Web Jobs" },
-        "26TriggerIcingUpdate" : { "default" : "Trigger Icing Update" },
-        "27TriggerPatchInstall" : { "default" : "Trigger Patch Install" },
-        "28PatchBucketName" : { "default" : "Patch Bucket Name" },
-        "29PatchFolderName" : { "default" : "Patch Folder Name" },
-        "10LansaGitRepoBranch" : { "default" : "Git Repository Branch" }
+            "03DBUsername" : { "default" : "Database User Name" },
+            "04DBPassword" : { "default" : "Database Password" },
+            "05WebUser" : { "default" : "Web Server User" },
+            "06WebPassword" : { "default" : "Web Server Password" },
+            "07KeyName" : { "default" : "Keypair Name" },
+            "08RemoteAccessLocation" : { "default" : "Remote Access Location CIDR" },
+
+            "13DBInstanceClass" : { "default" : "Instance Class" },
+            "14DBName" : { "default" : "Name" },
+            "15DBEngine" : { "default" : "SQL Server Engine Type" },
+            "19DBAllocatedStorage" : { "default" : "Maximum Size" },
+            "20DBIops" : { "default" : "I/O OPS" },
+
+            "11WebserverOSVersion" :  { "default" :  "OS Version"},
+            "11WebServerInstanceTyp" : { "default" : "Instance Type" },
+            "12WebServerMaxConnec" : { "default" : "Maximum Web Jobs" },
+
+            "25TriggerWebConfig" : { "default" : "Trigger Web Config" },
+            "26TriggerIcingUpdate" : { "default" : "Trigger Icing Update" },
+            "27TriggerPatchInstall" : { "default" : "Trigger Patch Install" },
+            "28PatchBucketName" : { "default" : "Patch Bucket Name" },
+            "29PatchFolderName" : { "default" : "Patch Folder Name" },
+
+            "10LansaGitRepoBranch" : { "default" : "Git Repository Branch" }
        }
      }
    },
@@ -214,19 +219,24 @@
                     "06WebPassword": { "Ref" : "06WebPassword" },
                     "07KeyName": { "Ref" : "07KeyName" },
                     "08RemoteAccessLocation": { "Ref" : "08RemoteAccessLocation" },
-                    "11WebserverOSVersion": { "Ref" : "11WebserverOSVersion" },
-                    "11WebServerInstanceTyp" : { "Ref" : "11WebServerInstanceTyp" },
-                    "12WebServerMaxConnec" : { "Ref" : "12WebServerMaxConnec" },
+
                     "13DBInstanceClass": { "Ref" : "13DBInstanceClass" },
                     "14DBName": { "Ref" : "14DBName" },
                     "15DBEngine": { "Ref" : "15DBEngine" },
                     "19DBAllocatedStorage": { "Ref" : "19DBAllocatedStorage" },
                     "20DBIops": { "Ref" : "20DBIops" },
+
+                    "11WebserverOSVersion": { "Ref" : "11WebserverOSVersion" },
+                    "11WebServerInstanceTyp" : { "Ref" : "11WebServerInstanceTyp" },
+                    "12WebServerMaxConnec" : { "Ref" : "12WebServerMaxConnec" },
+
                     "25TriggerWebConfig": { "Ref" : "25TriggerWebConfig" },
                     "26TriggerIcingUpdate": { "Ref" : "26TriggerIcingUpdate" },
                     "27TriggerPatchInstall": { "Ref" : "27TriggerPatchInstall" },
                     "28PatchBucketName": { "Ref" : "28PatchBucketName" },
-                    "29PatchFolderName": { "Ref" : "29PatchFolderName" }
+                    "29PatchFolderName": { "Ref" : "29PatchFolderName" },
+
+                    "10LansaGitRepoBranch" : { "default" : "Git Repository Branch" }
                 }
             }
         }
