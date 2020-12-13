@@ -47,6 +47,11 @@
             "MaxLength": "18",
             "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
         },
+        "10LansaGitRepoBranch": {
+            "Default": "debug/paas",
+            "Description": "Git branch to checkout from Lansa Git repository. This pulls in the script files which are used to assemble the Icing. This is performed during the initial launch and also everytime a Trigger is fired.",
+            "Type": "String"
+        },
         "11WebserverOSVersion": {
             "Default": "win2012",
             "Description": "WebServer Windows operating system version.",
@@ -54,6 +59,41 @@
             "AllowedValues": [
                 "win2012"
             ]
+        },
+        "11WebServerInstanceTyp": {
+            "Description": "WebServer EC2 instance type. See http://aws.amazon.com/ec2/instance-types/ for more information.",
+            "Type": "String",
+            "Default": "t3.medium"
+        },
+        "12WebServerMaxConnec": {
+            "Description": "The maximum number of LANSA jobs to run on each Web Server. Setting TriggerWebConfig will cause this value to be updated.",
+            "Type": "Number",
+            "Default": 20
+        },
+        "13DBInstanceClass": {
+            "Default": "db.t3.large",
+            "Description": "A valid database instance class. See http://aws.amazon.com/rds/details/ for more information.",
+            "Type": "String"
+        },
+        "14DBName": {
+            "Default": "lansa",
+            "Description": "LANSA database name. Must begin with a letter and contain only alphanumeric characters. Maximum length 64.",
+            "Type": "String"
+        },
+        "15DBEngine": {
+            "Description": "Database engine type. Must be a valid SQL Server engine type. Note that to support mirroring you need to choose 'sqlserver-ee' or 'sqlserver-se'. Otherwise you may choose 'sqlserver-web'.",
+            "Type": "String",
+            "Default": "sqlserver-web"
+        },
+        "19DBAllocatedStorage": {
+            "Default": "100",
+            "Description": "The maximum size of the database. Must be between 100 and 4096 GB. Minimum 200 for 'sqlserver-ee' and 'sqlserver-se'.",
+            "Type": "Number"
+        },
+        "20DBIops": {
+            "Default": "1000",
+            "Description": "The fixed number of I/O operations per second supported by this DB instance. This number must be 10 times the size of DBAllocatedStorage and in increments of 1000. E.g. If DBAllocatedStorage = 200 then DBIops = 2000",
+            "Type": "Number"
         },
         "25TriggerWebConfig": {
             "Type": "String",
@@ -114,19 +154,26 @@
          }
        ],
        "ParameterLabels" : {
-         "01LansaMSI" : { "default" : "Lansa MSI URL" },
-         "03DBUsername" : { "default" : "Database User Name" },
-         "04DBPassword" : { "default" : "Database Password" },
-         "05WebUser" : { "default" : "Web Server User" },
-         "06WebPassword" : { "default" : "Web Server Password" },
-         "07KeyName" : { "default" : "Keypair Name" },
-         "08RemoteAccessLocation" : { "default" : "Remote Access Location CIDR" },
-         "11WebserverOSVersion" :  { "default" :  "OS Version"},
-         "25TriggerWebConfig" : { "default" : "Trigger Web Config" },
-         "26TriggerIcingUpdate" : { "default" : "Trigger Icing Update" },
-         "27TriggerPatchInstall" : { "default" : "Trigger Patch Install" },
-         "28PatchBucketName" : { "default" : "Patch Bucket Name" },
-         "29PatchFolderName" : { "default" : "Patch Folder Name" }
+        "01LansaMSI" : { "default" : "Lansa MSI URL" },
+        "03DBUsername" : { "default" : "Database User Name" },
+        "04DBPassword" : { "default" : "Database Password" },
+        "05WebUser" : { "default" : "Web Server User" },
+        "06WebPassword" : { "default" : "Web Server Password" },
+        "07KeyName" : { "default" : "Keypair Name" },
+        "08RemoteAccessLocation" : { "default" : "Remote Access Location CIDR" },
+        "13DBInstanceClass" : { "default" : "Instance Class" },
+        "14DBName" : { "default" : "Name" },
+        "15DBEngine" : { "default" : "SQL Server Engine Type" },
+        "19DBAllocatedStorage" : { "default" : "Maximum Size" },
+        "20DBIops" : { "default" : "I/O OPS" },
+        "11WebserverOSVersion" :  { "default" :  "OS Version"},
+        "11WebServerInstanceTyp" : { "default" : "Instance Type" },
+        "12WebServerMaxConnec" : { "default" : "Maximum Web Jobs" },
+        "26TriggerIcingUpdate" : { "default" : "Trigger Icing Update" },
+        "27TriggerPatchInstall" : { "default" : "Trigger Patch Install" },
+        "28PatchBucketName" : { "default" : "Patch Bucket Name" },
+        "29PatchFolderName" : { "default" : "Patch Folder Name" },
+        "10LansaGitRepoBranch" : { "default" : "Git Repository Branch" }
        }
      }
    },
@@ -146,17 +193,19 @@
             "Type" : "AWS::CloudFormation::Stack",
             "Properties" : {
                 "TemplateURL" : { "Fn::If" : [ "IsReleaseLevel", 
-                                    { "Fn::Join" : ["", [
-                                        { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
-                                        "debug/paas/",
-                                        { "Fn::FindInMap" : [ "CustomVariable", "MasterTemplate", "Value" ] }
-                                    ]]}  ,                                              
-                                    { "Fn::Join" : ["", [
-                                        { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
-                                        "debug/paas/beta/",
-                                        { "Fn::FindInMap" : [ "CustomVariable", "MasterTemplate", "Value" ] }
-                                    ]]}
-                                ]},
+                    { "Fn::Join" : ["", [
+                        { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
+                        { "Ref" : "10LansaGitRepoBranch" },
+                        "/",
+                        { "Fn::FindInMap" : [ "CustomVariable", "MasterTemplate", "Value" ] }
+                    ]]}  ,                                              
+                    { "Fn::Join" : ["", [
+                        { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
+                        { "Ref" : "10LansaGitRepoBranch" },
+                        "/beta/",
+                        { "Fn::FindInMap" : [ "CustomVariable", "MasterTemplate", "Value" ] }
+                    ]]}
+                ]},
                 "Parameters" : {
                     "01LansaMSI": { "Ref" : "01LansaMSI" },
                     "03DBUsername": { "Ref" : "03DBUsername" },
@@ -166,14 +215,13 @@
                     "07KeyName": { "Ref" : "07KeyName" },
                     "08RemoteAccessLocation": { "Ref" : "08RemoteAccessLocation" },
                     "11WebserverOSVersion": { "Ref" : "11WebserverOSVersion" },
-                    "11WebServerInstanceTyp" : "t3.medium",
-                    "12WebServerMaxConnec" : 20,
-                    "18WebServerCapacity" : "1",
-                    "13DBInstanceClass": "db.t3.large",
-                    "14DBName": "lansa",
-                    "15DBEngine": "sqlserver-web",
-                    "19DBAllocatedStorage": "100",
-                    "20DBIops": "1000",
+                    "11WebServerInstanceTyp" : { "Ref" : "11WebServerInstanceTyp" },
+                    "12WebServerMaxConnec" : { "Ref" : "12WebServerMaxConnec" },
+                    "13DBInstanceClass": { "Ref" : "13DBInstanceClass" },
+                    "14DBName": { "Ref" : "14DBName" },
+                    "15DBEngine": { "Ref" : "15DBEngine" },
+                    "19DBAllocatedStorage": { "Ref" : "19DBAllocatedStorage" },
+                    "20DBIops": { "Ref" : "20DBIops" },
                     "25TriggerWebConfig": { "Ref" : "25TriggerWebConfig" },
                     "26TriggerIcingUpdate": { "Ref" : "26TriggerIcingUpdate" },
                     "27TriggerPatchInstall": { "Ref" : "27TriggerPatchInstall" },
