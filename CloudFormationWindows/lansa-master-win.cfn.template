@@ -383,10 +383,6 @@
         },
         "AMIId": {
             "Type": "String",
-            "AllowedValues": [
-               "Marketplace",
-               "Custom"
-            ],
             "Default": "",
             "Description": "The AMI Id of the custom image. Not required when Image Source is set to Marketplace"
         }
@@ -482,7 +478,7 @@
          "10LansaGitRepoBranch" : { "default" : "Git Repository Branch" },
          "LansaVersion" :  { "default" :  "Visual LANSA Version"},
          "ImageSource" :  { "default" :  "Image Source"},
-         "AMIId" :  { "default" :  "AMI Id"}
+         "AMIId" :  { "default" :  ""}
        }
      }
    },
@@ -590,7 +586,7 @@
        "DoesNotHaveUserScript" : {"Fn::Equals" : [{"Ref" : "17UserScriptHook"}, ""]},
        "HasUserScript" : {"Fn::Not" : [{"Condition" : "DoesNotHaveUserScript"}]},
        "IsLansaVersion142": {"Fn::Equals" : [{"Ref" : "LansaVersion"}, "V14 SP2"]},
-       "IsAMIIdEmpty": {"Fn::Equals" : [{"Ref": "AMIId"}, ""]}
+       "IsCustomImageSource": {"Fn::Equals" : [{"Ref": "ImageSource"}, "Custom"]}
     },
     "Resources": {
        "CloudWatchLogGroup":  {
@@ -804,7 +800,7 @@
                                     ]]}
                                 ]},
                 "Parameters" : {
-                    "AMI"                         : { "Fn:If" : ["IsLansaVersion142", { "Fn::FindInMap" : [ "AWSRegionArch2AMI14-2", { "Ref" : "AWS::Region" }, { "Ref": "11WebserverOSVersion" } ] }, {"Fn::If": [ "ISAMIIdEmpty", { "Fn::FindInMap" : [ "AWSRegionArch2AMI15-0", { "Ref" : "AWS::Region" }, { "Ref": "11WebserverOSVersion" }]}, { "Ref" : "AMIId" } ] }]},
+                    "AMI"                         : { "Fn::If": [ "IsCustomImageSource", { "Ref" : "AMIId" }, { "Fn:If" : ["IsLansaVersion142", { "Fn::FindInMap" : [ "AWSRegionArch2AMI14-2", { "Ref" : "AWS::Region" }, { "Ref": "11WebserverOSVersion" } ] }, { "Fn::FindInMap" : [ "AWSRegionArch2AMI15-0", { "Ref" : "AWS::Region" }, { "Ref": "11WebserverOSVersion" }]} ] }]},
                     "DBEndPoint"                  : { "Fn::GetAtt" : ["DBInstance", "Endpoint.Address"] },
                     "IAMRoleInstanceProfile"      : { "Ref" : "IAMRoleInstanceProfile" },
                     "LansaSecurityGroup"          : { "Ref" : "LansaSecurityGroup" },
@@ -858,7 +854,7 @@
                                     ]]}
                                 ]},
                 "Parameters" : {
-                    "AMI"                         : { "Fn:If" : ["IsLansaVersion142", { "Fn::FindInMap" : [ "AWSRegionArch2AMI14-2", { "Ref" : "AWS::Region" }, { "Ref": "11WebserverOSVersion" } ] }, {"Fn::If": [ "ISAMIIdEmpty", { "Fn::FindInMap" : [ "AWSRegionArch2AMI15-0", { "Ref" : "AWS::Region" }, { "Ref": "11WebserverOSVersion" }]}, { "Ref" : "AMIId" } ] }]},
+                    "AMI"                         : { "Fn::If": [ "IsCustomImageSource", { "Ref" : "AMIId" }, { "Fn:If" : ["IsLansaVersion142", { "Fn::FindInMap" : [ "AWSRegionArch2AMI14-2", { "Ref" : "AWS::Region" }, { "Ref": "11WebserverOSVersion" } ] }, { "Fn::FindInMap" : [ "AWSRegionArch2AMI15-0", { "Ref" : "AWS::Region" }, { "Ref": "11WebserverOSVersion" }]} ] }]},
                     "DBEndPoint"                  : { "Fn::GetAtt" : ["DBInstance", "Endpoint.Address"] },
                     "DummyRef"                    : { "Ref" : "DBWebServerApp" },
                     "IAMRoleInstanceProfile"      : { "Ref" : "IAMRoleInstanceProfile" },
