@@ -3600,14 +3600,26 @@
          }
        }
     },
-    "ELBSubnetId": {
+    "ELBSubnetId1": {
+      "Value": {
+        "Ref" : "PublicSubnet2"
+       },
+       "Description": "Public Subnet Id1 for ELB",
+       "Export": {
+         "Name": {
+           "Fn::Sub": "${AWS::StackName}-ELBSubnetID1"
+         }
+       }
+    },
+    "ELBSubnetId2": {
+      "Condition": "3AZCondition",
       "Value": {
         "Ref" : "PublicSubnet3"
        },
-       "Description": "Public Subnet Id for ELB",
+       "Description": "Public Subnet Id2 for ELB",
        "Export": {
          "Name": {
-           "Fn::Sub": "${AWS::StackName}-ELBSubnetID"
+           "Fn::Sub": "${AWS::StackName}-ELBSubnetID2"
          }
        }
     }

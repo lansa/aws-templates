@@ -4,6 +4,9 @@
     "Description" : "Deploy a LANSA WAM application into an auto scaling group. This template is designed to be executed by the parent lansa-master-win.cfn.template stack. Parameters described as Update Stack: are only modified after the stack has been created",
 
     "Parameters" : {
+		"AvailabilityZones"  : {
+			"Type": "List<AWS::EC2::AvailabilityZone::Name>"
+		},
         "AMI"  : {
             "Type": "String",
             "Default": "ami-e1c0b3db"
@@ -45,6 +48,10 @@
             "Default" : "DB Web Server Instance",
             "Description": "The Load Balancer used for the DbWebServer and WebServer."
         },
+		"WebServerSubnet": {
+			"Type": "List<AWS::EC2::Subnet::Id>",
+            "Description": "Subnet Id for WebServerGroup."
+		},
         "01LansaMSI": {
             "Type": "String",
             "Default": "https://s3-ap-southeast-2.amazonaws.com/lansa/app/Test/AWAMAPP_v14.2.20715_en-us.msi",
@@ -361,9 +368,7 @@
         "WebServerGroup" : {
             "Type": "AWS::AutoScaling::AutoScalingGroup",
             "Properties": {
-                "AvailabilityZones": {
-                    "Fn::GetAZs": ""
-                },
+				"VPCZoneIdentifier" : { "Ref": "WebServerSubnet"},
                 "LaunchConfigurationName": {
                     "Ref": "LaunchWebServer"
                 },
