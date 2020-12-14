@@ -60,41 +60,6 @@
                 "win2012"
             ]
         },
-        "11WebServerInstanceTyp": {
-            "Description": "WebServer EC2 instance type. See http://aws.amazon.com/ec2/instance-types/ for more information.",
-            "Type": "String",
-            "Default": "r5.large"
-        },
-        "12WebServerMaxConnec": {
-            "Description": "The maximum number of LANSA jobs to run on each Web Server. Setting TriggerWebConfig will cause this value to be updated.",
-            "Type": "Number",
-            "Default": 120
-        },
-        "13DBInstanceClass": {
-            "Default": "db.r5.8xlarge",
-            "Description": "A valid database instance class. See http://aws.amazon.com/rds/details/ for more information.",
-            "Type": "String"
-        },
-        "14DBName": {
-            "Default": "lansa",
-            "Description": "LANSA database name. Must begin with a letter and contain only alphanumeric characters. Maximum length 64.",
-            "Type": "String"
-        },
-        "15DBEngine": {
-            "Description": "Database engine type. Must be a valid SQL Server engine type. Note that to support mirroring you need to choose 'sqlserver-ee' or 'sqlserver-se'. Otherwise you may choose 'sqlserver-web'.",
-            "Type": "String",
-            "Default": "sqlserver-ee"
-        },
-        "19DBAllocatedStorage": {
-            "Default": "1000",
-            "Description": "The maximum size of the database. Must be between 100 and 4096 GB. Minimum 200 for 'sqlserver-ee' and 'sqlserver-se'.",
-            "Type": "Number"
-        },
-        "20DBIops": {
-            "Default": "10000",
-            "Description": "The fixed number of I/O operations per second supported by this DB instance. This number must be 10 times the size of DBAllocatedStorage and in increments of 1000. E.g. If DBAllocatedStorage = 200 then DBIops = 2000",
-            "Type": "Number"
-        },
         "25TriggerWebConfig": {
             "Type": "String",
             "Default": "1",
@@ -154,31 +119,23 @@
          }
        ],
        "ParameterLabels" : {
-        "01LansaMSI" : { "default" : "Lansa MSI URL" },
-            "03DBUsername" : { "default" : "Database User Name" },
-            "04DBPassword" : { "default" : "Database Password" },
-            "05WebUser" : { "default" : "Web Server User" },
-            "06WebPassword" : { "default" : "Web Server Password" },
-            "07KeyName" : { "default" : "Keypair Name" },
-            "08RemoteAccessLocation" : { "default" : "Remote Access Location CIDR" },
+         "01LansaMSI" : { "default" : "Lansa MSI URL" },
+         "03DBUsername" : { "default" : "Database User Name" },
+         "04DBPassword" : { "default" : "Database Password" },
+         "05WebUser" : { "default" : "Web Server User" },
+         "06WebPassword" : { "default" : "Web Server Password" },
+         "07KeyName" : { "default" : "Keypair Name" },
+         "08RemoteAccessLocation" : { "default" : "Remote Access Location CIDR" },
 
-            "13DBInstanceClass" : { "default" : "Instance Class" },
-            "14DBName" : { "default" : "Name" },
-            "15DBEngine" : { "default" : "SQL Server Engine Type" },
-            "19DBAllocatedStorage" : { "default" : "Maximum Size" },
-            "20DBIops" : { "default" : "I/O OPS" },
+         "11WebserverOSVersion" :  { "default" :  "OS Version"},
 
-            "11WebserverOSVersion" :  { "default" :  "OS Version"},
-            "11WebServerInstanceTyp" : { "default" : "Instance Type" },
-            "12WebServerMaxConnec" : { "default" : "Maximum Web Jobs" },
+         "25TriggerWebConfig" : { "default" : "Trigger Web Config" },
+         "26TriggerIcingUpdate" : { "default" : "Trigger Icing Update" },
+         "27TriggerPatchInstall" : { "default" : "Trigger Patch Install" },
+         "28PatchBucketName" : { "default" : "Patch Bucket Name" },
+         "29PatchFolderName" : { "default" : "Patch Folder Name" },
 
-            "25TriggerWebConfig" : { "default" : "Trigger Web Config" },
-            "26TriggerIcingUpdate" : { "default" : "Trigger Icing Update" },
-            "27TriggerPatchInstall" : { "default" : "Trigger Patch Install" },
-            "28PatchBucketName" : { "default" : "Patch Bucket Name" },
-            "29PatchFolderName" : { "default" : "Patch Folder Name" },
-
-            "10LansaGitRepoBranch" : { "default" : "Git Repository Branch" }
+         "10LansaGitRepoBranch" : { "default" : "Git Repository Branch" }
        }
      }
    },
@@ -220,23 +177,23 @@
                     "07KeyName": { "Ref" : "07KeyName" },
                     "08RemoteAccessLocation": { "Ref" : "08RemoteAccessLocation" },
 
-                    "13DBInstanceClass": { "Ref" : "13DBInstanceClass" },
-                    "14DBName": { "Ref" : "14DBName" },
-                    "15DBEngine": { "Ref" : "15DBEngine" },
-                    "19DBAllocatedStorage": { "Ref" : "19DBAllocatedStorage" },
-                    "20DBIops": { "Ref" : "20DBIops" },
+                    "13DBInstanceClass": "db.r5.8xlarge",
+                    "14DBName": "lansa",
+                    "15DBEngine": "sqlserver-ee",
+                    "19DBAllocatedStorage": "1000",
+                    "20DBIops": "10000",
 
                     "11WebserverOSVersion": { "Ref" : "11WebserverOSVersion" },
-                    "11WebServerInstanceTyp" : { "Ref" : "11WebServerInstanceTyp" },
-                    "12WebServerMaxConnec" : { "Ref" : "12WebServerMaxConnec" },
-
+                    "11WebServerInstanceTyp" : "r5.large",
+                    "12WebServerMaxConnec" : 120,
+                    
                     "25TriggerWebConfig": { "Ref" : "25TriggerWebConfig" },
                     "26TriggerIcingUpdate": { "Ref" : "26TriggerIcingUpdate" },
                     "27TriggerPatchInstall": { "Ref" : "27TriggerPatchInstall" },
                     "28PatchBucketName": { "Ref" : "28PatchBucketName" },
                     "29PatchFolderName": { "Ref" : "29PatchFolderName" },
 
-                    "10LansaGitRepoBranch" : { "default" : "Git Repository Branch" }
+                    "10LansaGitRepoBranch" : { "Ref" : "Git Repository Branch" }
                 }
             }
         }
