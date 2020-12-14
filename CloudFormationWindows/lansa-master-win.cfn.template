@@ -38,7 +38,7 @@
             "Default": ""
         },
         "ELBSubnetIds": {
-            "Description": "list of Subnet ID for ELB",
+            "Description": "list of Subnet IDs for ELB",
             "Type": "List<AWS::EC2::Subnet::Id>",
             "Default": "subnet-1869385e"
         },
@@ -409,14 +409,14 @@
        "ParameterGroups" : [
          {
            "Label" : { "default" : "Essential Parameters" },
-           "Parameters" : [ 
-               "01LansaMSI", 
-               "02LansaMSIBitness", 
-               "03DBUsername", 
-               "04DBPassword", 
-               "05WebUser", 
-               "06WebPassword", 
-               "07KeyName", 
+            "Parameters" : [
+               "01LansaMSI",
+               "02LansaMSIBitness",
+               "03DBUsername",
+               "04DBPassword",
+               "05WebUser",
+               "06WebPassword",
+               "07KeyName",
                "08RemoteAccessLocation" 
             ]
          },
@@ -436,10 +436,10 @@
          {
            "Label" : { "default":"Database Configuration" },
            "Parameters" : [
-               "13DBInstanceClass", 
-               "14DBName", 
-               "15DBEngine", 
-               "19DBAllocatedStorage", 
+               "13DBInstanceClass",
+               "14DBName",
+               "15DBEngine",
+               "19DBAllocatedStorage",
                "20DBIops" 
             ]
          },
@@ -454,15 +454,15 @@
          },
          {
            "Label" : { "default":"Stack Maintenance" },
-           "Parameters" : [ 
-               "22TriggerCakeUpdate", 
-               "23TriggerChefUpdate", 
-               "24TriggerWinUpdate", 
-               "25TriggerWebConfig", 
-               "26TriggerIcingUpdate", 
-               "27TriggerPatchInstall", 
-               "28PatchBucketName", 
-               "29PatchFolderName" 
+           "Parameters" : [
+               "22TriggerCakeUpdate",
+               "23TriggerChefUpdate",
+               "24TriggerWinUpdate",
+               "25TriggerWebConfig",
+               "26TriggerIcingUpdate",
+               "27TriggerPatchInstall",
+               "28PatchBucketName",
+               "29PatchFolderName"
             ]
          },
          {
@@ -525,7 +525,7 @@
          "eu-west-2": { "win2012": "ami-00a8a2f24f010c624", "win2016" : "" },
          "eu-west-3": { "win2012": "ami-0c6066ea9e07aeaa2", "win2016" : "" },
          "eu-north-1": { "win2012": "ami-d270f9ac", "win2016" : "" },
-         "eu-south-1": { "win2012": "", "win2016" : "" },         
+         "eu-south-1": { "win2012": "", "win2016" : "" },        
          "ap-southeast-1": { "win2012": "ami-0a606cfbd7dc17e53", "win2016" : "" },
          "ap-southeast-2": { "win2012": "ami-09509d8e30a702bc6", "win2016" : "ami-063c84b9992a58aea" },
          "ap-south-1": { "win2012": "ami-0e1a7a4677a06a03f", "win2016" : "" },
@@ -533,7 +533,7 @@
          "ap-northeast-2": { "win2012": "ami-00fda912916e5aa4e", "win2016" : "" },
          "ap-east-1": { "win2012": "", "win2016" : "" },
          "af-south-1": { "win2012": "", "win2016" : "" },
-         "me-south-1": { "win2012": "", "win2016" : "" },         
+         "me-south-1": { "win2012": "", "win2016" : "" },        
          "sa-east-1": { "win2012": "ami-0531a6656fd4cf471", "win2016" : "" }
       },
       "Region2Principal" : {
@@ -584,9 +584,9 @@
       },
        "CustomVariable" : {
          "TemplateRoot"      : { "Value" : "https://s3-ap-southeast-2.amazonaws.com/lansa/templates/" },
-         "WebServerTemplate" : { "Value" : "webserver-win-vpc.cfn.template.json"},
+         "WebServerTemplate" : { "Value" : "webserver-win.cfn.template.json"},
          "TemplateLevel"     : { "Value" : "R"},
-         "NestedVPCTemplate" : { "Value" : "nested_vpc_testing.json"}
+         "NestedVPCTemplate" : { "Value" : "nested-vpc.json"}
        }
     },
     "Conditions" : {

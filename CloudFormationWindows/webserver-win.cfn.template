@@ -365,7 +365,7 @@
         "WebServerGroup" : {
             "Type": "AWS::AutoScaling::AutoScalingGroup",
             "Properties": {
-				"VPCZoneIdentifier" : { "Ref": "WebServerSubnet"},
+                "VPCZoneIdentifier" : { "Ref": "WebServerSubnet"},
                 "LaunchConfigurationName": {
                     "Ref": "LaunchWebServer"
                 },
