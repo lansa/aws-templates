@@ -27,7 +27,7 @@
         },
         "MaxInstanceLifetime":{
             "Type": "Number",
-            "Description": "States the maximum lifetime of an instance."
+            "Description": "States the maximum lifetime of the instances to automatically terminate and re-create them."
         },
         "Sudb": {
             "Type": "String",
