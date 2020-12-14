@@ -4,9 +4,6 @@
     "Description" : "Deploy a LANSA WAM application into an auto scaling group. This template is designed to be executed by the parent lansa-master-win.cfn.template stack. Parameters described as Update Stack: are only modified after the stack has been created",
 
     "Parameters" : {
-		"AvailabilityZones"  : {
-			"Type": "List<AWS::EC2::AvailabilityZone::Name>"
-		},
         "AMI"  : {
             "Type": "String",
             "Default": "ami-e1c0b3db"

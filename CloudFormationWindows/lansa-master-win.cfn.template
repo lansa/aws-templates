@@ -920,7 +920,6 @@
                                     ]]}
                                 ]},
                 "Parameters" : {
-                    "AvailabilityZones":  { "Fn::Join": [",", { "Ref": "AvailabilityZones" }]},
                     "AMI"                         : { "Fn::FindInMap" : [ "AWSRegionArch2AMI", { "Ref" : "AWS::Region" }, { "Ref": "11WebserverOSVersion" } ] },
                     "DBEndPoint"                  : { "Fn::GetAtt" : ["DBInstance", "Endpoint.Address"] },
                     "WebServerSubnet" : {
@@ -995,7 +994,6 @@
                                     ]]}
                                 ]},
                 "Parameters" : {
-                    "AvailabilityZones":  { "Fn::Join": [",", { "Ref": "AvailabilityZones" }]},
                     "AMI"                         : { "Fn::FindInMap" : [ "AWSRegionArch2AMI", { "Ref" : "AWS::Region" }, { "Ref": "11WebserverOSVersion" } ] },
                     "DBEndPoint"                  : { "Fn::GetAtt" : ["DBInstance", "Endpoint.Address"] },
                     "DummyRef"                    : { "Ref" : "DBWebServerApp" },
