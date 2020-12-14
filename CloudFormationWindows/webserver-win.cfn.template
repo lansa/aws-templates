@@ -27,7 +27,8 @@
         },
         "MaxInstanceLifetime":{
             "Type": "Number",
-            "Description": "States the maximum lifetime of the instances to automatically terminate and re-create them."
+            "Default" : "5270400",
+            "Description": "States the maximum lifetime of an instance to automatically terminate and re-create it. Set to 5270400 for DbWebServer and 5788800 for WebServer."
         },
         "Sudb": {
             "Type": "String",

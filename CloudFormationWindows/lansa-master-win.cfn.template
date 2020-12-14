@@ -732,7 +732,7 @@
         "DBWebServerApp" : {
             "Type" : "AWS::CloudFormation::Stack",
             "Metadata" : {
-                "Comment1" : "The MaxInstanceLifetime property value is set to 5,270,400 seconds = 61 days. This is a prime number(close to two months i.e., 62 days) to reduce the likelihood that this instance will be unavailable when the Web ASG instance is also unavailable ",
+                "Comment1" : "The MaxInstanceLifetime property value for DB ASG is set to 5,270,400 seconds = 61 days. This is a prime number(close to two months i.e., 62 days) to reduce the likelihood that this instance will be unavailable when the Web ASG instance is also unavailable",
                 "Comment2" : "Using prime numbers ensures that the DB instances and Web instances will not be refreshed on the same day"
             },
             "Properties" : {
@@ -811,7 +811,7 @@
         "WebServerApp" : {
             "Type" : "AWS::CloudFormation::Stack",
             "Metadata" : {
-                "Comment1" : "The MaxInstanceLifetime property value is set to 5,788,800 seconds = 67 days. This is a prime number(close to two months i.e., 62 days) to reduce the likelihood that this instance will be unavailable when the DB ASG instance is also unavailable ",
+                "Comment1" : "The MaxInstanceLifetime property value for Web ASG is set to 5,788,800 seconds = 67 days. This is a prime number(close to two months i.e., 62 days) to reduce the likelihood that this instance will be unavailable when the DB ASG instance is also unavailable",
                 "Comment2" : "Using prime numbers ensures that the DB instances and Web instances will not be refreshed on the same day"
             },
             "Properties" : {
