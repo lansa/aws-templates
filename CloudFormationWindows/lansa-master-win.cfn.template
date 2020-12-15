@@ -634,9 +634,9 @@
       },
        "CustomVariable" : {
          "TemplateRoot"      : { "Value" : "https://s3-ap-southeast-2.amazonaws.com/lansa/templates/" },
-         "WebServerTemplate" : { "Value" : "webserver-win-vpc.cfn.template"},
+         "WebServerTemplate" : { "Value" : "webserver-win.cfn.template"},
          "TemplateLevel"     : { "Value" : "R"},
-         "NestedVPCTemplate" : { "Value" : "nested-vpc.json"}
+         "NestedVPCTemplate" : { "Value" : "nested-vpc.cfn.template"}
        }
     },
     "Conditions" : {
