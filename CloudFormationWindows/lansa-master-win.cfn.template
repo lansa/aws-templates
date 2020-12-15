@@ -497,7 +497,7 @@
          "eu-north-1": { "win2012": "ami-d270f9ac", "win2016" : "",  "win2019" : "" },
          "eu-south-1": { "win2012": "", "win2016" : "",  "win2019" : "" },
          "ap-southeast-1": { "win2012": "ami-0a606cfbd7dc17e53", "win2016" : "",  "win2019" : "" },
-         "ap-southeast-2": { "win2012": "ami-09509d8e30a702bc6", "win2016" : "ami-063c84b9992a58aea",  "win2019" : "" },
+         "ap-southeast-2": { "win2012": "ami-0e9f7937bc2fc9673", "win2016" : "ami-071adb8ebb55a458b",  "win2019" : "ami-07dc1768111978784" },
          "ap-south-1": { "win2012": "ami-0e1a7a4677a06a03f", "win2016" : "",  "win2019" : "" },
          "ap-northeast-1": { "win2012": "ami-01debc7e21503586d", "win2016" : "",  "win2019" : "" },
          "ap-northeast-2": { "win2012": "ami-00fda912916e5aa4e", "win2016" : "",  "win2019" : "" },
@@ -520,7 +520,7 @@
         "eu-north-1": { "win2012": "ami-d270f9ac", "win2016" : "",  "win2019" : "" },
         "eu-south-1": { "win2012": "", "win2016" : "",  "win2019" : "" },
         "ap-southeast-1": { "win2012": "ami-0a606cfbd7dc17e53", "win2016" : "",  "win2019" : "" },
-        "ap-southeast-2": { "win2012": "ami-09509d8e30a702bc6", "win2016" : "ami-063c84b9992a58aea",  "win2019" : "" },
+        "ap-southeast-2": { "win2012": "ami-0166ac02dda701e3f", "win2016" : "ami-01e24c1d10396b8d7",  "win2019" : "ami-0ccccbdbb077006f1" },
         "ap-south-1": { "win2012": "ami-0e1a7a4677a06a03f", "win2016" : "",  "win2019" : "" },
         "ap-northeast-1": { "win2012": "ami-01debc7e21503586d", "win2016" : "",  "win2019" : "" },
         "ap-northeast-2": { "win2012": "ami-00fda912916e5aa4e", "win2016" : "",  "win2019" : "" },
@@ -892,7 +892,7 @@
             }
         }
     },
-      
+
     "Outputs"                  : {
       "WebsiteURL" : {
          "Value" : { "Fn::Join" : [ "", [ "http://", { "Fn::GetAtt" : [ "WebServerELB", "DNSName" ]  } ] ] },
