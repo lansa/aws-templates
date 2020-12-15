@@ -578,11 +578,13 @@
        "CustomVariable" : {
          "TemplateRoot"      : { "Value" : "https://s3-ap-southeast-2.amazonaws.com/lansa/templates/" },
          "WebServerTemplate" : { "Value" : "webserver-win.cfn.template"},
-         "TemplateLevel"     : { "Value" : "R"}
+         "TemplateLevel"     : { "Value" : "R"},
+         "Namespace" : { "Value" : "" }
        }
     },
     "Conditions" : {
        "IsReleaseLevel" : {"Fn::Equals" : [{ "Fn::FindInMap" : [ "CustomVariable", "TemplateLevel", "Value" ] }, "R"]},
+       "IsEmptyNamespace" : {"Fn::Equals" : [{ "Fn::FindInMap" : [ "CustomVariable", "TemplateLevel", "Value" ] }, "" ]},
        "DoesNotHaveUserScript" : {"Fn::Equals" : [{"Ref" : "17UserScriptHook"}, ""]},
        "HasUserScript" : {"Fn::Not" : [{"Condition" : "DoesNotHaveUserScript"}]},
        "IsLansaVersion142": {"Fn::Equals" : [{"Ref" : "LansaVersion"}, "V14 SP2"]},
@@ -784,20 +786,44 @@
         },
         "DBWebServerApp" : {
             "Type" : "AWS::CloudFormation::Stack",
+            "Metadata" : {
+                "Comment1" : "The MaxInstanceLifetime property value for DB ASG is set to 5,270,400 seconds = 61 days. This is a prime number(close to two months) to reduce the likelihood that this instance will be unavailable when the Web ASG instance is also unavailable",
+                "Comment2" : "Using prime numbers ensures that the DB instances and Web instances will not be refreshed on the same day"
+            },
             "Properties" : {
                 "TemplateURL" : { "Fn::If" : [ "IsReleaseLevel",
-                                    { "Fn::Join" : ["", [
-                                        { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
-                                        { "Ref" : "10LansaGitRepoBranch" },
-                                        "/",
-                                        { "Fn::FindInMap" : [ "CustomVariable", "WebServerTemplate", "Value" ] }
-                                    ]]}  ,
-                                    { "Fn::Join" : ["", [
-                                        { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
-                                        { "Ref" : "10LansaGitRepoBranch" },
-                                        "/beta/",
-                                        { "Fn::FindInMap" : [ "CustomVariable", "WebServerTemplate", "Value" ] }
-                                    ]]}
+                                    { "Fn::If" : [ "IsEmptyNamespace", 
+                                        { 
+                                            "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
+                                            { "Ref" : "10LansaGitRepoBranch" },
+                                            "/",
+                                            { "Fn::FindInMap" : [ "CustomVariable", "WebServerTemplate", "Value" ] }
+                                        ]]},
+                                        {
+                                            "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
+                                            { "Ref" : "10LansaGitRepoBranch" },
+                                            "/",
+                                            {  "Fn::FindInMap" : [ "CustomVariable", "Namespace", "Value" ] },
+                                            "/",
+                                            { "Fn::FindInMap" : [ "CustomVariable", "WebServerTemplate", "Value" ] }
+                                        ]]}
+                                    ]},
+                                    { "Fn::If" : [ "IsEmptyNamespace",
+                                        {
+                                            "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
+                                            { "Ref" : "10LansaGitRepoBranch" },
+                                            "/beta/",
+                                            { "Fn::FindInMap" : [ "CustomVariable", "WebServerTemplate", "Value" ]}
+                                        ]]},
+                                        {
+                                            "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
+                                            { "Ref" : "10LansaGitRepoBranch" },
+                                            "/beta/",
+                                            { "Fn::FindInMap" : [ "CustomVariable", "Namespace", "Value" ] },
+                                            "/",
+                                            { "Fn::FindInMap" : [ "CustomVariable", "WebServerTemplate", "Value" ]}
+                                        ]]}
+                                    ]}
                                 ]},
                 "Parameters" : {
                     "AMI"                         : { "Fn::If": [ "IsCustomImageSource", { "Ref" : "AMIId" }, { "Fn::If" : ["IsLansaVersion142", { "Fn::FindInMap" : [ "AWSRegionArch2AMI142", { "Ref" : "AWS::Region" }, { "Ref": "11WebserverOSVersion" } ] }, { "Fn::FindInMap" : [ "AWSRegionArch2AMI15", { "Ref" : "AWS::Region" }, { "Ref": "11WebserverOSVersion" }]} ] }]},
@@ -832,26 +858,51 @@
                     "26TriggerIcingUpdate"        : { "Ref" : "26TriggerIcingUpdate"},
                     "27TriggerPatchInstall"       : { "Ref" : "27TriggerPatchInstall"},
                     "28PatchBucketName"           : { "Ref" : "28PatchBucketName"},
-                    "29PatchFolderName"           : { "Ref" : "29PatchFolderName"}
+                    "29PatchFolderName"           : { "Ref" : "29PatchFolderName"},
+                    "MaxInstanceLifetime"         : 5270400
                 }
             }
         },
         "WebServerApp" : {
             "Type" : "AWS::CloudFormation::Stack",
+            "Metadata" : {
+                "Comment1" : "The MaxInstanceLifetime property value for Web ASG is set to 5,788,800 seconds = 67 days. This is a prime number(close to two months) to reduce the likelihood that this instance will be unavailable when the DB ASG instance is also unavailable",
+                "Comment2" : "Using prime numbers ensures that the DB instances and Web instances will not be refreshed on the same day"
+            },
             "Properties" : {
                 "TemplateURL" : { "Fn::If" : [ "IsReleaseLevel",
-                                    { "Fn::Join" : ["", [
-                                        { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
-                                        { "Ref" : "10LansaGitRepoBranch" },
-                                        "/",
-                                        { "Fn::FindInMap" : [ "CustomVariable", "WebServerTemplate", "Value" ] }
-                                    ]]}  ,
-                                    { "Fn::Join" : ["", [
-                                        { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
-                                        { "Ref" : "10LansaGitRepoBranch" },
-                                        "/beta/",
-                                        { "Fn::FindInMap" : [ "CustomVariable", "WebServerTemplate", "Value" ] }
-                                    ]]}
+                                    { "Fn::If" : [ "IsEmptyNamespace", 
+                                        { 
+                                            "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
+                                            { "Ref" : "10LansaGitRepoBranch" },
+                                            "/",
+                                            { "Fn::FindInMap" : [ "CustomVariable", "WebServerTemplate", "Value" ] }
+                                        ]]},
+                                        {
+                                            "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
+                                            { "Ref" : "10LansaGitRepoBranch" },
+                                            "/",
+                                            {  "Fn::FindInMap" : [ "CustomVariable", "Namespace", "Value" ] },
+                                            "/",
+                                            { "Fn::FindInMap" : [ "CustomVariable", "WebServerTemplate", "Value" ] }
+                                        ]]}
+                                    ]},
+                                    { "Fn::If" : [ "IsEmptyNamespace",
+                                        {
+                                            "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
+                                            { "Ref" : "10LansaGitRepoBranch" },
+                                            "/beta/",
+                                            { "Fn::FindInMap" : [ "CustomVariable", "WebServerTemplate", "Value" ]}
+                                        ]]},
+                                        {
+                                            "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
+                                            { "Ref" : "10LansaGitRepoBranch" },
+                                            "/beta/",
+                                            { "Fn::FindInMap" : [ "CustomVariable", "Namespace", "Value" ] },
+                                            "/",
+                                            { "Fn::FindInMap" : [ "CustomVariable", "WebServerTemplate", "Value" ]}
+                                        ]]}
+                                    ]}
                                 ]},
                 "Parameters" : {
                     "AMI"                         : { "Fn::If": [ "IsCustomImageSource", { "Ref" : "AMIId" }, { "Fn::If" : ["IsLansaVersion142", { "Fn::FindInMap" : [ "AWSRegionArch2AMI142", { "Ref" : "AWS::Region" }, { "Ref": "11WebserverOSVersion" } ] }, { "Fn::FindInMap" : [ "AWSRegionArch2AMI15", { "Ref" : "AWS::Region" }, { "Ref": "11WebserverOSVersion" }]} ] }]},
@@ -887,7 +938,8 @@
                     "26TriggerIcingUpdate"        : { "Ref" : "26TriggerIcingUpdate"},
                     "27TriggerPatchInstall"       : { "Ref" : "27TriggerPatchInstall"},
                     "28PatchBucketName"           : { "Ref" : "28PatchBucketName"},
-                    "29PatchFolderName"           : { "Ref" : "29PatchFolderName"}
+                    "29PatchFolderName"           : { "Ref" : "29PatchFolderName"},
+                    "MaxInstanceLifetime"         : 5788800
                 }
             }
         }
