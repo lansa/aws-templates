@@ -1,0 +1,207 @@
+{
+    "AWSTemplateFormatVersion" : "2010-09-09",
+    "Description"              : "LANSA Windows template: This template installs a highly-available, scalable LANSA deployment using a multi-AZ Amazon RDS database instance for storage.  **WARNING** This template creates an Amazon Windows EC2 instance, an Elastic Load Balancer and an Amazon RDS database instance. Parameters described as Update Stack: are only modified after the stack has been created. You will be billed for the AWS resources used if you create a stack from this template.",
+    "Parameters": {
+        "01LansaMSI": {
+            "Type": "String",
+            "Default": "https://s3-ap-southeast-2.amazonaws.com/lansa/app/Test/AWAMAPP_v14.2.20715_en-us.msi",
+            "Description": "URL of the LANSA MSI to install. The MSI must have been previously uploaded to the specified location in Amazon S3 BLOB storage."
+        },
+        "03DBUsername": {
+            "Default": "admin",
+            "Description": "The LANSA database administrator account username. Must begin with a letter and contain only alphanumeric characters. Maximum length 16.",
+            "Type": "String",
+            "MinLength": "1",
+            "MaxLength": "16",
+            "AllowedPattern": "[a-zA-Z][a-zA-Z0-9]*"
+        },
+        "04DBPassword": {
+            "NoEcho": "true",
+            "Description": "The LANSA database administrator account password. Minimum length 8, maximum length 41. There must be at least one character from each of the following character classes: uppercase letters, lowercase letters and numeric digits. Only printable ASCII characters, not including '/', '@', '\"', and space, may be used.",
+            "Type": "String",
+            "MinLength": "8",
+            "MaxLength": "41",
+            "AllowedPattern": "(?!.*[/\"@\\s])(?=.*\\d)(?=.*[A-Z])(?=.*[a-z]).{8,41}"
+        },
+        "05WebUser": {
+            "Type": "String",
+            "Default": "PCXUSER2",
+            "Description": "User to use for running web jobs."
+        },
+        "06WebPassword": {
+            "NoEcho": "true",
+            "Type": "String",
+            "Description": "Password for WebUser. Minimum length 8, maximum length 41. There must be at least one character from each of the following character classes: uppercase letters, lowercase letters and numeric digits. A space must not be used. This password must conform to Account Policy rules. E.g. The whole user name must not be in the password. With user name 'lansa', 'lansa!@#$abc' will NOT be accepted as a password. With user name 'lansa2', 'lansa!123' will be accepted as a password. See https://technet.microsoft.com/en-au/library/cc786468(v=ws.10).aspx for more information.",
+            "MinLength": "8",
+            "MaxLength": "41",
+            "AllowedPattern": "(?!.*[\\s])(?=.*\\d)(?=.*[A-Z])(?=.*[a-z]).{8,41}"
+        },
+        "07KeyName": {
+            "Description": "Name of an existing EC2 KeyPair to enable remote access to the instances via RDP (case sensitive). e.g. linux-keypair",
+            "Type": "AWS::EC2::KeyPair::KeyName"
+        },
+        "08RemoteAccessLocation": {
+            "Description": "The IP address range that may be used to remotely access the EC2 instances. Must be a valid IP CIDR range of the form x.x.x.x/x. e.g. 103.231.169.65/32 This is a security feature which limits remote access to your EC2 instances.",
+            "Type": "String",
+            "MinLength": "9",
+            "MaxLength": "18",
+            "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
+        },
+        "10LansaGitRepoBranch": {
+            "Default": "support/scalable",
+            "Description": "Git branch to checkout from Lansa Git repository. This pulls in the script files which are used to assemble the Icing. This is performed during the initial launch and also everytime a Trigger is fired.",
+            "Type": "String"
+        },
+        "11WebserverOSVersion": {
+            "Default": "win2012",
+            "Description": "WebServer Windows operating system version.",
+            "Type": "String",
+            "AllowedValues": [
+                "win2012"
+            ]
+        },
+        "25TriggerWebConfig": {
+            "Type": "String",
+            "Default": "1",
+            "Description": "Update Stack: Increment this by one to trigger an update to the web configuration"
+        },
+        "26TriggerIcingUpdate": {
+            "Type": "String",
+            "Default": "1",
+            "Description": "Update Stack: Increment this by one to trigger an MSI Upgrade. Obtains the specified MSI and installs it. Ensure the LansaMSI parameter is set correctly."
+        },
+        "27TriggerPatchInstall": {
+            "Type": "String",
+            "Default": "1",
+            "Description": "Update Stack: Increment this by one to trigger patches to be installed.  Obtains all MSPs from the PatchBucket and PatchFolder and applies those not already applied. The PatchFolder is usually specified as just the folder in which the patches are located. e.g. 'app/Test'. Its also possible to limit it to a particular file match e.g. to limit it to just install the patches for a particular version - 'app/Test/AWAMAPP_v1.0.0.' N.B. ensure there is a '.' on the end of the name to ensure that only patches for this version are applied."
+        },
+        "28PatchBucketName": {
+            "Type": "String",
+            "Default": "lansa",
+            "Description": "Update Stack: S3 Bucket which will contain the patches. (case sensitive). See TriggerPatchInstall parameter for more details."
+        },
+        "29PatchFolderName": {
+            "Type": "String",
+            "Default": "/change me",
+            "Description": "Update Stack: S3 folder which will contain the patches. (case sensitive). Note that ALL sub-directories are searched so ensure the directory used to store the patches has no sub directories. For the demo use app/test-patches. See TriggerPatchInstall parameter for more details."
+        }
+    },
+   "Metadata" : {
+     "AWS::CloudFormation::Interface" : {
+       "ParameterGroups" : [
+         {
+           "Label" : { "default" : "Essential Parameters" },
+           "Parameters" : [ 
+               "01LansaMSI",  
+               "03DBUsername", 
+               "04DBPassword", 
+               "05WebUser", 
+               "06WebPassword", 
+               "07KeyName", 
+               "08RemoteAccessLocation" 
+            ]
+         },
+         {
+           "Label" : { "default":"Web Server Configuration" },
+           "Parameters" : [ 
+               "11WebserverOSVersion"
+            ]
+         },
+         {
+           "Label" : { "default":"Stack Maintenance" },
+           "Parameters" : [ 
+               "25TriggerWebConfig", 
+               "26TriggerIcingUpdate", 
+               "27TriggerPatchInstall", 
+               "28PatchBucketName", 
+               "29PatchFolderName" 
+            ]
+         }
+       ],
+       "ParameterLabels" : {
+         "01LansaMSI" : { "default" : "Lansa MSI URL" },
+         "03DBUsername" : { "default" : "Database User Name" },
+         "04DBPassword" : { "default" : "Database Password" },
+         "05WebUser" : { "default" : "Web Server User" },
+         "06WebPassword" : { "default" : "Web Server Password" },
+         "07KeyName" : { "default" : "Keypair Name" },
+         "08RemoteAccessLocation" : { "default" : "Remote Access Location CIDR" },
+
+         "11WebserverOSVersion" :  { "default" :  "OS Version"},
+
+         "25TriggerWebConfig" : { "default" : "Trigger Web Config" },
+         "26TriggerIcingUpdate" : { "default" : "Trigger Icing Update" },
+         "27TriggerPatchInstall" : { "default" : "Trigger Patch Install" },
+         "28PatchBucketName" : { "default" : "Patch Bucket Name" },
+         "29PatchFolderName" : { "default" : "Patch Folder Name" },
+
+         "10LansaGitRepoBranch" : { "default" : "Git Repository Branch" }
+       }
+     }
+   },
+   "Mappings"                 : {
+     "CustomVariable" : {
+       "TemplateRoot"      : { "Value" : "https://s3-ap-southeast-2.amazonaws.com/lansa/templates/" },
+       "MasterTemplate" : { "Value" : "lansa-master-win.cfn.template"},
+       "TemplateLevel"     : { "Value" : "R"}
+     }
+  },
+  "Conditions" : {
+    "IsReleaseLevel" : {"Fn::Equals" : [{ "Fn::FindInMap" : [ "CustomVariable", "TemplateLevel", "Value" ] }, "R"]},
+    },
+
+    "Resources": {
+        "MasterStackApp" : {
+            "Type" : "AWS::CloudFormation::Stack",
+            "Properties" : {
+                "TemplateURL" : { "Fn::If" : [ "IsReleaseLevel", 
+                    { "Fn::Join" : ["", [
+                        { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
+                        { "Ref" : "10LansaGitRepoBranch" },
+                        "/",
+                        { "Fn::FindInMap" : [ "CustomVariable", "MasterTemplate", "Value" ] }
+                    ]]}  ,                                              
+                    { "Fn::Join" : ["", [
+                        { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
+                        { "Ref" : "10LansaGitRepoBranch" },
+                        "/beta/",
+                        { "Fn::FindInMap" : [ "CustomVariable", "MasterTemplate", "Value" ] }
+                    ]]}
+                ]},
+                "Parameters" : {
+                    "01LansaMSI": { "Ref" : "01LansaMSI" },
+                    "03DBUsername": { "Ref" : "03DBUsername" },
+                    "04DBPassword": { "Ref" : "04DBPassword" },
+                    "05WebUser": { "Ref" : "05WebUser" },
+                    "06WebPassword": { "Ref" : "06WebPassword" },
+                    "07KeyName": { "Ref" : "07KeyName" },
+                    "08RemoteAccessLocation": { "Ref" : "08RemoteAccessLocation" },
+
+                    "13DBInstanceClass": "db.r5.8xlarge",
+                    "14DBName": "lansa",
+                    "15DBEngine": "sqlserver-ee",
+                    "19DBAllocatedStorage": "1000",
+                    "20DBIops": "10000",
+
+                    "11WebserverOSVersion": { "Ref" : "11WebserverOSVersion" },
+                    "11WebServerInstanceTyp" : "r5.large",
+                    "12WebServerMaxConnec" : 120,
+                    
+                    "25TriggerWebConfig": { "Ref" : "25TriggerWebConfig" },
+                    "26TriggerIcingUpdate": { "Ref" : "26TriggerIcingUpdate" },
+                    "27TriggerPatchInstall": { "Ref" : "27TriggerPatchInstall" },
+                    "28PatchBucketName": { "Ref" : "28PatchBucketName" },
+                    "29PatchFolderName": { "Ref" : "29PatchFolderName" },
+
+                    "10LansaGitRepoBranch" : { "Ref" : "10LansaGitRepoBranch" }
+                }
+            }
+        }
+    },
+    "Outputs"                  : {
+        "WebsiteURL" : {
+           "Value" : { "Fn::GetAtt": ["MasterStackApp", "Outputs.WebsiteURL"] },
+           "Description" : "LANSA App Website"
+        }
+     }
+}
