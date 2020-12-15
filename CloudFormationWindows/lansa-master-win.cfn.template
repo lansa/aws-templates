@@ -63,11 +63,13 @@
             "Type": "String"
         },
         "11WebserverOSVersion": {
-            "Default": "win2012",
+            "Default": "win2019",
             "Description": "WebServer Windows operating system version.",
             "Type": "String",
             "AllowedValues": [
-                "win2012"
+                "win2012",
+                "win2016",
+                "win2019",
             ]
         },
         "11WebServerInstanceTyp": {
