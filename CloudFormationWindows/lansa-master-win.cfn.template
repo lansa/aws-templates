@@ -14,8 +14,7 @@
         "CurrentVPC": {
             "Description": "Existing VPC id",
             "Type": "AWS::EC2::VPC::Id",
-            "Default": "vpc-30eaf959"
-            
+            "Default": "vpc-30eaf959"   
         },
         "AvailabilityZones": {
             "Description": "List of Availability Zones to use for the subnets in the VPC. Note: The logical order is preserved.",
@@ -408,7 +407,7 @@
        "ParameterGroups" : [
          {
            "Label" : { "default" : "Essential Parameters" },
-            "Parameters" : [
+           "Parameters" : [
                "01LansaMSI",
                "02LansaMSIBitness",
                "03DBUsername",
@@ -444,11 +443,11 @@
          },
          {
            "Label" : { "default":"Web Server Configuration" },
-           "Parameters" : [ 
+           "Parameters" : [
                "11WebserverOSVersion",
-               "11WebServerInstanceTyp", 
-               "12WebServerMaxConnec", 
-               "18WebServerCapacity" 
+               "11WebServerInstanceTyp",
+               "12WebServerMaxConnec",
+               "18WebServerCapacity"
             ]
          },
          {
