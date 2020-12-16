@@ -499,7 +499,7 @@
          "eu-north-1": { "win2012": "ami-d270f9ac", "win2016" : "",  "win2019" : "" },
          "eu-south-1": { "win2012": "", "win2016" : "",  "win2019" : "" },
          "ap-southeast-1": { "win2012": "ami-0a606cfbd7dc17e53", "win2016" : "",  "win2019" : "" },
-         "ap-southeast-2": { "win2012": "ami-0e9f7937bc2fc9673", "win2016" : "ami-071adb8ebb55a458b",  "win2019" : "ami-07dc1768111978784" },
+         "ap-southeast-2": { "win2012": "ami-00583864b8ce11997", "win2016" : "ami-0e6818cef603fffb1",  "win2019" : "ami-0579533f5ec93030a" },
          "ap-south-1": { "win2012": "ami-0e1a7a4677a06a03f", "win2016" : "",  "win2019" : "" },
          "ap-northeast-1": { "win2012": "ami-01debc7e21503586d", "win2016" : "",  "win2019" : "" },
          "ap-northeast-2": { "win2012": "ami-00fda912916e5aa4e", "win2016" : "",  "win2019" : "" },
@@ -522,7 +522,7 @@
         "eu-north-1": { "win2012": "ami-d270f9ac", "win2016" : "",  "win2019" : "" },
         "eu-south-1": { "win2012": "", "win2016" : "",  "win2019" : "" },
         "ap-southeast-1": { "win2012": "ami-0a606cfbd7dc17e53", "win2016" : "",  "win2019" : "" },
-        "ap-southeast-2": { "win2012": "ami-0166ac02dda701e3f", "win2016" : "ami-01e24c1d10396b8d7",  "win2019" : "ami-0ccccbdbb077006f1" },
+        "ap-southeast-2": { "win2012": "ami-00c37c246f11d7938", "win2016" : "ami-05111318bb625171e",  "win2019" : "ami-0e6fe611a91dae33d" },
         "ap-south-1": { "win2012": "ami-0e1a7a4677a06a03f", "win2016" : "",  "win2019" : "" },
         "ap-northeast-1": { "win2012": "ami-01debc7e21503586d", "win2016" : "",  "win2019" : "" },
         "ap-northeast-2": { "win2012": "ami-00fda912916e5aa4e", "win2016" : "",  "win2019" : "" },
@@ -794,8 +794,8 @@
             },
             "Properties" : {
                 "TemplateURL" : { "Fn::If" : [ "IsReleaseLevel",
-                                    { "Fn::If" : [ "IsEmptyNamespace", 
-                                        { 
+                                    { "Fn::If" : [ "IsEmptyNamespace",
+                                        {
                                             "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
                                             { "Ref" : "10LansaGitRepoBranch" },
                                             "/",
@@ -873,8 +873,8 @@
             },
             "Properties" : {
                 "TemplateURL" : { "Fn::If" : [ "IsReleaseLevel",
-                                    { "Fn::If" : [ "IsEmptyNamespace", 
-                                        { 
+                                    { "Fn::If" : [ "IsEmptyNamespace",
+                                        {
                                             "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
                                             { "Ref" : "10LansaGitRepoBranch" },
                                             "/",
