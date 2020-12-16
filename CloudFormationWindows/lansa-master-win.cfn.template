@@ -505,7 +505,7 @@
          "CurrentVPC": { "default": "Provide existing VPC Id" },
          "AvailabilityZones": { "default": "Availability Zones" },
          "NumberOfAZs": { "default": "Number of Availability Zones" },
-         "DBSubnetGroupName": { "default": "DBSubnetGroup Name"},
+         "DBSubnetGroupName": { "default": "DB Subnet Group Name"},
          "ELBSubnetIds": { "default": "Subnet IDs for ELB"},
          "01LansaMSI" : { "default" : "Lansa MSI URL" },
          "02LansaMSIBitness" : { "default" : "MSI Bitness" },
@@ -662,7 +662,6 @@
     "Resources": {
         "VpcStack": {
           "Type": "AWS::CloudFormation::Stack",
-          "DeletionPolicy": "Retain",
           "Condition": "CreateNewVPCResources",
           "Properties": {
             "TemplateURL" : { "Fn::If" : [ "IsReleaseLevel",
