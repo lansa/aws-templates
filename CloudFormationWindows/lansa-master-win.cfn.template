@@ -2,6 +2,44 @@
     "AWSTemplateFormatVersion" : "2010-09-09",
     "Description"              : "LANSA Windows template: This template installs a highly-available, scalable LANSA deployment using a multi-AZ Amazon RDS database instance for storage.  **WARNING** This template creates an Amazon Windows EC2 instance, an Elastic Load Balancer and an Amazon RDS database instance. Parameters described as Update Stack: are only modified after the stack has been created. You will be billed for the AWS resources used if you create a stack from this template.",
     "Parameters": {
+        "CreateVPC": {
+            "Description": "Create a new VPC with necessary access control lists (ACLs) and security groups",
+            "Type": "String",
+            "Default": "No",
+            "AllowedValues": [
+                "Yes",
+                "No"
+                ]
+        },
+        "CurrentVPC": {
+            "Description": "Existing VPC id",
+            "Type": "AWS::EC2::VPC::Id",
+            "Default": "vpc-30eaf959"   
+        },
+        "AvailabilityZones": {
+            "Description": "List of Availability Zones to use for the subnets in the VPC. Note: The logical order is preserved.",
+            "Type": "List<AWS::EC2::AvailabilityZone::Name>",
+            "Default": "ap-southeast-2a,ap-southeast-2b,ap-southeast-2c"
+        },
+        "NumberOfAZs": {
+            "Default": "3",
+            "Description": "Number of Availability Zones to use in the VPC. This must match your selections in the list of Availability Zones parameter.",
+            "Type": "String",
+            "AllowedValues": [
+                "2",
+                "3"
+            ]
+        },
+        "DBSubnetGroupName": {
+            "Description": "DBSubnetGroup Name",
+            "Type": "String",
+            "Default": ""
+        },
+        "ELBSubnetIds": {
+            "Description": "list of Subnet IDs for ELB",
+            "Type": "List<AWS::EC2::Subnet::Id>",
+            "Default": "subnet-1869385e"
+        },
         "01LansaMSI": {
             "Type": "String",
             "Default": "https://s3-ap-southeast-2.amazonaws.com/lansa/app/Test/AWAMAPP_v14.2.20715_en-us.msi",
@@ -58,7 +96,7 @@
             "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
         },
         "10LansaGitRepoBranch": {
-            "Default": "support/scalable",
+            "Default": "debug/paas",
             "Description": "Git branch to checkout from Lansa Git repository. This pulls in the script files which are used to assemble the Icing. This is performed during the initial launch and also everytime a Trigger is fired.",
             "Type": "String"
         },
@@ -69,7 +107,7 @@
             "AllowedValues": [
                 "win2012",
                 "win2016",
-                "win2019",
+                "win2019"
             ]
         },
         "11WebServerInstanceTyp": {
@@ -402,9 +440,22 @@
                "05WebUser",
                "06WebPassword",
                "07KeyName",
-               "08RemoteAccessLocation"
+               "08RemoteAccessLocation" 
             ]
          },
+         {
+            "Label": {
+              "default": "Use Existing VPC or add a new VPC"
+            },
+            "Parameters": [
+              "CreateVPC",
+              "CurrentVPC",
+              "AvailabilityZones",
+              "NumberOfAZs",
+              "DBSubnetGroupName",
+              "ELBSubnetIds"
+            ]
+          },
          {
            "Label" : { "default":"Database Configuration" },
            "Parameters" : [
@@ -412,7 +463,7 @@
                "14DBName",
                "15DBEngine",
                "19DBAllocatedStorage",
-               "20DBIops"
+               "20DBIops" 
             ]
          },
          {
@@ -442,14 +493,20 @@
          },
          {
            "Label" : { "default":"Advanced Configuration" },
-           "Parameters" : [
-               "21ELBTimeout",
-               "17UserScriptHook",
-               "10LansaGitRepoBranch"
+           "Parameters" : [ 
+               "21ELBTimeout", 
+               "17UserScriptHook", 
+               "10LansaGitRepoBranch" 
             ]
          }
        ],
        "ParameterLabels" : {
+         "CreateVPC": { "default": "Create new VPC " },
+         "CurrentVPC": { "default": "Provide existing VPC Id" },
+         "AvailabilityZones": { "default": "Availability Zones" },
+         "NumberOfAZs": { "default": "Number of Availability Zones" },
+         "DBSubnetGroupName": { "default": "DBSubnetGroup Name"},
+         "ELBSubnetIds": { "default": "Subnet IDs for ELB"},
          "01LansaMSI" : { "default" : "Lansa MSI URL" },
          "02LansaMSIBitness" : { "default" : "MSI Bitness" },
          "03DBUsername" : { "default" : "Database User Name" },
@@ -581,18 +638,72 @@
          "TemplateRoot"      : { "Value" : "https://s3-ap-southeast-2.amazonaws.com/lansa/templates/" },
          "WebServerTemplate" : { "Value" : "webserver-win.cfn.template"},
          "TemplateLevel"     : { "Value" : "R"},
-         "Namespace" : { "Value" : "" }
+         "Namespace" : { "Value" : "" },
+         "NestedVPCTemplate" : { "Value" : "nested-vpc.cfn.template"}
        }
     },
     "Conditions" : {
+       "CreateNewVPCResources" : { "Fn::Equals" : [ { "Ref" : "CreateVPC" }, "Yes" ] },
        "IsReleaseLevel" : {"Fn::Equals" : [{ "Fn::FindInMap" : [ "CustomVariable", "TemplateLevel", "Value" ] }, "R"]},
-       "IsEmptyNamespace" : {"Fn::Equals" : [{ "Fn::FindInMap" : [ "CustomVariable", "TemplateLevel", "Value" ] }, "" ]},
+       "IsEmptyNamespace" : {"Fn::Equals" : [{ "Fn::FindInMap" : [ "CustomVariable", "Namespace", "Value" ] }, "" ]},
        "DoesNotHaveUserScript" : {"Fn::Equals" : [{"Ref" : "17UserScriptHook"}, ""]},
        "HasUserScript" : {"Fn::Not" : [{"Condition" : "DoesNotHaveUserScript"}]},
        "IsLansaVersion142": {"Fn::Equals" : [{"Ref" : "LansaVersion"}, "V14 SP2"]},
-       "IsCustomImageSource": {"Fn::Equals" : [{"Ref": "ImageSource"}, "Custom"]}
+       "IsCustomImageSource": {"Fn::Equals" : [{"Ref": "ImageSource"}, "Custom"]},
+       "3AZCondition": {
+        "Fn::Equals": [
+              {
+                "Ref": "NumberOfAZs"
+              },
+              "3"
+            ]
+          }   
     },
     "Resources": {
+        "VpcStack": {
+          "Type": "AWS::CloudFormation::Stack",
+          "Condition": "CreateNewVPCResources",
+          "Properties": {
+            "TemplateURL" : { "Fn::If" : [ "IsReleaseLevel",
+                                    { "Fn::If" : [ "IsEmptyNamespace", 
+                                        { 
+                                            "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
+                                        { "Ref" : "10LansaGitRepoBranch" },
+                                        "/",
+                                        { "Fn::FindInMap" : [ "CustomVariable", "NestedVPCTemplate", "Value" ] }
+                                    ]]}  ,
+                                        {
+                                            "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
+                                        { "Ref" : "10LansaGitRepoBranch" },
+                                            "/",
+                                            {  "Fn::FindInMap" : [ "CustomVariable", "Namespace", "Value" ] },
+                                            "/",
+                                            { "Fn::FindInMap" : [ "CustomVariable", "NestedVPCTemplate", "Value" ] }
+                                        ]]}
+                                    ]},
+                                    { "Fn::If" : [ "IsEmptyNamespace",
+                                        {
+                                            "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
+                                            { "Ref" : "10LansaGitRepoBranch" },
+                                        "/beta/",
+                                        { "Fn::FindInMap" : [ "CustomVariable", "NestedVPCTemplate", "Value" ] }
+                                        ]]},
+                                        {
+                                            "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
+                                            { "Ref" : "10LansaGitRepoBranch" },
+                                            "/beta/",
+                                            { "Fn::FindInMap" : [ "CustomVariable", "Namespace", "Value" ] },
+                                            "/",
+                                            { "Fn::FindInMap" : [ "CustomVariable", "NestedVPCTemplate", "Value" ]}
+                                    ]]}
+                                    ]}
+                                ]},
+            "Parameters": {
+                "AvailabilityZones": { "Fn::Join": [",", { "Ref": "AvailabilityZones" }]},
+                "NumberOfAZs": { "Ref": "NumberOfAZs"}
+             }
+            }
+        },
        "CloudWatchLogGroup":  {
            "Type" : "AWS::Logs::LogGroup",
            "Properties" : {
@@ -648,8 +759,21 @@
                 "Comment2": "Use install path for healthcheck to avoid redirects. Refer to LANSA report to place the right tag here for health check - ELB healthcheck does not handle 302 return codes"
             },
             "Properties": {
-                "AvailabilityZones": {
-                    "Fn::GetAZs": ""
+                "Subnets" : {
+                    "Fn::If" : [
+                        "CreateNewVPCResources",
+                        {
+                             "Fn::If" : [ "3AZCondition", 
+                            [ 
+                                { "Fn::GetAtt": [ "VpcStack", "Outputs.ELBSubnetId1" ] },
+                                { "Fn::GetAtt": [ "VpcStack", "Outputs.ELBSubnetId2" ] }
+                            ],
+                            [ 
+                                { "Fn::GetAtt": [ "VpcStack", "Outputs.ELBSubnetId1" ] }
+                            ] ]
+                        },
+                        {"Ref" : "ELBSubnetIds"}
+                      ]
                 },
                 "CrossZone": "true",
                 "LBCookieStickinessPolicy": [
@@ -670,6 +794,11 @@
                     "Enabled": "true",
                     "Timeout": "300"
                 },
+                "SecurityGroups":[
+                    {
+                      "Ref":"WBELBSecurityGroup"
+                    }
+                  ],
                 "HealthCheck": {
                     "Target": "HTTP:80/cgi-bin/probe",
                     "HealthyThreshold": "3",
@@ -684,6 +813,13 @@
         "DBInstance": {
             "Type": "AWS::RDS::DBInstance",
             "Properties": {
+                "DBSubnetGroupName": { 
+                    "Fn::If" : [
+                        "CreateNewVPCResources",
+                        { "Fn::GetAtt": [ "VpcStack", "Outputs.DBSubnetGroupName" ] },
+                        {"Ref" : "DBSubnetGroupName"}
+                      ]
+                },
                 "Engine": {
                     "Ref": "15DBEngine"
                 },
@@ -732,41 +868,89 @@
                             "Ref": "08RemoteAccessLocation"
                         }
                     }
-                ]
+                ],
+                "VpcId": {
+                    "Fn::If" : [
+                      "CreateNewVPCResources",
+                      { "Fn::GetAtt": [ "VpcStack", "Outputs.VpcId" ] },
+                      {"Ref" : "CurrentVPC"}
+                    ]
+                  }
             }
         },
         "SGDBIngress": {
             "Type": "AWS::EC2::SecurityGroupIngress",
             "Properties": {
-                "GroupName": { "Ref": "DBSecurityGroup" },
+               "GroupId":{
+                    "Fn::GetAtt":[
+                      "DBSecurityGroup",
+                      "GroupId"
+                    ]
+                  },
                 "IpProtocol": "tcp",
                 "FromPort": "1433",
                 "ToPort": "1433",
-                "SourceSecurityGroupName": { "Ref": "LansaSecurityGroup" }
+                "SourceSecurityGroupId": {  "Fn::GetAtt":[
+                    "LansaSecurityGroup",
+                    "GroupId"
+                  ]
+                }
+            }
+        },
+        "WBELBSecurityGroup": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "Security Group for ELB belonging to non-default VPC",
+                "SecurityGroupIngress": [
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "80",
+                        "ToPort": "80",
+                        "CidrIp": {
+                            "Ref": "08RemoteAccessLocation"
+                        }
+                    }
+                ],
+                "VpcId": {
+                    "Fn::If" : [
+                      "CreateNewVPCResources",
+                      { "Fn::GetAtt": [ "VpcStack", "Outputs.VpcId" ] },
+                      {"Ref" : "CurrentVPC"}
+                    ]
+                  }
+            }
+        },
+        "WBELBIngress": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+               "GroupId":{
+                    "Fn::GetAtt":[
+                      "LansaSecurityGroup",
+                      "GroupId"
+                    ]
+                  },
+                "IpProtocol": "tcp",
+                "FromPort": "80",
+                "ToPort": "80",
+                "SourceSecurityGroupId": {  "Fn::GetAtt":[
+                    "WBELBSecurityGroup",
+                    "GroupId"
+                  ]
+                }
             }
         },
         "LansaSecurityGroup": {
             "Type": "AWS::EC2::SecurityGroup",
             "Properties": {
                 "GroupDescription": "Enable HTTP access via port 80 locked down to the load balancers + SSH access + RDP access",
-                "SecurityGroupIngress": [
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "80",
-                        "ToPort": "80",
-                        "SourceSecurityGroupOwnerId": {
-                            "Fn::GetAtt": [
-                                "WebServerELB",
-                                "SourceSecurityGroup.OwnerAlias"
-                            ]
-                        },
-                        "SourceSecurityGroupName": {
-                            "Fn::GetAtt": [
-                                "WebServerELB",
-                                "SourceSecurityGroup.GroupName"
-                            ]
-                        }
-                    },
+                "VpcId": {
+                    "Fn::If" : [
+                      "CreateNewVPCResources",
+                      { "Fn::GetAtt": [ "VpcStack", "Outputs.VpcId" ] },
+                      {"Ref" : "CurrentVPC"}
+                    ]
+                  },
+                  "SecurityGroupIngress": [
                     {
                         "IpProtocol": "tcp",
                         "FromPort": "22",
@@ -797,13 +981,13 @@
                                     { "Fn::If" : [ "IsEmptyNamespace",
                                         {
                                             "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
-                                            { "Ref" : "10LansaGitRepoBranch" },
-                                            "/",
-                                            { "Fn::FindInMap" : [ "CustomVariable", "WebServerTemplate", "Value" ] }
-                                        ]]},
+                                        { "Ref" : "10LansaGitRepoBranch" },
+                                        "/",
+                                        { "Fn::FindInMap" : [ "CustomVariable", "WebServerTemplate", "Value" ] }
+                                    ]]}  ,
                                         {
                                             "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
-                                            { "Ref" : "10LansaGitRepoBranch" },
+                                        { "Ref" : "10LansaGitRepoBranch" },
                                             "/",
                                             {  "Fn::FindInMap" : [ "CustomVariable", "Namespace", "Value" ] },
                                             "/",
@@ -814,8 +998,8 @@
                                         {
                                             "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
                                             { "Ref" : "10LansaGitRepoBranch" },
-                                            "/beta/",
-                                            { "Fn::FindInMap" : [ "CustomVariable", "WebServerTemplate", "Value" ]}
+                                        "/beta/",
+                                        { "Fn::FindInMap" : [ "CustomVariable", "WebServerTemplate", "Value" ] }
                                         ]]},
                                         {
                                             "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
@@ -824,12 +1008,32 @@
                                             { "Fn::FindInMap" : [ "CustomVariable", "Namespace", "Value" ] },
                                             "/",
                                             { "Fn::FindInMap" : [ "CustomVariable", "WebServerTemplate", "Value" ]}
-                                        ]]}
+                                    ]]}
                                     ]}
                                 ]},
                 "Parameters" : {
                     "AMI"                         : { "Fn::If": [ "IsCustomImageSource", { "Ref" : "AMIId" }, { "Fn::If" : ["IsLansaVersion142", { "Fn::FindInMap" : [ "AWSRegionArch2AMI142", { "Ref" : "AWS::Region" }, { "Ref": "11WebserverOSVersion" } ] }, { "Fn::FindInMap" : [ "AWSRegionArch2AMI15", { "Ref" : "AWS::Region" }, { "Ref": "11WebserverOSVersion" }]} ] }]},
                     "DBEndPoint"                  : { "Fn::GetAtt" : ["DBInstance", "Endpoint.Address"] },
+                    "WebServerSubnet" : {
+                        "Fn::If" : [
+                            "CreateNewVPCResources",
+                            { "Fn::Join" : [ 
+                                ",", 
+                                {
+                                    "Fn::If" : [ "3AZCondition", 
+                                   [ 
+                                       { "Fn::GetAtt": [ "VpcStack", "Outputs.ELBSubnetId1" ] },
+                                       { "Fn::GetAtt": [ "VpcStack", "Outputs.ELBSubnetId2" ] }
+                                   ],
+                                   [ 
+                                       { "Fn::GetAtt": [ "VpcStack", "Outputs.ELBSubnetId1" ] }
+                                   ] ]
+                               } 
+                            ] }
+                            ,
+                            { "Fn::Join": [",", {"Ref" : "ELBSubnetIds"}]}
+                          ]
+                    },
                     "IAMRoleInstanceProfile"      : { "Ref" : "IAMRoleInstanceProfile" },
                     "LansaSecurityGroup"          : { "Ref" : "LansaSecurityGroup" },
                     "Sudb"                        : "1",
@@ -876,13 +1080,13 @@
                                     { "Fn::If" : [ "IsEmptyNamespace",
                                         {
                                             "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
-                                            { "Ref" : "10LansaGitRepoBranch" },
-                                            "/",
-                                            { "Fn::FindInMap" : [ "CustomVariable", "WebServerTemplate", "Value" ] }
-                                        ]]},
+                                        { "Ref" : "10LansaGitRepoBranch" },
+                                        "/",
+                                        { "Fn::FindInMap" : [ "CustomVariable", "WebServerTemplate", "Value" ] }
+                                    ]]}  ,
                                         {
                                             "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
-                                            { "Ref" : "10LansaGitRepoBranch" },
+                                        { "Ref" : "10LansaGitRepoBranch" },
                                             "/",
                                             {  "Fn::FindInMap" : [ "CustomVariable", "Namespace", "Value" ] },
                                             "/",
@@ -893,8 +1097,8 @@
                                         {
                                             "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
                                             { "Ref" : "10LansaGitRepoBranch" },
-                                            "/beta/",
-                                            { "Fn::FindInMap" : [ "CustomVariable", "WebServerTemplate", "Value" ]}
+                                        "/beta/",
+                                        { "Fn::FindInMap" : [ "CustomVariable", "WebServerTemplate", "Value" ] }
                                         ]]},
                                         {
                                             "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
@@ -903,7 +1107,7 @@
                                             { "Fn::FindInMap" : [ "CustomVariable", "Namespace", "Value" ] },
                                             "/",
                                             { "Fn::FindInMap" : [ "CustomVariable", "WebServerTemplate", "Value" ]}
-                                        ]]}
+                                    ]]}
                                     ]}
                                 ]},
                 "Parameters" : {
@@ -916,6 +1120,26 @@
                     "TemplateRoot"                : { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
                     "WebServerELB"                : { "Ref" : "WebServerELB" },
                     "WebServerName"               : "Web Server Instance",
+                    "WebServerSubnet" : {
+                        "Fn::If" : [
+                            "CreateNewVPCResources",
+                            { "Fn::Join" : [ 
+                                ",", 
+                                {
+                                    "Fn::If" : [ "3AZCondition", 
+                                   [ 
+                                       { "Fn::GetAtt": [ "VpcStack", "Outputs.ELBSubnetId1" ] },
+                                       { "Fn::GetAtt": [ "VpcStack", "Outputs.ELBSubnetId2" ] }
+                                   ],
+                                   [ 
+                                       { "Fn::GetAtt": [ "VpcStack", "Outputs.ELBSubnetId1" ] }
+                                   ] ]
+                               }
+                            ] }
+                            ,
+                            { "Fn::Join": [",", {"Ref" : "ELBSubnetIds"}]}
+                          ]
+                    },
                     "01LansaMSI"                  : { "Ref" : "01LansaMSI" },
                     "02LansaMSIBitness"           : { "Ref" : "02LansaMSIBitness"},
                     "03DBUsername"                : { "Ref" : "03DBUsername" },
@@ -945,8 +1169,7 @@
                 }
             }
         }
-    },
-
+    }, 
     "Outputs"                  : {
       "WebsiteURL" : {
          "Value" : { "Fn::Join" : [ "", [ "http://", { "Fn::GetAtt" : [ "WebServerELB", "DNSName" ]  } ] ] },
@@ -954,4 +1177,3 @@
       }
    }
 }
-

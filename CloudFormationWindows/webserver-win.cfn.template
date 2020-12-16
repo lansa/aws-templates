@@ -50,6 +50,10 @@
             "Default" : "DB Web Server Instance",
             "Description": "The Load Balancer used for the DbWebServer and WebServer."
         },
+		"WebServerSubnet": {
+			"Type": "List<AWS::EC2::Subnet::Id>",
+            "Description": "Subnet Id for WebServerGroup."
+		},
         "01LansaMSI": {
             "Type": "String",
             "Default": "https://s3-ap-southeast-2.amazonaws.com/lansa/app/Test/AWAMAPP_v14.2.20715_en-us.msi",
@@ -366,9 +370,7 @@
         "WebServerGroup" : {
             "Type": "AWS::AutoScaling::AutoScalingGroup",
             "Properties": {
-                "AvailabilityZones": {
-                    "Fn::GetAZs": ""
-                },
+                "VPCZoneIdentifier" : { "Ref": "WebServerSubnet"},
                 "LaunchConfigurationName": {
                     "Ref": "LaunchWebServer"
                 },
