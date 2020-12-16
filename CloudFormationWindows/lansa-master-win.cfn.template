@@ -14,7 +14,7 @@
         "CurrentVPC": {
             "Description": "Existing VPC id",
             "Type": "AWS::EC2::VPC::Id",
-            "Default": "vpc-30eaf959"   
+            "Default": "vpc-06adef7ecab120405"   
         },
         "AvailabilityZones": {
             "Description": "List of Availability Zones to use for the subnets in the VPC. Note: The logical order is preserved.",
@@ -31,14 +31,14 @@
             ]
         },
         "DBSubnetGroupName": {
-            "Description": "DBSubnetGroup Name",
+            "Description": "The name of DBSubnetGroup which needs to provided if using CurrentVPC, not required if CreateVPC is set to Yes. DB Subnet Group Name can be checked in the Amazon RDS console in the Subnet section along with the Vpc in which it is created.",
             "Type": "String",
-            "Default": ""
+            "Default": "azuredevopstestvpc-vpcstack-1fzffiyjvv6f9-dbsubnetgroup-o0whou04hkw2"
         },
         "ELBSubnetIds": {
-            "Description": "list of Subnet IDs for ELB",
+            "Description": "list of Subnet IDs for ELB which needs to provided if using CurrentVPC, select default subnet if CreateVPC is set to Yes.",
             "Type": "List<AWS::EC2::Subnet::Id>",
-            "Default": "subnet-1869385e"
+            "Default": "subnet-08358c3721c83aadb,subnet-0c48beacbc5772e71"
         },
         "01LansaMSI": {
             "Type": "String",
@@ -440,7 +440,7 @@
                "05WebUser",
                "06WebPassword",
                "07KeyName",
-               "08RemoteAccessLocation" 
+               "08RemoteAccessLocation"
             ]
          },
          {
@@ -463,7 +463,7 @@
                "14DBName",
                "15DBEngine",
                "19DBAllocatedStorage",
-               "20DBIops" 
+               "20DBIops"
             ]
          },
          {
@@ -662,6 +662,7 @@
     "Resources": {
         "VpcStack": {
           "Type": "AWS::CloudFormation::Stack",
+          "DeletionPolicy": "Retain",
           "Condition": "CreateNewVPCResources",
           "Properties": {
             "TemplateURL" : { "Fn::If" : [ "IsReleaseLevel",
