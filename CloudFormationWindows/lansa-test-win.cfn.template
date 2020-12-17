@@ -1,7 +1,45 @@
 {
-    "AWSTemplateFormatVersion" : "2010-09-09",
-    "Description"              : "LANSA Windows template: This template installs a highly-available, scalable LANSA deployment using a multi-AZ Amazon RDS database instance for storage.  **WARNING** This template creates an Amazon Windows EC2 instance, an Elastic Load Balancer and an Amazon RDS database instance. Parameters described as Update Stack: are only modified after the stack has been created. You will be billed for the AWS resources used if you create a stack from this template.",
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "LANSA Windows template: This template installs a highly-available, scalable LANSA deployment using a multi-AZ Amazon RDS database instance for storage.  **WARNING** This template creates an Amazon Windows EC2 instance, an Elastic Load Balancer and an Amazon RDS database instance. Parameters described as Update Stack: are only modified after the stack has been created. You will be billed for the AWS resources used if you create a stack from this template.",
     "Parameters": {
+        "CreateVPC": {
+            "Description": "Create a new VPC with necessary access control lists (ACLs) and security groups",
+            "Type": "String",
+            "Default": "No",
+            "AllowedValues": [
+                "Yes",
+                "No"
+            ]
+        },
+        "CurrentVPC": {
+            "Description": "Existing VPC id",
+            "Type": "AWS::EC2::VPC::Id",
+            "Default": "vpc-06adef7ecab120405"   
+        },
+        "AvailabilityZones": {
+            "Description": "List of Availability Zones to use for the subnets in the VPC. Note: The logical order is preserved.",
+            "Type": "List<AWS::EC2::AvailabilityZone::Name>",
+            "Default": "ap-southeast-2a,ap-southeast-2b,ap-southeast-2c"
+        },
+        "NumberOfAZs": {
+            "Default": "3",
+            "Description": "Number of Availability Zones to use in the VPC. This must match your selections in the list of Availability Zones parameter.",
+            "Type": "String",
+            "AllowedValues": [
+                "2",
+                "3"
+            ]
+        },
+        "DBSubnetGroupName": {
+            "Description": "The name of DBSubnetGroup which needs to provided if using CurrentVPC, not required if CreateVPC is set to Yes. DB Subnet Group Name can be checked in the Amazon RDS console in the Subnet section along with the Vpc in which it is created.",
+            "Type": "String",
+            "Default": "azuredevopstestvpc-vpcstack-1fzffiyjvv6f9-dbsubnetgroup-o0whou04hkw2"
+        },
+        "ELBSubnetIds": {
+            "Description": "list of Subnet IDs for ELB which needs to provided if using CurrentVPC, select default subnet if CreateVPC is set to Yes.",
+            "Type": "List<AWS::EC2::Subnet::Id>",
+            "Default": "subnet-08358c3721c83aadb,subnet-0c48beacbc5772e71"
+        },
         "01LansaMSI": {
             "Type": "String",
             "Default": "https://s3-ap-southeast-2.amazonaws.com/lansa/app/Test/AWAMAPP_v14.2.20715_en-us.msi",
@@ -49,15 +87,17 @@
         },
         "10LansaGitRepoBranch": {
             "Default": "support/scalable",
-            "Description": "Git branch to checkout from Lansa Git repository. This pulls in the script files which are used to assemble the Icing. This is performed during the initial launch and also everytime a Trigger is fired.",
+            "Description": "Git branch to checkout from Lansa Git repository and the S3 folder from which the nested templates are loaded. This pulls in the script files which are used to assemble the Icing. This is performed during the initial launch and also everytime a Trigger is fired.",
             "Type": "String"
         },
         "11WebserverOSVersion": {
-            "Default": "win2012",
+            "Default": "win2019",
             "Description": "WebServer Windows operating system version.",
             "Type": "String",
             "AllowedValues": [
-                "win2012"
+                "win2012",
+                "win2016",
+                "win2019"
             ]
         },
         "25TriggerWebConfig": {
@@ -84,91 +124,124 @@
             "Type": "String",
             "Default": "/change me",
             "Description": "Update Stack: S3 folder which will contain the patches. (case sensitive). Note that ALL sub-directories are searched so ensure the directory used to store the patches has no sub directories. For the demo use app/test-patches. See TriggerPatchInstall parameter for more details."
+        },
+        "LansaVersion": {
+            "Type": "String",
+            "AllowedValues": [
+                "V15 GA",
+                "V14 SP2"
+            ],
+            "Default": "V15 GA",
+            "Description": "Visual LANSA Version"
         }
     },
-   "Metadata" : {
-     "AWS::CloudFormation::Interface" : {
-       "ParameterGroups" : [
-         {
-           "Label" : { "default" : "Essential Parameters" },
-           "Parameters" : [ 
-               "01LansaMSI",  
-               "03DBUsername", 
-               "04DBPassword", 
-               "05WebUser", 
-               "06WebPassword", 
-               "07KeyName", 
-               "08RemoteAccessLocation" 
-            ]
-         },
-         {
-           "Label" : { "default":"Web Server Configuration" },
-           "Parameters" : [ 
-               "11WebserverOSVersion"
-            ]
-         },
-         {
-           "Label" : { "default":"Stack Maintenance" },
-           "Parameters" : [ 
-               "25TriggerWebConfig", 
-               "26TriggerIcingUpdate", 
-               "27TriggerPatchInstall", 
-               "28PatchBucketName", 
-               "29PatchFolderName" 
-            ]
-         }
-       ],
-       "ParameterLabels" : {
-         "01LansaMSI" : { "default" : "Lansa MSI URL" },
-         "03DBUsername" : { "default" : "Database User Name" },
-         "04DBPassword" : { "default" : "Database Password" },
-         "05WebUser" : { "default" : "Web Server User" },
-         "06WebPassword" : { "default" : "Web Server Password" },
-         "07KeyName" : { "default" : "Keypair Name" },
-         "08RemoteAccessLocation" : { "default" : "Remote Access Location CIDR" },
+    "Metadata": {
+        "AWS::CloudFormation::Interface": {
+            "ParameterGroups": [
+                {
+                    "Label": { "default": "Essential Parameters" },
+                    "Parameters" : [
+                        "01LansaMSI",
+                        "03DBUsername",
+                        "04DBPassword",
+                        "05WebUser",
+                        "06WebPassword",
+                        "07KeyName",
+                        "08RemoteAccessLocation"
+                    ]
+                },
+                {
+                    "Label": { "default": "Use Existing VPC or add a new VPC" },
+                    "Parameters": [
+                        "CreateVPC",
+                        "CurrentVPC",
+                        "AvailabilityZones",
+                        "NumberOfAZs",
+                        "DBSubnetGroupName",
+                        "ELBSubnetIds"
+                    ]
+                },
+                {
+                    "Label": { "default":"Web Server Configuration" },
+                    "Parameters" : [ 
+                        "LansaVersion",
+                        "11WebserverOSVersion"
+                    ]
+                },
+                {
+                    "Label": { "default":"Stack Maintenance" },
+                    "Parameters" : [ 
+                        "25TriggerWebConfig",
+                        "26TriggerIcingUpdate",
+                        "27TriggerPatchInstall",
+                        "28PatchBucketName",
+                        "29PatchFolderName" 
+                    ]
+                }
+            ],
+            "ParameterLabels": {
+                "CreateVPC": { "default": "Create new VPC " },
+                "CurrentVPC": { "default": "Provide existing VPC Id" },
+                "AvailabilityZones": { "default": "Availability Zones" },
+                "NumberOfAZs": { "default": "Number of Availability Zones" },
+                "DBSubnetGroupName": { "default": "DB Subnet Group Name"},
+                "ELBSubnetIds": { "default": "Subnet IDs for ELB"},
+                "01LansaMSI": { "default": "Lansa MSI URL" },
+                "03DBUsername": { "default": "Database User Name" },
+                "04DBPassword": { "default": "Database Password" },
+                "05WebUser": { "default": "Web Server User" },
+                "06WebPassword": { "default": "Web Server Password" },
+                "07KeyName": { "default": "Keypair Name" },
+                "08RemoteAccessLocation": { "default": "Remote Access Location CIDR" },
 
-         "11WebserverOSVersion" :  { "default" :  "OS Version"},
+                "LansaVersion":  { "default":  "Visual LANSA Version"},
+                "11WebserverOSVersion":  { "default":  "OS Version"},
 
-         "25TriggerWebConfig" : { "default" : "Trigger Web Config" },
-         "26TriggerIcingUpdate" : { "default" : "Trigger Icing Update" },
-         "27TriggerPatchInstall" : { "default" : "Trigger Patch Install" },
-         "28PatchBucketName" : { "default" : "Patch Bucket Name" },
-         "29PatchFolderName" : { "default" : "Patch Folder Name" },
+                "25TriggerWebConfig": { "default": "Trigger Web Config" },
+                "26TriggerIcingUpdate": { "default": "Trigger Icing Update" },
+                "27TriggerPatchInstall": { "default": "Trigger Patch Install" },
+                "28PatchBucketName": { "default": "Patch Bucket Name" },
+                "29PatchFolderName": { "default": "Patch Folder Name" },
 
-         "10LansaGitRepoBranch" : { "default" : "Git Repository Branch" }
-       }
-     }
-   },
-   "Mappings"                 : {
-     "CustomVariable" : {
-       "TemplateRoot"      : { "Value" : "https://s3-ap-southeast-2.amazonaws.com/lansa/templates/" },
-       "MasterTemplate" : { "Value" : "lansa-master-win.cfn.template"},
-       "TemplateLevel"     : { "Value" : "R"}
-     }
-  },
-  "Conditions" : {
-    "IsReleaseLevel" : {"Fn::Equals" : [{ "Fn::FindInMap" : [ "CustomVariable", "TemplateLevel", "Value" ] }, "R"]},
+                "10LansaGitRepoBranch": { "default": "Git Repository Branch" }
+            }
+        }
     },
-
+    "Mappings": {
+        "CustomVariable": {
+            "TemplateRoot": { "Value": "https://s3-ap-southeast-2.amazonaws.com/lansa/templates/" },
+            "MasterTemplate": { "Value": "lansa-master-win.cfn.template" },
+            "TemplateLevel": { "Value": "R" }
+        }
+    },
+    "Conditions": {
+        "IsReleaseLevel": {"Fn::Equals": [{ "Fn::FindInMap": [ "CustomVariable", "TemplateLevel", "Value" ] }, "R"]}
+    },
     "Resources": {
-        "MasterStackApp" : {
-            "Type" : "AWS::CloudFormation::Stack",
-            "Properties" : {
-                "TemplateURL" : { "Fn::If" : [ "IsReleaseLevel", 
-                    { "Fn::Join" : ["", [
-                        { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
-                        { "Ref" : "10LansaGitRepoBranch" },
+        "MasterStackApp": {
+            "Type": "AWS::CloudFormation::Stack",
+            "Properties": {
+                "TemplateURL": { "Fn::If": [ "IsReleaseLevel", 
+                    { "Fn::Join": ["", [
+                        { "Fn::FindInMap": [ "CustomVariable", "TemplateRoot", "Value" ] },
+                        { "Ref": "10LansaGitRepoBranch" },
                         "/",
-                        { "Fn::FindInMap" : [ "CustomVariable", "MasterTemplate", "Value" ] }
+                        { "Fn::FindInMap": [ "CustomVariable", "MasterTemplate", "Value" ] }
                     ]]}  ,                                              
-                    { "Fn::Join" : ["", [
-                        { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
-                        { "Ref" : "10LansaGitRepoBranch" },
+                    { "Fn::Join": ["", [
+                        { "Fn::FindInMap": [ "CustomVariable", "TemplateRoot", "Value" ] },
+                        { "Ref": "10LansaGitRepoBranch" },
                         "/beta/",
-                        { "Fn::FindInMap" : [ "CustomVariable", "MasterTemplate", "Value" ] }
+                        { "Fn::FindInMap": [ "CustomVariable", "MasterTemplate", "Value" ] }
                     ]]}
                 ]},
-                "Parameters" : {
+                "Parameters": {
+                    "CreateVPC": { "Ref" : "CreateVPC" },
+                    "CurrentVPC": { "Ref" : "CurrentVPC" },
+                    "AvailabilityZones": { "Fn::Join": [",", { "Ref": "AvailabilityZones" }]},
+                    "NumberOfAZs": { "Ref" : "NumberOfAZs" },
+                    "DBSubnetGroupName": { "Ref" : "DBSubnetGroupName" },
+                    "ELBSubnetIds": { "Fn::Join": [",", { "Ref": "ELBSubnetIds" }]},
                     "01LansaMSI": { "Ref" : "01LansaMSI" },
                     "03DBUsername": { "Ref" : "03DBUsername" },
                     "04DBPassword": { "Ref" : "04DBPassword" },
@@ -183,6 +256,7 @@
                     "19DBAllocatedStorage": "100",
                     "20DBIops": "1000",
 
+                    "LansaVersion": { "Ref" : "LansaVersion" },
                     "11WebserverOSVersion": { "Ref" : "11WebserverOSVersion" },
                     "11WebServerInstanceTyp" : "t3.medium",
                     "12WebServerMaxConnec" : 20,
@@ -193,15 +267,15 @@
                     "28PatchBucketName": { "Ref" : "28PatchBucketName" },
                     "29PatchFolderName": { "Ref" : "29PatchFolderName" },
 
-                    "10LansaGitRepoBranch" : { "Ref" : "10LansaGitRepoBranch" }
+                    "10LansaGitRepoBranch": { "Ref" : "10LansaGitRepoBranch" }
                 }
             }
         }
     },
-    "Outputs"                  : {
-        "WebsiteURL" : {
-           "Value" : { "Fn::GetAtt": ["MasterStackApp", "Outputs.WebsiteURL"] },
-           "Description" : "LANSA App Website"
+    "Outputs": {
+        "WebsiteURL": {
+           "Value": { "Fn::GetAtt": ["MasterStackApp", "Outputs.WebsiteURL"] },
+           "Description": "LANSA App Website"
         }
      }
 }
