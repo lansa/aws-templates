@@ -90,11 +90,6 @@
             "Description": "Git branch to checkout from Lansa Git repository and the S3 folder from which the nested templates are loaded. This pulls in the script files which are used to assemble the Icing. This is performed during the initial launch and also everytime a Trigger is fired.",
             "Type": "String"
         },
-        "TemplateS3Namespace": {
-            "Default" : "",
-            "Description": "Usually left empty. Adds another sub folder level to the template location in S3 so that developers and CI/CD pipelines may segregate their template versions. ",
-            "Type": "String"
-        },
         "11WebserverOSVersion": {
             "Default": "win2019",
             "Description": "WebServer Windows operating system version.",
@@ -182,12 +177,6 @@
                         "28PatchBucketName",
                         "29PatchFolderName" 
                     ]
-                },
-                {
-                    "Label": { "default":"Advanced Configuration" },
-                    "Parameters" : [
-                        "TemplateS3Namespace"
-                    ]
                 }
             ],
             "ParameterLabels": {
@@ -214,8 +203,7 @@
                 "28PatchBucketName": { "default": "Patch Bucket Name" },
                 "29PatchFolderName": { "default": "Patch Folder Name" },
 
-                "10LansaGitRepoBranch": { "default": "Git Repository Branch" },
-                "TemplateS3Namespace" : { "default" : "Template S3 Namespace" }
+                "10LansaGitRepoBranch": { "default": "Git Repository Branch" }
             }
         }
     },
@@ -279,8 +267,7 @@
                     "28PatchBucketName": { "Ref" : "28PatchBucketName" },
                     "29PatchFolderName": { "Ref" : "29PatchFolderName" },
 
-                    "10LansaGitRepoBranch": { "Ref" : "10LansaGitRepoBranch" },
-                    "TemplateS3Namespace" : { "Ref" : "TemplateS3Namespace" }
+                    "10LansaGitRepoBranch": { "Ref" : "10LansaGitRepoBranch" }
                 }
             }
         }
