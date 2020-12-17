@@ -96,8 +96,13 @@
             "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
         },
         "10LansaGitRepoBranch": {
-            "Default": "debug/paas",
-            "Description": "Git branch to checkout from Lansa Git repository. This pulls in the script files which are used to assemble the Icing. This is performed during the initial launch and also everytime a Trigger is fired.",
+            "Default": "support/scalable",
+            "Description": "Git branch to checkout from Lansa Git repository and the S3 folder from which the nested templates are loaded. This pulls in the script files which are used to assemble the Icing. This is performed during the initial launch and also everytime a Trigger is fired.",
+            "Type": "String"
+        },
+        "TemplateS3Namespace": {
+            "Default" : "",
+            "Description": "Usually left empty. Adds another sub folder level to the template location in S3 so that developers and CI/CD pipelines may segregate their template versions. ",
             "Type": "String"
         },
         "11WebserverOSVersion": {
@@ -493,10 +498,11 @@
          },
          {
            "Label" : { "default":"Advanced Configuration" },
-           "Parameters" : [ 
-               "21ELBTimeout", 
-               "17UserScriptHook", 
-               "10LansaGitRepoBranch" 
+           "Parameters" : [
+               "21ELBTimeout",
+               "17UserScriptHook",
+               "10LansaGitRepoBranch",
+               "TemplateS3Namespace"
             ]
          }
        ],
@@ -535,6 +541,7 @@
          "21ELBTimeout" : { "default" : "Load Balancer Timeout" },
          "17UserScriptHook" : { "default" : "User Script Hook" },
          "10LansaGitRepoBranch" : { "default" : "Git Repository Branch" },
+         "TemplateS3Namespace" : { "default" : "Template S3 Namespace" },
          "LansaVersion" :  { "default" :  "Visual LANSA Version"},
          "ImageSource" :  { "default" :  "Image Source"},
          "AMIId" :  { "default" :  ""}
@@ -638,14 +645,13 @@
          "TemplateRoot"      : { "Value" : "https://s3-ap-southeast-2.amazonaws.com/lansa/templates/" },
          "WebServerTemplate" : { "Value" : "webserver-win.cfn.template"},
          "TemplateLevel"     : { "Value" : "R"},
-         "Namespace" : { "Value" : "" },
          "NestedVPCTemplate" : { "Value" : "nested-vpc.cfn.template"}
        }
     },
     "Conditions" : {
        "CreateNewVPCResources" : { "Fn::Equals" : [ { "Ref" : "CreateVPC" }, "Yes" ] },
        "IsReleaseLevel" : {"Fn::Equals" : [{ "Fn::FindInMap" : [ "CustomVariable", "TemplateLevel", "Value" ] }, "R"]},
-       "IsEmptyNamespace" : {"Fn::Equals" : [{ "Fn::FindInMap" : [ "CustomVariable", "Namespace", "Value" ] }, "" ]},
+       "IsEmptyNamespace" : {"Fn::Equals" : [{"Ref" : "TemplateS3Namespace"}, "" ]},
        "DoesNotHaveUserScript" : {"Fn::Equals" : [{"Ref" : "17UserScriptHook"}, ""]},
        "HasUserScript" : {"Fn::Not" : [{"Condition" : "DoesNotHaveUserScript"}]},
        "IsLansaVersion142": {"Fn::Equals" : [{"Ref" : "LansaVersion"}, "V14 SP2"]},
@@ -657,7 +663,7 @@
               },
               "3"
             ]
-          }   
+          }
     },
     "Resources": {
         "VpcStack": {
@@ -665,8 +671,8 @@
           "Condition": "CreateNewVPCResources",
           "Properties": {
             "TemplateURL" : { "Fn::If" : [ "IsReleaseLevel",
-                                    { "Fn::If" : [ "IsEmptyNamespace", 
-                                        { 
+                                    { "Fn::If" : [ "IsEmptyNamespace",
+                                        {
                                             "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
                                         { "Ref" : "10LansaGitRepoBranch" },
                                         "/",
@@ -676,7 +682,7 @@
                                             "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
                                         { "Ref" : "10LansaGitRepoBranch" },
                                             "/",
-                                            {  "Fn::FindInMap" : [ "CustomVariable", "Namespace", "Value" ] },
+                                            {  "Ref" : "TemplateS3Namespace" },
                                             "/",
                                             { "Fn::FindInMap" : [ "CustomVariable", "NestedVPCTemplate", "Value" ] }
                                         ]]}
@@ -692,7 +698,7 @@
                                             "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
                                             { "Ref" : "10LansaGitRepoBranch" },
                                             "/beta/",
-                                            { "Fn::FindInMap" : [ "CustomVariable", "Namespace", "Value" ] },
+                                            { "Ref" : "TemplateS3Namespace" },
                                             "/",
                                             { "Fn::FindInMap" : [ "CustomVariable", "NestedVPCTemplate", "Value" ]}
                                     ]]}
@@ -763,12 +769,12 @@
                     "Fn::If" : [
                         "CreateNewVPCResources",
                         {
-                             "Fn::If" : [ "3AZCondition", 
-                            [ 
+                             "Fn::If" : [ "3AZCondition",
+                            [
                                 { "Fn::GetAtt": [ "VpcStack", "Outputs.ELBSubnetId1" ] },
                                 { "Fn::GetAtt": [ "VpcStack", "Outputs.ELBSubnetId2" ] }
                             ],
-                            [ 
+                            [
                                 { "Fn::GetAtt": [ "VpcStack", "Outputs.ELBSubnetId1" ] }
                             ] ]
                         },
@@ -813,7 +819,7 @@
         "DBInstance": {
             "Type": "AWS::RDS::DBInstance",
             "Properties": {
-                "DBSubnetGroupName": { 
+                "DBSubnetGroupName": {
                     "Fn::If" : [
                         "CreateNewVPCResources",
                         { "Fn::GetAtt": [ "VpcStack", "Outputs.DBSubnetGroupName" ] },
@@ -989,7 +995,7 @@
                                             "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
                                         { "Ref" : "10LansaGitRepoBranch" },
                                             "/",
-                                            {  "Fn::FindInMap" : [ "CustomVariable", "Namespace", "Value" ] },
+                                            {  "Ref" : "TemplateS3Namespace" },
                                             "/",
                                             { "Fn::FindInMap" : [ "CustomVariable", "WebServerTemplate", "Value" ] }
                                         ]]}
@@ -1005,7 +1011,7 @@
                                             "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
                                             { "Ref" : "10LansaGitRepoBranch" },
                                             "/beta/",
-                                            { "Fn::FindInMap" : [ "CustomVariable", "Namespace", "Value" ] },
+                                            { "Ref" : "TemplateS3Namespace" },
                                             "/",
                                             { "Fn::FindInMap" : [ "CustomVariable", "WebServerTemplate", "Value" ]}
                                     ]]}
@@ -1017,18 +1023,18 @@
                     "WebServerSubnet" : {
                         "Fn::If" : [
                             "CreateNewVPCResources",
-                            { "Fn::Join" : [ 
-                                ",", 
+                            { "Fn::Join" : [
+                                ",",
                                 {
-                                    "Fn::If" : [ "3AZCondition", 
-                                   [ 
+                                    "Fn::If" : [ "3AZCondition",
+                                   [
                                        { "Fn::GetAtt": [ "VpcStack", "Outputs.ELBSubnetId1" ] },
                                        { "Fn::GetAtt": [ "VpcStack", "Outputs.ELBSubnetId2" ] }
                                    ],
-                                   [ 
+                                   [
                                        { "Fn::GetAtt": [ "VpcStack", "Outputs.ELBSubnetId1" ] }
                                    ] ]
-                               } 
+                               }
                             ] }
                             ,
                             { "Fn::Join": [",", {"Ref" : "ELBSubnetIds"}]}
@@ -1088,7 +1094,7 @@
                                             "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
                                         { "Ref" : "10LansaGitRepoBranch" },
                                             "/",
-                                            {  "Fn::FindInMap" : [ "CustomVariable", "Namespace", "Value" ] },
+                                            {  "Ref" : "TemplateS3Namespace" },
                                             "/",
                                             { "Fn::FindInMap" : [ "CustomVariable", "WebServerTemplate", "Value" ] }
                                         ]]}
@@ -1104,7 +1110,7 @@
                                             "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
                                             { "Ref" : "10LansaGitRepoBranch" },
                                             "/beta/",
-                                            { "Fn::FindInMap" : [ "CustomVariable", "Namespace", "Value" ] },
+                                            { "Ref" : "TemplateS3Namespace" },
                                             "/",
                                             { "Fn::FindInMap" : [ "CustomVariable", "WebServerTemplate", "Value" ]}
                                     ]]}
@@ -1123,15 +1129,15 @@
                     "WebServerSubnet" : {
                         "Fn::If" : [
                             "CreateNewVPCResources",
-                            { "Fn::Join" : [ 
-                                ",", 
+                            { "Fn::Join" : [
+                                ",",
                                 {
-                                    "Fn::If" : [ "3AZCondition", 
-                                   [ 
+                                    "Fn::If" : [ "3AZCondition",
+                                   [
                                        { "Fn::GetAtt": [ "VpcStack", "Outputs.ELBSubnetId1" ] },
                                        { "Fn::GetAtt": [ "VpcStack", "Outputs.ELBSubnetId2" ] }
                                    ],
-                                   [ 
+                                   [
                                        { "Fn::GetAtt": [ "VpcStack", "Outputs.ELBSubnetId1" ] }
                                    ] ]
                                }
@@ -1169,7 +1175,7 @@
                 }
             }
         }
-    }, 
+    },
     "Outputs"                  : {
       "WebsiteURL" : {
          "Value" : { "Fn::Join" : [ "", [ "http://", { "Fn::GetAtt" : [ "WebServerELB", "DNSName" ]  } ] ] },
