@@ -1,0 +1,123 @@
+{
+    "AWSTemplateFormatVersion" : "2010-09-09",
+    "Description"              : "LANSA Windows template: This template installs a highly-available, scalable LANSA deployment using a multi-AZ Amazon RDS database instance for storage.  **WARNING** This template creates an Amazon Windows EC2 instance, an Elastic Load Balancer and an Amazon RDS database instance. Parameters described as Update Stack: are only modified after the stack has been created. You will be billed for the AWS resources used if you create a stack from this template.",
+    "Parameters": {
+        "CreateVPC": {
+            "Description": "Create a new VPC with necessary access control lists (ACLs) and security groups",
+            "Type": "String",
+            "Default": "Yes",
+            "AllowedValues": [
+                "Yes",
+                "No"
+                ]
+        },
+        "AvailabilityZones": {
+            "Description": "List of Availability Zones to use for the subnets in the VPC. Note: The logical order is preserved.",
+            "Type": "List<AWS::EC2::AvailabilityZone::Name>",
+            "Default": "ap-southeast-2a,ap-southeast-2b,ap-southeast-2c"
+        },
+        "NumberOfAZs": {
+            "Default": "3",
+            "Description": "Number of Availability Zones to use in the VPC. This must match your selections in the list of Availability Zones parameter.",
+            "Type": "String",
+            "AllowedValues": [
+                "2",
+                "3"
+            ]
+        },
+        "10LansaGitRepoBranch": {
+            "Default": "debug/paas",
+            "Description": "Git branch to checkout from Lansa Git repository. This pulls in the script files which are used to assemble the Icing. This is performed during the initial launch and also everytime a Trigger is fired.",
+            "Type": "String"
+        }
+    },
+   "Metadata" : {
+     "AWS::CloudFormation::Interface" : {
+       "ParameterGroups" : [
+         {
+            "Label": {
+              "default": "Use Existing VPC or add a new VPC"
+            },
+            "Parameters": [
+              "CreateVPC",
+              "AvailabilityZones",
+              "NumberOfAZs",
+              "10LansaGitRepoBranch"
+            ]
+          }
+       ],
+       "ParameterLabels" : {
+         "CreateVPC": { "default": "Create new VPC " },
+         "AvailabilityZones": { "default": "Availability Zones" },
+         "NumberOfAZs": { "default": "Number of Availability Zones" },
+         "10LansaGitRepoBranch" : { "default" : "Git Repository Branch" }
+       }
+     }
+   },
+   "Mappings"                 : {
+       "CustomVariable" : {
+         "TemplateRoot"      : { "Value" : "https://s3-ap-southeast-2.amazonaws.com/lansa/templates/" },
+         "TemplateLevel"     : { "Value" : "R"},
+         "Namespace" : { "Value" : "" },
+         "NestedVPCTemplate" : { "Value" : "nested-vpc.cfn.template"}
+       }
+    },
+    "Conditions" : {
+       "CreateNewVPCResources" : { "Fn::Equals" : [ { "Ref" : "CreateVPC" }, "Yes" ] },
+       "IsReleaseLevel" : {"Fn::Equals" : [{ "Fn::FindInMap" : [ "CustomVariable", "TemplateLevel", "Value" ] }, "R"]},
+       "IsEmptyNamespace" : {"Fn::Equals" : [{ "Fn::FindInMap" : [ "CustomVariable", "Namespace", "Value" ] }, "" ]}   
+    },
+    "Resources": {
+        "VpcStack": {
+          "Type": "AWS::CloudFormation::Stack",
+          "DeletionPolicy": "Retain",
+          "Condition": "CreateNewVPCResources",
+          "Properties": {
+            "TemplateURL" : { "Fn::If" : [ "IsReleaseLevel",
+                                    { "Fn::If" : [ "IsEmptyNamespace", 
+                                        { 
+                                            "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
+                                        { "Ref" : "10LansaGitRepoBranch" },
+                                        "/",
+                                        { "Fn::FindInMap" : [ "CustomVariable", "NestedVPCTemplate", "Value" ] }
+                                    ]]}  ,
+                                        {
+                                            "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
+                                        { "Ref" : "10LansaGitRepoBranch" },
+                                            "/",
+                                            {  "Fn::FindInMap" : [ "CustomVariable", "Namespace", "Value" ] },
+                                            "/",
+                                            { "Fn::FindInMap" : [ "CustomVariable", "NestedVPCTemplate", "Value" ] }
+                                        ]]}
+                                    ]},
+                                    { "Fn::If" : [ "IsEmptyNamespace",
+                                        {
+                                            "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
+                                            { "Ref" : "10LansaGitRepoBranch" },
+                                        "/beta/",
+                                        { "Fn::FindInMap" : [ "CustomVariable", "NestedVPCTemplate", "Value" ] }
+                                        ]]},
+                                        {
+                                            "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
+                                            { "Ref" : "10LansaGitRepoBranch" },
+                                            "/beta/",
+                                            { "Fn::FindInMap" : [ "CustomVariable", "Namespace", "Value" ] },
+                                            "/",
+                                            { "Fn::FindInMap" : [ "CustomVariable", "NestedVPCTemplate", "Value" ]}
+                                    ]]}
+                                    ]}
+                                ]},
+            "Parameters": {
+                "AvailabilityZones": { "Fn::Join": [",", { "Ref": "AvailabilityZones" }]},
+                "NumberOfAZs": { "Ref": "NumberOfAZs"}
+             }
+            }
+        }
+    }, 
+    "Outputs"                  : {
+      "VpcId" : {
+         "Value" : { "Fn::GetAtt": [ "VpcStack", "Outputs.VpcId" ] },
+         "Description" : "Newly Created Vpc Id"
+      }
+   }
+}
