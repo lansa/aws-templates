@@ -14,15 +14,12 @@
         "CurrentVPC": {
             "Description": "Existing VPC id",
             "Type": "AWS::EC2::VPC::Id",
-            "Default": "vpc-06adef7ecab120405"   
         },
         "AvailabilityZones": {
             "Description": "List of Availability Zones to use for the subnets in the VPC. Note: The logical order is preserved.",
             "Type": "List<AWS::EC2::AvailabilityZone::Name>",
-            "Default": "ap-southeast-2a,ap-southeast-2b,ap-southeast-2c"
         },
         "NumberOfAZs": {
-            "Default": "3",
             "Description": "Number of Availability Zones to use in the VPC. This must match your selections in the list of Availability Zones parameter.",
             "Type": "String",
             "AllowedValues": [
@@ -33,16 +30,13 @@
         "DBSubnetGroupName": {
             "Description": "The name of DBSubnetGroup which needs to provided if using CurrentVPC, not required if CreateVPC is set to Yes. DB Subnet Group Name can be checked in the Amazon RDS console in the Subnet section along with the Vpc in which it is created.",
             "Type": "String",
-            "Default": "azuredevopstestvpc-vpcstack-1fzffiyjvv6f9-dbsubnetgroup-o0whou04hkw2"
         },
         "ELBSubnetIds": {
             "Description": "list of Subnet IDs for ELB which needs to provided if using CurrentVPC, select default subnet if CreateVPC is set to Yes.",
             "Type": "List<AWS::EC2::Subnet::Id>",
-            "Default": "subnet-08358c3721c83aadb,subnet-0c48beacbc5772e71"
         },
         "01LansaMSI": {
             "Type": "String",
-            "Default": "https://s3-ap-southeast-2.amazonaws.com/lansa/app/Test/AWAMAPP_v14.2.20715_en-us.msi",
             "Description": "URL of the LANSA MSI to install. The MSI must have been previously uploaded to the specified location in Amazon S3 BLOB storage."
         },
         "03DBUsername": {
@@ -163,19 +157,19 @@
                 },
                 {
                     "Label": { "default":"Web Server Configuration" },
-                    "Parameters" : [ 
+                    "Parameters" : [
                         "LansaVersion",
                         "11WebserverOSVersion"
                     ]
                 },
                 {
                     "Label": { "default":"Stack Maintenance" },
-                    "Parameters" : [ 
+                    "Parameters" : [
                         "25TriggerWebConfig",
                         "26TriggerIcingUpdate",
                         "27TriggerPatchInstall",
                         "28PatchBucketName",
-                        "29PatchFolderName" 
+                        "29PatchFolderName"
                     ]
                 }
             ],
@@ -221,13 +215,13 @@
         "MasterStackApp": {
             "Type": "AWS::CloudFormation::Stack",
             "Properties": {
-                "TemplateURL": { "Fn::If": [ "IsReleaseLevel", 
+                "TemplateURL": { "Fn::If": [ "IsReleaseLevel",
                     { "Fn::Join": ["", [
                         { "Fn::FindInMap": [ "CustomVariable", "TemplateRoot", "Value" ] },
                         { "Ref": "10LansaGitRepoBranch" },
                         "/",
                         { "Fn::FindInMap": [ "CustomVariable", "MasterTemplate", "Value" ] }
-                    ]]}  ,                                              
+                    ]]}  ,
                     { "Fn::Join": ["", [
                         { "Fn::FindInMap": [ "CustomVariable", "TemplateRoot", "Value" ] },
                         { "Ref": "10LansaGitRepoBranch" },
@@ -260,7 +254,7 @@
                     "11WebserverOSVersion": { "Ref" : "11WebserverOSVersion" },
                     "11WebServerInstanceTyp" : "r5.large",
                     "12WebServerMaxConnec" : 120,
-                    
+
                     "25TriggerWebConfig": { "Ref" : "25TriggerWebConfig" },
                     "26TriggerIcingUpdate": { "Ref" : "26TriggerIcingUpdate" },
                     "27TriggerPatchInstall": { "Ref" : "27TriggerPatchInstall" },
