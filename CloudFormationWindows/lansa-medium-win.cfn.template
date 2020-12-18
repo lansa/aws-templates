@@ -35,11 +35,7 @@
         "ELBSubnetIds": {
             "Description": "List of Subnet IDs for ELB which needs to be provided if using an existing VPC. If you are creating a new VPC you must still select a valid subnet in order to pass CFT validation.",
             "Type": "List<AWS::EC2::Subnet::Id>",
-        },
-        "ELBSubnetIds": {
-            "Description": "list of Subnet IDs for ELB which needs to provided if using CurrentVPC, select default subnet if CreateVPC is set to Yes.",
-            "Type": "List<AWS::EC2::Subnet::Id>",
-        },
+        }
         "01LansaMSI": {
             "Type": "String",
             "Description": "URL of the LANSA MSI to install. The MSI must have been previously uploaded to the specified location in Amazon S3 BLOB storage. Here is an example application you may use https://s3-ap-southeast-2.amazonaws.com/lansa/app/Test/AWAMAPP_v14.2.20715_en-us.msi"
