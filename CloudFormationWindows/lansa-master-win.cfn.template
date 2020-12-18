@@ -11,7 +11,7 @@
                 "No"
                 ]
         },
-         "CurrentVPC": {
+        "CurrentVPC": {
             "Description": "Existing VPC id. If creating a new VPC you must still select a valid existing VPC in order to pass CFT validation.",
             "Type": "AWS::EC2::VPC::Id",
         },
