@@ -12,14 +12,12 @@
                 ]
         },
         "CurrentVPC": {
-            "Description": "Existing VPC id",
+            "Description": "Existing VPC id. If creating a new VPC you must still select a valid existing VPC in order to pass CFT validation.",
             "Type": "AWS::EC2::VPC::Id",
-            "Default": "vpc-06adef7ecab120405"   
         },
         "AvailabilityZones": {
-            "Description": "List of Availability Zones to use for the subnets in the VPC. Note: The logical order is preserved.",
+            "Description": "List of Availability Zones to use for the subnets in the VPC. Note: The logical order is preserved. If using an existing VPC you must still select a valid Availability Zone in order to pass CFT validation.",
             "Type": "List<AWS::EC2::AvailabilityZone::Name>",
-            "Default": "ap-southeast-2a,ap-southeast-2b,ap-southeast-2c"
         },
         "NumberOfAZs": {
             "Default": "3",
@@ -31,14 +29,12 @@
             ]
         },
         "DBSubnetGroupName": {
-            "Description": "The name of DBSubnetGroup which needs to provided if using CurrentVPC, not required if CreateVPC is set to Yes. DB Subnet Group Name can be checked in the Amazon RDS console in the Subnet section along with the Vpc in which it is created.",
+            "Description": "The name of the DB Subnet Group which needs to be provided if using an existing VPC. DB Subnet Group Name can be checked in the Amazon RDS console in the Subnet section along with the VPC in which it was created.",
             "Type": "String",
-            "Default": "azuredevopstestvpc-vpcstack-1fzffiyjvv6f9-dbsubnetgroup-o0whou04hkw2"
         },
         "ELBSubnetIds": {
-            "Description": "list of Subnet IDs for ELB which needs to provided if using CurrentVPC, select default subnet if CreateVPC is set to Yes.",
+            "Description": "List of Subnet IDs for ELB which needs to be provided if using an existing VPC. If you are creating a new VPC you must still select a valid subnet in order to pass CFT validation.",
             "Type": "List<AWS::EC2::Subnet::Id>",
-            "Default": "subnet-08358c3721c83aadb,subnet-0c48beacbc5772e71"
         },
         "01LansaMSI": {
             "Type": "String",
