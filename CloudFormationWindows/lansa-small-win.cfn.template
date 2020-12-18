@@ -1,6 +1,6 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
-    "Description": "LANSA Windows template: This template installs a highly-available, scalable LANSA deployment using a multi-AZ Amazon RDS database instance for storage.  **WARNING** This template creates an Amazon Windows EC2 instance, an Elastic Load Balancer and an Amazon RDS database instance. Parameters described as Update Stack: are only modified after the stack has been created. You will be billed for the AWS resources used if you create a stack from this template.",
+    "Description": "Small Stack LANSA Windows template: This template installs a highly-available, scalable LANSA deployment using a multi-AZ Amazon RDS database instance for storage.  **WARNING** This template creates AWS resources. You will be billed for the AWS resources used if you create a stack from this template.",
     "Parameters": {
         "CreateVPC": {
             "Description": "Create a new VPC with necessary access control lists (ACLs) and security groups",

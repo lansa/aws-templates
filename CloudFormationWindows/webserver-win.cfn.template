@@ -1,7 +1,7 @@
 {
     "AWSTemplateFormatVersion" : "2010-09-09",
 
-    "Description" : "Deploy a LANSA WAM application into an auto scaling group. This template is designed to be executed by the parent lansa-master-win.cfn.template stack. Parameters described as Update Stack: are only modified after the stack has been created",
+    "Description" : "Deploy a LANSA WAM application into an auto scaling group. This template is designed to be executed by the parent lansa-master-win.cfn.template stack. Parameters described as Update Stack: are only modified after the stack has been created. **WARNING** This template creates AWS resources. You will be billed for the AWS resources used if you create a stack from this template.",
 
     "Parameters" : {
         "AMI"  : {
@@ -117,7 +117,7 @@
                 "R"
             ],
             "ConstraintDescription" : "Must be R (Release)."
-        },        
+        },
         "10LansaGitRepoBranch": {
             "Type": "String",
             "Default": "debug/paas",
