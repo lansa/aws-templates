@@ -20,6 +20,7 @@
             "Type": "List<AWS::EC2::AvailabilityZone::Name>",
         },
         "NumberOfAZs": {
+            "Default" : 3,
             "Description": "Number of Availability Zones to use in the VPC. This must match your selections in the list of Availability Zones parameter.",
             "Type": "String",
             "AllowedValues": [
@@ -30,6 +31,7 @@
         "DBSubnetGroupName": {
             "Description": "The name of DBSubnetGroup which needs to provided if using CurrentVPC, not required if CreateVPC is set to Yes. DB Subnet Group Name can be checked in the Amazon RDS console in the Subnet section along with the Vpc in which it is created.",
             "Type": "String",
+            "Default" : ""
         },
         "ELBSubnetIds": {
             "Description": "list of Subnet IDs for ELB which needs to provided if using CurrentVPC, select default subnet if CreateVPC is set to Yes.",
