@@ -12,15 +12,15 @@
                 ]
         },
         "CurrentVPC": {
-            "Description": "Existing VPC id",
-            "Type": "AWS::EC2::VPC::Id",
+            "Description": "Existing VPC id. If creating a new VPC you must still select a valid existing VPC in order to pass CFT validation.",
+            "Type": "AWS::EC2::VPC::Id"
         },
         "AvailabilityZones": {
-            "Description": "List of Availability Zones to use for the subnets in the VPC. Note: The logical order is preserved.",
-            "Type": "List<AWS::EC2::AvailabilityZone::Name>",
+            "Description": "List of Availability Zones to use for the subnets in the VPC. Note: The logical order is preserved. If using an existing VPC you must still select a valid Availability Zone in order to pass CFT validation.",
+            "Type": "List<AWS::EC2::AvailabilityZone::Name>"
         },
         "NumberOfAZs": {
-            "Default" : 3,
+            "Default": "3",
             "Description": "Number of Availability Zones to use in the VPC. This must match your selections in the list of Availability Zones parameter.",
             "Type": "String",
             "AllowedValues": [
@@ -29,13 +29,12 @@
             ]
         },
         "DBSubnetGroupName": {
-            "Description": "The name of DBSubnetGroup which needs to provided if using CurrentVPC, not required if CreateVPC is set to Yes. DB Subnet Group Name can be checked in the Amazon RDS console in the Subnet section along with the Vpc in which it is created.",
-            "Type": "String",
-            "Default" : ""
+            "Description": "The name of the DB Subnet Group which needs to be provided if using an existing VPC. DB Subnet Group Name can be checked in the Amazon RDS console in the Subnet section along with the VPC in which it was created.",
+            "Type": "String"
         },
         "ELBSubnetIds": {
-            "Description": "list of Subnet IDs for ELB which needs to provided if using CurrentVPC, select default subnet if CreateVPC is set to Yes.",
-            "Type": "List<AWS::EC2::Subnet::Id>",
+            "Description": "List of Subnet IDs for ELB which needs to be provided if using an existing VPC. If you are creating a new VPC you must still select a valid subnet in order to pass CFT validation.",
+            "Type": "List<AWS::EC2::Subnet::Id>"
         },
         "01LansaMSI": {
             "Type": "String",
