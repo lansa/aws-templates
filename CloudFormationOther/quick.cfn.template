@@ -2,6 +2,11 @@
     "AWSTemplateFormatVersion" : "2010-09-09",
     "Description"              : "LANSA Windows template: This template installs a highly-available, scalable LANSA deployment using a multi-AZ Amazon RDS database instance for storage.  **WARNING** This template creates an Amazon Windows EC2 instance, an Elastic Load Balancer and an Amazon RDS database instance. Parameters described as Update Stack: are only modified after the stack has been created. You will be billed for the AWS resources used if you create a stack from this template.",
     "Parameters": {
+        "Default": "https://s3-ap-southeast-2.amazonaws.com/lansa/app/Test/AWAMAPP_v14.2.20715_en-us.msi",
+        "01LansaMSI": {
+            "Type": "String",
+            "Description": "URL of the LANSA MSI to install. The MSI must have been previously uploaded to the specified location in Amazon S3 BLOB storage. Here is an example application you may use https://s3-ap-southeast-2.amazonaws.com/lansa/app/Test/AWAMAPP_v14.2.20715_en-us.msi"
+        },
         "04DBPassword": {
             "NoEcho": "true",
             "Description": "The LANSA database administrator account password. Minimum length 8, maximum length 41. There must be at least one character from each of the following character classes: uppercase letters, lowercase letters and numeric digits. Only printable ASCII characters, not including '/', '@', '\"', and space, may be used.",
@@ -20,7 +25,8 @@
         },
         "07KeyName": {
             "Description": "Name of an existing EC2 KeyPair to enable remote access to the instances via RDP (case sensitive). e.g. linux-keypair",
-            "Type": "AWS::EC2::KeyPair::KeyName"
+            "Type": "AWS::EC2::KeyPair::KeyName",
+            "Default":"RobG_id_rsa"
         },
         "08RemoteAccessLocation": {
             "Description": "The IP address range that may be used to remotely access the EC2 instances. Must be a valid IP CIDR range of the form x.x.x.x/x. e.g. 103.231.169.65/32 This is a security feature which limits remote access to your EC2 instances.",
@@ -33,6 +39,11 @@
         "10LansaGitRepoBranch": {
             "Default": "debug/paas",
             "Description": "Git branch to checkout from Lansa Git repository. This pulls in the script files which are used to assemble the Icing. This is performed during the initial launch and also everytime a Trigger is fired.",
+            "Type": "String"
+        },
+        "TemplateS3Namespace": {
+            "Default": "robg",
+            "Description": "Usually left empty. Adds another sub folder level to the template location in S3 so that developers and CI/CD pipelines may segregate their template versions. ",
             "Type": "String"
         },
         "LansaVersion": {
@@ -54,6 +65,21 @@
                 "win2019",
             ]
         },
+        "CurrentVPC": {
+            "Description": "Existing VPC id",
+            "Type": "AWS::EC2::VPC::Id",
+            "Default": "vpc-0337a59d1fd635797"
+        },
+        "DBSubnetGroupName": {
+            "Description": "DBSubnetGroup Name",
+            "Type": "String",
+            "Default": "test-vpc-new-vpcstack-1exbu5iueipza-dbsubnetgroup-z5qgrknje6tl"
+        },
+        "ELBSubnetIds": {
+            "Description": "list of Subnet IDs for ELB",
+            "Type": "List<AWS::EC2::Subnet::Id>",
+            "Default": "subnet-03b98bd22c0d669de,subnet-0cf5f26dc2fbec0fb"
+        }
     },
    "Metadata" : {
      "AWS::CloudFormation::Interface" : {
@@ -97,6 +123,7 @@
   },
   "Conditions" : {
     "IsReleaseLevel" : {"Fn::Equals" : [{ "Fn::FindInMap" : [ "CustomVariable", "TemplateLevel", "Value" ] }, "R"]},
+    "IsEmptyNamespace" : {"Fn::Equals" : [{"Ref" : "TemplateS3Namespace"}, "" ]}
     },
 
     "Resources": {
@@ -104,18 +131,38 @@
             "Type" : "AWS::CloudFormation::Stack",
             "Properties" : {
                 "TemplateURL" : { "Fn::If" : [ "IsReleaseLevel",
-                    { "Fn::Join" : ["", [
-                        { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
+                    { "Fn::If" : [ "IsEmptyNamespace",
+                        {
+                            "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
                         { "Ref" : "10LansaGitRepoBranch" },
                         "/",
                         { "Fn::FindInMap" : [ "CustomVariable", "MasterTemplate", "Value" ] }
                     ]]}  ,
-                    { "Fn::Join" : ["", [
-                        { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
+                        {
+                            "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
                         { "Ref" : "10LansaGitRepoBranch" },
+                            "/",
+                            {  "Ref" : "TemplateS3Namespace" },
+                            "/",
+                            { "Fn::FindInMap" : [ "CustomVariable", "MasterTemplate", "Value" ] }
+                        ]]}
+                    ]},
+                    { "Fn::If" : [ "IsEmptyNamespace",
+                        {
+                            "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
+                            { "Ref" : "10LansaGitRepoBranch" },
                         "/beta/",
                         { "Fn::FindInMap" : [ "CustomVariable", "MasterTemplate", "Value" ] }
+                        ]]},
+                        {
+                            "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
+                            { "Ref" : "10LansaGitRepoBranch" },
+                            "/beta/",
+                            { "Ref" : "TemplateS3Namespace" },
+                            "/",
+                            { "Fn::FindInMap" : [ "CustomVariable", "MasterTemplate", "Value" ]}
                     ]]}
+                    ]}
                 ]},
                 "Parameters" : {
                     "04DBPassword": { "Ref" : "04DBPassword" },
@@ -129,12 +176,18 @@
                     "19DBAllocatedStorage": "100",
                     "20DBIops": "1000",
 
+                    "01LansaMSI": { "Ref" : "01LansaMSI "},
                     "LansaVersion": { "Ref" : "LansaVersion"},
                     "11WebserverOSVersion": { "Ref" : "11WebserverOSVersion" },
                     "11WebServerInstanceTyp" : "t3.micro",
                     "12WebServerMaxConnec" : 10,
 
-                    "10LansaGitRepoBranch" : { "Ref" : "10LansaGitRepoBranch" }
+                    "10LansaGitRepoBranch" : { "Ref" : "10LansaGitRepoBranch" },
+                    "TemplateS3Namespace" : { "Ref" : "TemplateS3Namespace" },
+
+                    "CurrentVPC": { "Ref" : "CurrentVPC" },
+                    "DBSubnetGroupName": { "Ref" : "DBSubnetGroupName" },
+                    "ELBSubnetIds": { "Fn::Join": [",", {"Ref" : "ELBSubnetIds"}]}
                 }
             }
         }
