@@ -1,9 +1,9 @@
 {
     "AWSTemplateFormatVersion" : "2010-09-09",
-    "Description"              : "LANSA Windows template: This template installs a highly-available, scalable LANSA deployment using a multi-AZ Amazon RDS database instance for storage.  **WARNING** This template creates an Amazon Windows EC2 instance, an Elastic Load Balancer and an Amazon RDS database instance. Parameters described as Update Stack: are only modified after the stack has been created. You will be billed for the AWS resources used if you create a stack from this template.",
+    "Description"              : "Quick LANSA Windows template: This template installs a highly-available, scalable LANSA deployment using a multi-AZ Amazon RDS database instance for storage.  **WARNING** This template creates AWS resources. You will be billed for the AWS resources used if you create a stack from this template.",
     "Parameters": {
-        "Default": "https://s3-ap-southeast-2.amazonaws.com/lansa/app/Test/AWAMAPP_v14.2.20715_en-us.msi",
         "01LansaMSI": {
+            "Default": "https://s3-ap-southeast-2.amazonaws.com/lansa/app/Test/AWAMAPP_v14.2.20715_en-us.msi",
             "Type": "String",
             "Description": "URL of the LANSA MSI to install. The MSI must have been previously uploaded to the specified location in Amazon S3 BLOB storage. Here is an example application you may use https://s3-ap-southeast-2.amazonaws.com/lansa/app/Test/AWAMAPP_v14.2.20715_en-us.msi"
         },
@@ -62,7 +62,7 @@
             "AllowedValues": [
                 "win2012",
                 "win2016",
-                "win2019",
+                "win2019"
             ]
         },
         "CurrentVPC": {
@@ -176,7 +176,7 @@
                     "19DBAllocatedStorage": "100",
                     "20DBIops": "1000",
 
-                    "01LansaMSI": { "Ref" : "01LansaMSI "},
+                    "01LansaMSI": { "Ref" : "01LansaMSI"},
                     "LansaVersion": { "Ref" : "LansaVersion"},
                     "11WebserverOSVersion": { "Ref" : "11WebserverOSVersion" },
                     "11WebServerInstanceTyp" : "t3.micro",
