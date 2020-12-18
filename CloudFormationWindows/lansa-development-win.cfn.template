@@ -20,7 +20,6 @@
             "Type": "List<AWS::EC2::AvailabilityZone::Name>"
         },
         "NumberOfAZs": {
-            "Default": "3",
             "Description": "Number of Availability Zones to use in the VPC. This must match your selections in the list of Availability Zones parameter.",
             "Type": "String",
             "AllowedValues": [
