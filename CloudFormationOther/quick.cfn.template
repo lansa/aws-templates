@@ -42,7 +42,7 @@
             "Type": "String"
         },
         "TemplateS3Namespace": {
-            "Default": "robg",
+            "Default": "",
             "Description": "Usually left empty. Adds another sub folder level to the template location in S3 so that developers and CI/CD pipelines may segregate their template versions. ",
             "Type": "String"
         },
@@ -56,7 +56,7 @@
             "Description": "Visual LANSA Version"
         },
         "11WebserverOSVersion": {
-            "Default": "win2019",
+            "Default": "win2012",
             "Description": "WebServer Windows operating system version.",
             "Type": "String",
             "AllowedValues": [
@@ -65,20 +65,25 @@
                 "win2019"
             ]
         },
+        "AvailabilityZones": {
+            "Default": "ap-southeast-2a,ap-southeast-2b,ap-southeast-2c",
+            "Description": "List of Availability Zones to use for the subnets in the VPC. Note: The logical order is preserved. If using an existing VPC you must still select a valid Availability Zone in order to pass CFT validation.",
+            "Type": "List<AWS::EC2::AvailabilityZone::Name>"
+        },
         "CurrentVPC": {
             "Description": "Existing VPC id",
             "Type": "AWS::EC2::VPC::Id",
-            "Default": "vpc-0337a59d1fd635797"
+            "Default": "vpc-06adef7ecab120405"
         },
         "DBSubnetGroupName": {
             "Description": "DBSubnetGroup Name",
             "Type": "String",
-            "Default": "test-vpc-new-vpcstack-1exbu5iueipza-dbsubnetgroup-z5qgrknje6tl"
+            "Default": "azuredevopstestvpc-vpcstack-1fzffiyjvv6f9-dbsubnetgroup-o0whou04hkw2"
         },
         "ELBSubnetIds": {
             "Description": "list of Subnet IDs for ELB",
             "Type": "List<AWS::EC2::Subnet::Id>",
-            "Default": "subnet-03b98bd22c0d669de,subnet-0cf5f26dc2fbec0fb"
+            "Default": "subnet-08358c3721c83aadb,subnet-0c48beacbc5772e71"
         }
     },
    "Metadata" : {
@@ -186,6 +191,7 @@
                     "TemplateS3Namespace" : { "Ref" : "TemplateS3Namespace" },
 
                     "CurrentVPC": { "Ref" : "CurrentVPC" },
+                    "AvailabilityZones": { "Fn::Join": [",", { "Ref": "AvailabilityZones" }]},
                     "DBSubnetGroupName": { "Ref" : "DBSubnetGroupName" },
                     "ELBSubnetIds": { "Fn::Join": [",", {"Ref" : "ELBSubnetIds"}]}
                 }
