@@ -739,6 +739,8 @@
                    "arn:aws:iam::aws:policy/AWSHealthFullAccess",
                    "arn:aws:iam::aws:policy/AWSConfigUserAccess",
                    "arn:aws:iam::aws:policy/AmazonSSMFullAccess",
+                   "arn:aws:iam::aws:policy/AmazonEC2RoleforSSM",
+                   "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore",
                    "arn:aws:iam::aws:policy/AWSResourceGroupsReadOnlyAccess",
                    "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy",
                    "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"
