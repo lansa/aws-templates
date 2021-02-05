@@ -546,7 +546,7 @@
    "Mappings"                 : {
       "AWSRegionArch2AMI142": {
          "Metadata": { "Comment1": "This mapping is updated whenever a new AMI is submitted to Marketplace" },
-         "us-east-1": { "win2012": "ami-0e595def70f14bbe4", "win2016" : "",  "win2019" : "" },
+         "us-east-1": { "win2012": "", "win2016" : "",  "win2019" : "" },
          "us-east-2": { "win2012": "ami-058af61789274bb95", "win2016" : "",  "win2019" : "" },
          "us-west-1": { "win2012": "ami-097ce131f533d28ed", "win2016" : "",  "win2019" : "" },
          "us-west-2": { "win2012": "ami-069f525710ebdd472", "win2016" : "",  "win2019" : "" },
@@ -558,7 +558,7 @@
          "eu-north-1": { "win2012": "ami-d270f9ac", "win2016" : "",  "win2019" : "" },
          "eu-south-1": { "win2012": "", "win2016" : "",  "win2019" : "" },
          "ap-southeast-1": { "win2012": "ami-0a606cfbd7dc17e53", "win2016" : "",  "win2019" : "" },
-         "ap-southeast-2": { "win2012": "ami-00583864b8ce11997", "win2016" : "ami-0e6818cef603fffb1",  "win2019" : "ami-0579533f5ec93030a" },
+         "ap-southeast-2": { "win2012": "ami-08990d1a5c8e3fadd", "win2016" : "ami-06c21da96949dd1f4",  "win2019" : "ami-0b0a532110c69f52a" },
          "ap-south-1": { "win2012": "ami-0e1a7a4677a06a03f", "win2016" : "",  "win2019" : "" },
          "ap-northeast-1": { "win2012": "ami-01debc7e21503586d", "win2016" : "",  "win2019" : "" },
          "ap-northeast-2": { "win2012": "ami-00fda912916e5aa4e", "win2016" : "",  "win2019" : "" },
@@ -569,7 +569,7 @@
       },
       "AWSRegionArch2AMI15": {
         "Metadata": { "Comment1": "This mapping is updated whenever a new AMI is submitted to Marketplace" },
-        "us-east-1": { "win2012": "ami-0e595def70f14bbe4", "win2016" : "",  "win2019" : "" },
+        "us-east-1": { "win2012": "", "win2016" : "",  "win2019" : "" },
         "us-east-2": { "win2012": "ami-058af61789274bb95", "win2016" : "",  "win2019" : "" },
         "us-west-1": { "win2012": "ami-097ce131f533d28ed", "win2016" : "",  "win2019" : "" },
         "us-west-2": { "win2012": "ami-069f525710ebdd472", "win2016" : "",  "win2019" : "" },
@@ -581,7 +581,7 @@
         "eu-north-1": { "win2012": "ami-d270f9ac", "win2016" : "",  "win2019" : "" },
         "eu-south-1": { "win2012": "", "win2016" : "",  "win2019" : "" },
         "ap-southeast-1": { "win2012": "ami-0a606cfbd7dc17e53", "win2016" : "",  "win2019" : "" },
-        "ap-southeast-2": { "win2012": "ami-00c37c246f11d7938", "win2016" : "ami-05111318bb625171e",  "win2019" : "ami-0e6fe611a91dae33d" },
+        "ap-southeast-2": { "win2012": "ami-033573be70f4d9e55", "win2016" : "ami-02fb5129e0378eef2",  "win2019" : "ami-0a535f2884660c517" },
         "ap-south-1": { "win2012": "ami-0e1a7a4677a06a03f", "win2016" : "",  "win2019" : "" },
         "ap-northeast-1": { "win2012": "ami-01debc7e21503586d", "win2016" : "",  "win2019" : "" },
         "ap-northeast-2": { "win2012": "ami-00fda912916e5aa4e", "win2016" : "",  "win2019" : "" },
