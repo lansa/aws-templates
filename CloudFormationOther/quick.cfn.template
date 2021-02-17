@@ -3,9 +3,9 @@
     "Description"              : "Quick LANSA Windows template: This template installs a highly-available, scalable LANSA deployment using a multi-AZ Amazon RDS database instance for storage.  **WARNING** This template creates AWS resources. You will be billed for the AWS resources used if you create a stack from this template.",
     "Parameters": {
         "01LansaMSI": {
-            "Default": "https://s3-ap-southeast-2.amazonaws.com/lansa/app/Test/AWAMAPP_v14.2.20715_en-us.msi",
+            "Default": "https://s3-ap-southeast-2.amazonaws.com/lansa/app/Test/AWAMAPP_v14.2.21217_en-us.msi",
             "Type": "String",
-            "Description": "URL of the LANSA MSI to install. The MSI must have been previously uploaded to the specified location in Amazon S3 BLOB storage. Here is an example application you may use https://s3-ap-southeast-2.amazonaws.com/lansa/app/Test/AWAMAPP_v14.2.20715_en-us.msi"
+            "Description": "URL of the LANSA MSI to install. The MSI must have been previously uploaded to the specified location in Amazon S3 BLOB storage. Here is an example application you may use https://s3-ap-southeast-2.amazonaws.com/lansa/app/Test/AWAMAPP_v14.2.21217_en-us.msi"
         },
         "04DBPassword": {
             "NoEcho": "true",
