@@ -637,7 +637,7 @@
          "cn-north-1": { "ARNPrefix": "arn:aws-cn:" }
       },
        "CustomVariable" : {
-         "TemplateRoot"      : { "Value" : "https://s3-ap-southeast-2.amazonaws.com/lansa/templates/" },
+         "TemplateRoot"      : { "Value" : "https://s3-ap-southeast-2.amazonaws.com/lansa/templates/support/scalable/marketplace" },
          "WebServerTemplate" : { "Value" : "webserver-win.cfn.template"},
          "TemplateLevel"     : { "Value" : "R"},
          "NestedVPCTemplate" : { "Value" : "nested-vpc.cfn.template"}
@@ -665,40 +665,7 @@
           "Type": "AWS::CloudFormation::Stack",
           "Condition": "CreateNewVPCResources",
           "Properties": {
-            "TemplateURL" : { "Fn::If" : [ "IsReleaseLevel",
-                                    { "Fn::If" : [ "IsEmptyNamespace",
-                                        {
-                                            "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
-                                        { "Ref" : "10LansaGitRepoBranch" },
-                                        "/",
-                                        { "Fn::FindInMap" : [ "CustomVariable", "NestedVPCTemplate", "Value" ] }
-                                    ]]}  ,
-                                        {
-                                            "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
-                                        { "Ref" : "10LansaGitRepoBranch" },
-                                            "/",
-                                            {  "Ref" : "TemplateS3Namespace" },
-                                            "/",
-                                            { "Fn::FindInMap" : [ "CustomVariable", "NestedVPCTemplate", "Value" ] }
-                                        ]]}
-                                    ]},
-                                    { "Fn::If" : [ "IsEmptyNamespace",
-                                        {
-                                            "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
-                                            { "Ref" : "10LansaGitRepoBranch" },
-                                        "/beta/",
-                                        { "Fn::FindInMap" : [ "CustomVariable", "NestedVPCTemplate", "Value" ] }
-                                        ]]},
-                                        {
-                                            "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
-                                            { "Ref" : "10LansaGitRepoBranch" },
-                                            "/beta/",
-                                            { "Ref" : "TemplateS3Namespace" },
-                                            "/",
-                                            { "Fn::FindInMap" : [ "CustomVariable", "NestedVPCTemplate", "Value" ]}
-                                    ]]}
-                                    ]}
-                                ]},
+            "TemplateURL" : "https://lansa.s3-ap-southeast-2.amazonaws.com/templates/support/scalable/marketplace/nested-vpc.cfn.template",
             "Parameters": {
                 "AvailabilityZones": { "Fn::Join": [",", { "Ref": "AvailabilityZones" }]},
                 "NumberOfAZs": { "Ref": "NumberOfAZs"}
@@ -979,40 +946,7 @@
                 "Comment2" : "Using prime numbers ensures that the DB instances and Web instances will not be refreshed on the same day"
             },
             "Properties" : {
-                "TemplateURL" : { "Fn::If" : [ "IsReleaseLevel",
-                                    { "Fn::If" : [ "IsEmptyNamespace",
-                                        {
-                                            "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
-                                        { "Ref" : "10LansaGitRepoBranch" },
-                                        "/",
-                                        { "Fn::FindInMap" : [ "CustomVariable", "WebServerTemplate", "Value" ] }
-                                    ]]}  ,
-                                        {
-                                            "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
-                                        { "Ref" : "10LansaGitRepoBranch" },
-                                            "/",
-                                            {  "Ref" : "TemplateS3Namespace" },
-                                            "/",
-                                            { "Fn::FindInMap" : [ "CustomVariable", "WebServerTemplate", "Value" ] }
-                                        ]]}
-                                    ]},
-                                    { "Fn::If" : [ "IsEmptyNamespace",
-                                        {
-                                            "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
-                                            { "Ref" : "10LansaGitRepoBranch" },
-                                        "/beta/",
-                                        { "Fn::FindInMap" : [ "CustomVariable", "WebServerTemplate", "Value" ] }
-                                        ]]},
-                                        {
-                                            "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
-                                            { "Ref" : "10LansaGitRepoBranch" },
-                                            "/beta/",
-                                            { "Ref" : "TemplateS3Namespace" },
-                                            "/",
-                                            { "Fn::FindInMap" : [ "CustomVariable", "WebServerTemplate", "Value" ]}
-                                    ]]}
-                                    ]}
-                                ]},
+                "TemplateURL" : "https://lansa.s3-ap-southeast-2.amazonaws.com/templates/support/scalable/marketplace/webserver-win.cfn.template",
                 "Parameters" : {
                     "AMI"                         : { "Fn::If": [ "IsCustomImageSource", { "Ref" : "AMIId" }, { "Fn::If" : ["IsLansaVersion142", { "Fn::FindInMap" : [ "AWSRegionArch2AMI142", { "Ref" : "AWS::Region" }, { "Ref": "11WebserverOSVersion" } ] }, { "Fn::FindInMap" : [ "AWSRegionArch2AMI15", { "Ref" : "AWS::Region" }, { "Ref": "11WebserverOSVersion" }]} ] }]},
                     "DBEndPoint"                  : { "Fn::GetAtt" : ["DBInstance", "Endpoint.Address"] },
@@ -1078,40 +1012,7 @@
                 "Comment2" : "Using prime numbers ensures that the DB instances and Web instances will not be refreshed on the same day"
             },
             "Properties" : {
-                "TemplateURL" : { "Fn::If" : [ "IsReleaseLevel",
-                                    { "Fn::If" : [ "IsEmptyNamespace",
-                                        {
-                                            "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
-                                        { "Ref" : "10LansaGitRepoBranch" },
-                                        "/",
-                                        { "Fn::FindInMap" : [ "CustomVariable", "WebServerTemplate", "Value" ] }
-                                    ]]}  ,
-                                        {
-                                            "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
-                                        { "Ref" : "10LansaGitRepoBranch" },
-                                            "/",
-                                            {  "Ref" : "TemplateS3Namespace" },
-                                            "/",
-                                            { "Fn::FindInMap" : [ "CustomVariable", "WebServerTemplate", "Value" ] }
-                                        ]]}
-                                    ]},
-                                    { "Fn::If" : [ "IsEmptyNamespace",
-                                        {
-                                            "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
-                                            { "Ref" : "10LansaGitRepoBranch" },
-                                        "/beta/",
-                                        { "Fn::FindInMap" : [ "CustomVariable", "WebServerTemplate", "Value" ] }
-                                        ]]},
-                                        {
-                                            "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
-                                            { "Ref" : "10LansaGitRepoBranch" },
-                                            "/beta/",
-                                            { "Ref" : "TemplateS3Namespace" },
-                                            "/",
-                                            { "Fn::FindInMap" : [ "CustomVariable", "WebServerTemplate", "Value" ]}
-                                    ]]}
-                                    ]}
-                                ]},
+                "TemplateURL" : "https://lansa.s3-ap-southeast-2.amazonaws.com/templates/support/scalable/marketplace/webserver-win.cfn.template",
                 "Parameters" : {
                     "AMI"                         : { "Fn::If": [ "IsCustomImageSource", { "Ref" : "AMIId" }, { "Fn::If" : ["IsLansaVersion142", { "Fn::FindInMap" : [ "AWSRegionArch2AMI142", { "Ref" : "AWS::Region" }, { "Ref": "11WebserverOSVersion" } ] }, { "Fn::FindInMap" : [ "AWSRegionArch2AMI15", { "Ref" : "AWS::Region" }, { "Ref": "11WebserverOSVersion" }]} ] }]},
                     "DBEndPoint"                  : { "Fn::GetAtt" : ["DBInstance", "Endpoint.Address"] },
