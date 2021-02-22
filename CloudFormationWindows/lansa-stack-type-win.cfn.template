@@ -239,20 +239,7 @@
         "MasterStackApp": {
             "Type": "AWS::CloudFormation::Stack",
             "Properties": {
-                "TemplateURL": { "Fn::If": [ "IsReleaseLevel",
-                    { "Fn::Join": ["", [
-                        { "Fn::FindInMap": [ "CustomVariable", "TemplateRoot", "Value" ] },
-                        { "Ref": "10LansaGitRepoBranch" },
-                        "/",
-                        { "Fn::FindInMap": [ "CustomVariable", "MasterTemplate", "Value" ] }
-                    ]]}  ,
-                    { "Fn::Join": ["", [
-                        { "Fn::FindInMap": [ "CustomVariable", "TemplateRoot", "Value" ] },
-                        { "Ref": "10LansaGitRepoBranch" },
-                        "/beta/",
-                        { "Fn::FindInMap": [ "CustomVariable", "MasterTemplate", "Value" ] }
-                    ]]}
-                ]},
+                "TemplateURL": "https://lansa.s3-ap-southeast-2.amazonaws.com/templates/support/scalable/marketplace/lansa-master-win.cfn.template",
                 "Parameters": {
                     "CreateVPC": { "Ref" : "CreateVPC" },
                     "CurrentVPC": { "Ref" : "CurrentVPC" },
