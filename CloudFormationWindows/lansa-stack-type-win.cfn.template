@@ -1,6 +1,6 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
-    "Description": "Stack size LANSA Windows template: This template installs a highly-available, scalable LANSA deployment using a multi-AZ Amazon RDS database instance for storage.  **WARNING** This template creates AWS resources. You will be billed for the AWS resources used if you create a stack from this template.",
+    "Description": "Stack type LANSA Windows template: This template installs a highly-available, scalable LANSA deployment using a multi-AZ Amazon RDS database instance for storage.  **WARNING** This template creates AWS resources. You will be billed for the AWS resources used if you create a stack from this template.",
     "Parameters": {
         "StackType": {
             "Description": "Stack Type",
