@@ -546,7 +546,7 @@
    "Mappings"                 : {
       "AWSRegionArch2AMI142": {
          "Metadata": { "Comment1": "This mapping is updated whenever a new AMI is submitted to Marketplace" },
-         "us-east-1": { "win2012": "ami-01f7a802b1ba30339", "win2016" : "ami-014cb04b788606ad9",  "win2019" : "ami-03afa9098fb49c3b1" },
+         "us-east-1": { "win2012": "ami-01f7a802b1ba30339", "win2016" : "ami-033edb23200d5b92a",  "win2019" : "ami-03afa9098fb49c3b1" },
          "us-east-2": { "win2012": "ami-", "win2016" : "",  "win2019" : "" },
          "us-west-1": { "win2012": "ami-", "win2016" : "",  "win2019" : "" },
          "us-west-2": { "win2012": "ami-", "win2016" : "",  "win2019" : "" },
@@ -569,7 +569,7 @@
       },
       "AWSRegionArch2AMI15": {
         "Metadata": { "Comment1": "This mapping is updated whenever a new AMI is submitted to Marketplace" },
-        "us-east-1": { "win2012": "ami-08315dfc171e5a1a7", "win2016" : "ami-0fdc733812f35ef4c",  "win2019" : "ami-0784dffeef59772ca" },
+        "us-east-1": { "win2012": "ami-08315dfc171e5a1a7", "win2016" : "ami-08163cec1b04c40aa",  "win2019" : "ami-0784dffeef59772ca" },
         "us-east-2": { "win2012": "ami-", "win2016" : "",  "win2019" : "" },
         "us-west-1": { "win2012": "ami-", "win2016" : "",  "win2019" : "" },
         "us-west-2": { "win2012": "ami-", "win2016" : "",  "win2019" : "" },
