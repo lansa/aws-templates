@@ -117,9 +117,18 @@
             ],
             "ConstraintDescription" : "Must be R (Release)."
         },
+        "UpdateManagementScripts": {
+            "Default": "No",
+            "Description": "Setting this parameter to Yes is not recommended. It is intended for internal developer usage. Doing so will pull changes from a LANSA-managed github repo named robe070/cookbooks",
+            "Type": "String",
+            "AllowedValues": [
+                "No",
+                "Yes"
+            ]
+        },
         "10LansaGitRepoBranch": {
             "Type": "String",
-            "Default": "debug/paas",
+            "Default": "support/scalable",
             "Description": "Git branch to checkout from Lansa Git repository. This pulls in the script files which are used to assemble the Icing. This is performed during the initial launch and also everytime a Trigger is fired."
         },
         "11WebServerInstanceTyp": {
@@ -584,30 +593,6 @@
                             }
                         }
                     },
-                    "git-install": {
-                        "commands": {
-                            "01_git_install": {
-                                "command": {
-                                    "Fn::Join": [
-                                        "",
-                                        [
-                                            "@powershell -NoProfile -ExecutionPolicy unrestricted -command \"& {",
-                                            "choco -y install git.install -version 1.9.4.20140929;",
-                                            "cd \\ ;",
-                                            "$env:Path += ';C:\\Program Files (x86)\\Git\\cmd';",
-                                            "cmd /C git clone https://github.com/robe070/cookbooks.git lansa '2>&1';",
-                                            "if ($LASTEXITCODE -ne 0 -and $LASTEXITCODE -ne 128) {Write-Error ('Git clone failed');exit $LastExitCode};",
-                                            "cd \\lansa;",
-                                            "cmd /C git checkout windows-stack '2>&1';if ($LASTEXITCODE -ne 0) {Write-Error ('Git checkout failed');exit $LastExitCode};",
-                                            "exit 0",
-                                            "}\""
-                                        ]
-                                    ]
-                                },
-                                "waitAfterCompletion": "0"
-                            }
-                        }
-                    },
                     "git-pull": {
                         "commands": {
                             "01_git_pull": {
@@ -616,6 +601,9 @@
                                         "",
                                         [
                                             "@powershell -NoProfile -ExecutionPolicy unrestricted -command \"& {",
+                                            "if ('yes' -eq '",
+                                            { "Ref": "UpdateManagementScripts" },
+                                            "') {",
                                             "$newPath = 'C:\\Program Files (x86)\\Git\\cmd';",
                                             "$oldPath = [Environment]::GetEnvironmentVariable('PATH', 'Machine');",
                                             "$match = '*' + $newpath + '*';",
@@ -630,6 +618,9 @@
                                             "  '2>&1';if ($LASTEXITCODE -ne 0) {Write-Error ('Git checkout failed');exit $LastExitCode};",
                                             "cmd /C git pull origin '2>&1';if ($LASTEXITCODE -ne 0) {Write-Error ('Git pull failed');exit $LastExitCode};",
                                             "exit 0",
+                                            "} else {",
+                                            "Write-Host('Skipping git-pull as UpdateManagementScripts template parameter -ne yes')",
+                                            "}",
                                             "}\""
                                         ]
                                     ]
