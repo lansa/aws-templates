@@ -90,6 +90,15 @@
             "MaxLength": "18",
             "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
         },
+        "UpdateManagementScripts": {
+            "Default": "No",
+            "Description": "Setting this parameter to Yes is not recommended. It is intended for internal developer usage. Doing so will pull changes from a LANSA-managed github repo named robe070/cookbooks",
+            "Type": "String",
+            "AllowedValues": [
+                "No",
+                "Yes"
+            ]
+        },
         "10LansaGitRepoBranch": {
             "Default": "support/scalable",
             "Description": "Git branch to checkout from Lansa Git repository and the S3 folder from which the nested templates are loaded. This pulls in the script files which are used to assemble the Icing. This is performed during the initial launch and also everytime a Trigger is fired.",
@@ -496,6 +505,7 @@
            "Parameters" : [
                "21ELBTimeout",
                "17UserScriptHook",
+               "UpdateManagementScripts",
                "10LansaGitRepoBranch",
                "TemplateS3Namespace"
             ]
@@ -535,6 +545,7 @@
          "29PatchFolderName" : { "default" : "Patch Folder Name" },
          "21ELBTimeout" : { "default" : "Load Balancer Timeout" },
          "17UserScriptHook" : { "default" : "User Script Hook" },
+         "UpdateManagementScripts" : { "default" : "Update Management Scripts"},
          "10LansaGitRepoBranch" : { "default" : "Git Repository Branch" },
          "TemplateS3Namespace" : { "default" : "Template S3 Namespace" },
          "LansaVersion" :  { "default" :  "Visual LANSA Version"},
@@ -985,6 +996,7 @@
                     "07KeyName"                   : { "Ref" : "07KeyName" },
                     "8RemoteAccessLocation"       : { "Ref" : "08RemoteAccessLocation" },
                     "90LansaTemplateLevel"        : { "Fn::FindInMap" : [ "CustomVariable", "TemplateLevel", "Value" ] },
+                    "UpdateManagementScripts"     : { "Ref" : "UpdateManagementScripts" },
                     "10LansaGitRepoBranch"        : { "Ref" : "10LansaGitRepoBranch" },
                     "11WebServerInstanceTyp"      : { "Ref" : "11WebServerInstanceTyp" },
                     "12WebServerMaxConnec"        : { "Ref" : "12WebServerMaxConnec" },
@@ -1052,6 +1064,7 @@
                     "07KeyName"                   : { "Ref" : "07KeyName" },
                     "8RemoteAccessLocation"       : { "Ref" : "08RemoteAccessLocation" },
                     "90LansaTemplateLevel"        : { "Fn::FindInMap" : [ "CustomVariable", "TemplateLevel", "Value" ] },
+                    "UpdateManagementScripts"     : { "Ref" : "UpdateManagementScripts" },
                     "10LansaGitRepoBranch"        : { "Ref" : "10LansaGitRepoBranch" },
                     "11WebServerInstanceTyp"      : { "Ref" : "11WebServerInstanceTyp" },
                     "12WebServerMaxConnec"        : { "Ref" : "12WebServerMaxConnec" },
