@@ -340,6 +340,16 @@
                 "sqlserver-ee"
             ]
         },
+        "DBCCSID": {
+            "Default": "",
+            "Description": "Database Server Collation. Defaults to SQL Server default of English US when left unspecified",
+            "Type": "String"
+        },
+        "DBTimeZone": {
+            "Default": "",
+            "Description": "Database Server Time Zone. It is recommended not to change this setting. Defaults to SQL Server default of UTC/GMT when left unspecified",
+            "Type": "String"
+        },
         "17UserScriptHook": {
             "Type": "String",
             "Default": "https://s3-ap-southeast-2.amazonaws.com/lansa/scripts/user-script.ps1",
@@ -471,6 +481,8 @@
                "13DBInstanceClass",
                "14DBName",
                "15DBEngine",
+               "DBCCSID",
+               "DBTimeZone",
                "19DBAllocatedStorage",
                "20DBIops"
             ]
@@ -529,6 +541,8 @@
          "13DBInstanceClass" : { "default" : "Instance Class" },
          "14DBName" : { "default" : "Name" },
          "15DBEngine" : { "default" : "SQL Server Engine Type" },
+         "DBCCSID" : { "default" : "SQL Server Collation" },
+         "DBTImeZone" : { "default" : "SQL Server Time Zone" },
          "19DBAllocatedStorage" : { "default" : "Maximum Size" },
          "20DBIops" : { "default" : "I/O OPS" },
          "11WebserverOSVersion" :  { "default" :  "OS Version"},
@@ -658,6 +672,8 @@
        "CreateNewVPCResources" : { "Fn::Equals" : [ { "Ref" : "CreateVPC" }, "Yes" ] },
        "IsReleaseLevel" : {"Fn::Equals" : [{ "Fn::FindInMap" : [ "CustomVariable", "TemplateLevel", "Value" ] }, "R"]},
        "IsEmptyNamespace" : {"Fn::Equals" : [{"Ref" : "TemplateS3Namespace"}, "" ]},
+       "IsEmptyDBCCSID" : {"Fn::Equals" : [{"Ref" : "DBCCSID"}, "" ]},
+       "IsEmptyDBTimeZone" : {"Fn::Equals" : [{"Ref" : "DBTimeZone"}, "" ]},
        "DoesNotHaveUserScript" : {"Fn::Equals" : [{"Ref" : "17UserScriptHook"}, ""]},
        "HasUserScript" : {"Fn::Not" : [{"Condition" : "DoesNotHaveUserScript"}]},
        "IsLansaVersion142": {"Fn::Equals" : [{"Ref" : "LansaVersion"}, "V14 SP2"]},
@@ -858,6 +874,20 @@
                 },
                 "AllowMajorVersionUpgrade": "false",
                 "AutoMinorVersionUpgrade": "true",
+                "CharacterSetName" : {
+                    "Fn::If" : [
+                        "IsEmptyDBCCSID",
+                        {"Ref": "AWS::NoValue"},
+                        {"Ref": "DBCCSID"}
+                    ]
+                },
+                "Timezone" : {
+                    "Fn::If" : [
+                        "IsEmptyDBTimeZone",
+                        {"Ref": "AWS::NoValue"},
+                        {"Ref": "DBTimeZone"}
+                    ]
+                },
                 "LicenseModel": "license-included",
                 "Tags": [
                     {
