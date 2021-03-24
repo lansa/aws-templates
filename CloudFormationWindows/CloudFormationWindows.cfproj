@@ -30,6 +30,9 @@
     <Compile Include="mp.template">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="quick.cfn.template">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="webserver-win.cfn.template">
       <SubType>Code</SubType>
     </Compile>
