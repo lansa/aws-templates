@@ -56,7 +56,7 @@
             "Description": "Visual LANSA Version"
         },
         "11WebserverOSVersion": {
-            "Default": "win2012",
+            "Default": "win2019",
             "Description": "WebServer Windows operating system version.",
             "Type": "String",
             "AllowedValues": [
@@ -84,6 +84,20 @@
             "Description": "list of Subnet IDs for ELB",
             "Type": "List<AWS::EC2::Subnet::Id>",
             "Default": "subnet-08358c3721c83aadb,subnet-0c48beacbc5772e71"
+        },
+        "ImageSource": {
+            "Type": "String",
+            "AllowedValues": [
+               "Marketplace",
+               "Custom"
+            ],
+            "Default": "Marketplace",
+            "Description": "Location from where the image must be picked"
+        },
+        "AMIId": {
+            "Type": "String",
+            "Default": "",
+            "Description": "The AMI Id of the custom image. Not required when Image Source is set to Marketplace"
         }
     },
    "Metadata" : {
@@ -102,7 +116,10 @@
            "Label" : { "default":"Web Server Configuration" },
            "Parameters" : [
                "LansaVersion",
-               "11WebserverOSVersion"
+               "11WebserverOSVersion",
+               "ImageSource",
+               "AMIID",
+               "10LansaGitRepoBranch"
             ]
          }
        ],
@@ -114,7 +131,8 @@
 
          "LansaVersion" :  { "default" :  "LANSA Version"},
          "11WebserverOSVersion" :  { "default" :  "OS Version"},
-
+         "ImageSource" :  { "default" :  "Image Source"},
+         "AMIID" :  { "default" :  "AMI Id"},
          "10LansaGitRepoBranch" : { "default" : "Git Repository Branch" }
        }
      }
@@ -170,6 +188,8 @@
                     ]}
                 ]},
                 "Parameters" : {
+                    "ImageSource": { "Ref" : "ImageSource" },
+                    "AMIId": { "Ref" : "AMIId" },
                     "04DBPassword": { "Ref" : "04DBPassword" },
                     "06WebPassword": { "Ref" : "06WebPassword" },
                     "07KeyName": { "Ref" : "07KeyName" },
@@ -184,7 +204,7 @@
                     "01LansaMSI": { "Ref" : "01LansaMSI"},
                     "LansaVersion": { "Ref" : "LansaVersion"},
                     "11WebserverOSVersion": { "Ref" : "11WebserverOSVersion" },
-                    "11WebServerInstanceTyp" : "t3.micro",
+                    "11WebServerInstanceTyp" : "t3.2xlarge",
                     "12WebServerMaxConnec" : 10,
 
                     "10LansaGitRepoBranch" : { "Ref" : "10LansaGitRepoBranch" },
