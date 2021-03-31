@@ -970,8 +970,11 @@
                             "",
                             [
                                 "<powershell>\n",
-                                "# Only install MSI if the url has been provided",
-                                "\n",
+                                "# Only capture of DBCS Write-Host messages\n",
+                                "[Console]::OutputEncoding = [System.Text.Encoding]::UTF8\n",
+                                "$Env:PYTHONIOENCODING = 'CP932'\n",
+
+                                "# Only install MSI if the url has been provided\n",
                                 "if ('' -ne '",
                                 { "Ref": "01LansaMSI" },
                                 "') {",
