@@ -56,7 +56,7 @@
             "Description": "Visual LANSA Version"
         },
         "11WebserverOSVersion": {
-            "Default": "win2019",
+            "Default": "win2016",
             "Description": "WebServer Windows operating system version.",
             "Type": "String",
             "AllowedValues": [
@@ -213,7 +213,8 @@
                     "CurrentVPC": { "Ref" : "CurrentVPC" },
                     "AvailabilityZones": { "Fn::Join": [",", { "Ref": "AvailabilityZones" }]},
                     "DBSubnetGroupName": { "Ref" : "DBSubnetGroupName" },
-                    "ELBSubnetIds": { "Fn::Join": [",", {"Ref" : "ELBSubnetIds"}]}
+                    "ELBSubnetIds": { "Fn::Join": [",", {"Ref" : "ELBSubnetIds"}]},
+                    "UpdateManagementScripts": "Yes"
                 }
             }
         }
