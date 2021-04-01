@@ -37,7 +37,7 @@
             "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
         },
         "10LansaGitRepoBranch": {
-            "Default": "debug/paas",
+            "Default": "debug/jpn",
             "Description": "Git branch to checkout from Lansa Git repository. This pulls in the script files which are used to assemble the Icing. This is performed during the initial launch and also everytime a Trigger is fired.",
             "Type": "String"
         },
@@ -91,12 +91,12 @@
                "Marketplace",
                "Custom"
             ],
-            "Default": "Marketplace",
+            "Default": "Custom",
             "Description": "Location from where the image must be picked"
         },
         "AMIId": {
             "Type": "String",
-            "Default": "",
+            "Default": "ami-0397fb7889f8fa235",
             "Description": "The AMI Id of the custom image. Not required when Image Source is set to Marketplace"
         }
     },
