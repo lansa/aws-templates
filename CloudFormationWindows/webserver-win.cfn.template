@@ -411,7 +411,7 @@
                 "AWS::CloudFormation::Init": {
                     "configSets": {
                         "no-icing": [ "installing", "install-cfn", "git-pull", "install-logging", "config-windows-update", "ready" ],
-                        "icing-install": [ "installing", "install-cfn", "git-pull", "ready" ],
+                        "icing-install": [ "installing", "install-cfn", "git-pull", "install-logging", "config-windows-update", "install-msi", "install-patches", "run-webconfig", "ready" ],
                         "cfn-update": [ "installing", "install-cfn", "ready" ],
                         "cake-update": [ "installing", "git-pull", "restart-ifneeded", "run-chef", "run-windows-update", "ready" ],
                         "chef-update": [ "installing", "git-pull", "restart-ifneeded", "run-chef", "ready" ],
