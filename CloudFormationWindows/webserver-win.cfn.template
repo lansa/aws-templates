@@ -898,7 +898,9 @@
                                     "Fn::Join": [
                                         "",
                                         [
-                                            "@powershell -NoProfile -ExecutionPolicy unrestricted -command \"& {",
+                                            "@powershell -NoProfile -ExecutionPolicy unrestricted -command \"",
+                                            "[Console]::OutputEncoding = [System.Text.Encoding]::UTF8\n",
+                                            "& {",
                                             "C:\\LANSA\\scripts\\webconfig.ps1",
                                             " -server_name ",
                                             { "Ref" : "DBEndPoint" },
@@ -943,7 +945,9 @@
                                     "Fn::Join": [
                                         "",
                                         [
-                                            "@powershell -NoProfile -ExecutionPolicy unrestricted -command \"& {",
+                                            "@powershell -NoProfile -ExecutionPolicy unrestricted -command \"",
+                                            "[Console]::OutputEncoding = [System.Text.Encoding]::UTF8\n",
+                                            "& {",
                                             "C:\\LANSA\\scripts\\run-chef.ps1 ",
                                             "-cookbook VLWebServer::MainRecipe ",
                                             "-WorkingDirectory C:\\recipes\\chef-repo\\cookbooks",
@@ -970,8 +974,8 @@
                             "",
                             [
                                 "<powershell>\n",
-                                "# Only install MSI if the url has been provided",
-                                "\n",
+                                "# Only install MSI if the url has been provided\n",
+                                "[Console]::OutputEncoding = [System.Text.Encoding]::UTF8\n",
                                 "if ('' -ne '",
                                 { "Ref": "01LansaMSI" },
                                 "') {",
