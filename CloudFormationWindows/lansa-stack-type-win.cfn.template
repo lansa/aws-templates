@@ -97,6 +97,15 @@
             "Description": "Git branch to checkout from Lansa Git repository and the S3 folder from which the nested templates are loaded. This pulls in the script files which are used to assemble the Icing. This is performed during the initial launch and also everytime a Trigger is fired.",
             "Type": "String"
         },
+        "UpdateManagementScripts": {
+            "Default": "No",
+            "Description": "Setting this parameter to Yes is not recommended. It is intended for internal developer usage. Doing so will pull changes from a LANSA-managed github repo named robe070/cookbooks",
+            "Type": "String",
+            "AllowedValues": [
+                "No",
+                "Yes"
+            ]
+        },
         "11WebserverOSVersion": {
             "Default": "win2019",
             "Description": "WebServer Windows operating system version.",
@@ -285,7 +294,8 @@
                     "28PatchBucketName": { "Ref" : "28PatchBucketName" },
                     "29PatchFolderName": { "Ref" : "29PatchFolderName" },
 
-                    "10LansaGitRepoBranch": { "Ref" : "10LansaGitRepoBranch" }
+                    "10LansaGitRepoBranch": { "Ref" : "10LansaGitRepoBranch" },
+                    "UpdateManagementScripts": { "Ref" : "UpdateManagementScripts" }
                 }
             }
         }

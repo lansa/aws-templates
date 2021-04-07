@@ -139,6 +139,15 @@
             "Default": "support/scalable",
             "Description": "Git branch to checkout from Lansa Git repository and the S3 folder from which the nested templates are loaded. This pulls in the script files which are used to assemble the Icing. This is performed during the initial launch and also everytime a Trigger is fired.",
             "Type": "String"
+        },
+        "UpdateManagementScripts": {
+            "Default": "No",
+            "Description": "Setting this parameter to Yes is not recommended. It is intended for internal developer usage. Doing so will pull changes from a LANSA-managed github repo named robe070/cookbooks",
+            "Type": "String",
+            "AllowedValues": [
+                "No",
+                "Yes"
+            ]
         }
     },
     "Metadata": {
@@ -274,7 +283,9 @@
                     "12WebServerMaxConnec" : { "Fn::FindInMap" : [ "StackDifferences", "12WebServerMaxConnec", { "Ref": "StackType" }]},
 
                     "DBCCSID": { "Ref": "DBCCSID" },
-                    "DBTimeZone": { "Ref": "DBTimeZone" }
+                    "DBTimeZone": { "Ref": "DBTimeZone" },
+                    "10LansaGitRepoBranch": { "Ref": "10LansaGitRepoBranch"},
+                    "UpdateManagementScripts": { "Ref" : "UpdateManagementScripts" }
                 }
             }
         }
