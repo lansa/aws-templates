@@ -969,7 +969,7 @@
                                             "$OutputEncoding = [Console]::OutputEncoding;",
                                             "C:\\LANSA\\scripts\\run-chef.ps1 ",
                                             "-cookbook VLWebServer::MainRecipe ",
-                                            "-WorkingDirectory C:\\recipes\\chef-repo\\cookbooks",
+                                            "-WorkingDirectory C:\\lansa\\cookbooks",
                                             ";exit $LastExitCode",
                                             "}\""
                                         ]
