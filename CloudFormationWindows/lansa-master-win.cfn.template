@@ -607,7 +607,7 @@
         "eu-west-3": { "win2012": "ami-", "win2016" : "",  "win2019" : "", "win2016jpn" : "", "win2019jpn" : "" },
         "eu-north-1": { "win2012": "ami-", "win2016" : "",  "win2019" : "", "win2016jpn" : "", "win2019jpn" : "" },
         "eu-south-1": { "win2012": "", "win2016" : "",  "win2019" : "", "win2016jpn" : "", "win2019jpn" : "" },
-        "ap-southeast-1": { "win2012": "ami-", "win2016" : "",  "win2019" : "", "win2016jpn" : "", "win2019jpn" : "" },
+        "ap-southeast-1": { "win2012": "ami-", "win2016" : "",  "win2019" : "", "win2016jpn" : "", "win2019jpn" : "ami-0bedeb84bee729631" },
         "ap-southeast-2": { "win2012": "ami-0c9bff9fe226976b7", "win2016" : "ami-0d76613af7c40732e",  "win2019" : "ami-03c27699916008eb3", "win2016jpn" : "", "win2019jpn" : "" },
         "ap-south-1": { "win2012": "ami-", "win2016" : "",  "win2019" : "", "win2016jpn" : "", "win2019jpn" : "" },
         "ap-northeast-1": { "win2012": "ami-", "win2016" : "",  "win2019" : "", "win2016jpn" : "", "win2019jpn" : "" },
