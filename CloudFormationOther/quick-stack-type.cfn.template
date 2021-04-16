@@ -52,17 +52,19 @@
                 "V15 GA",
                 "V14 SP2"
             ],
-            "Default": "V15 GA",
+            "Default": "V14 SP2",
             "Description": "Visual LANSA Version"
         },
         "11WebserverOSVersion": {
-            "Default": "win2019",
+            "Default": "win2019jpn",
             "Description": "WebServer Windows operating system version.",
             "Type": "String",
             "AllowedValues": [
                 "win2012",
                 "win2016",
-                "win2019"
+                "win2019",
+                "win2016jpn",
+                "win2019jpn"
             ]
         },
         "AvailabilityZones": {
@@ -91,12 +93,12 @@
                 "Marketplace",
                 "Custom"
             ],
-            "Default": "Custom",
+            "Default": "Marketplace",
             "Description": "Location from where the image must be picked"
         },
         "AMIId": {
             "Type": "String",
-            "Default": "ami-022ebba0083f01d96",
+            "Default": "",
             "Description": "The AMI Id of the custom image. Not required when Image Source is set to Marketplace"
         },
         "DBCCSID": {

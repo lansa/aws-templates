@@ -113,7 +113,9 @@
             "AllowedValues": [
                 "win2012",
                 "win2016",
-                "win2019"
+                "win2019",
+                "win2016jpn",
+                "win2019jpn"
             ]
         },
         "LansaVersion": {
