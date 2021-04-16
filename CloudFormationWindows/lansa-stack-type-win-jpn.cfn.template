@@ -7,7 +7,7 @@
             "Type": "String",
             "Default": "Small",
             "AllowedValues": [
-                "Dev",
+                "Development",
                 "Test",
                 "Small",
                 "Medium",
