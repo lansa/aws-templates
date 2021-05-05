@@ -707,7 +707,8 @@
                                 "Service": [
                                     {
                                         "Fn::Join": [
-                                            "ec2.",
+                                            ".",
+                                            "ec2",
                                             { "Ref": "AWS::URLSuffix" }
                                         ]
                                     }
