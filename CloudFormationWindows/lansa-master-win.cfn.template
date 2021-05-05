@@ -708,8 +708,10 @@
                                     {
                                         "Fn::Join": [
                                             ".",
-                                            "ec2",
-                                            { "Ref": "AWS::URLSuffix" }
+                                            [
+                                                "ec2",
+                                                { "Ref": "AWS::URLSuffix" }
+                                            ]
                                         ]
                                     }
                                 ]
