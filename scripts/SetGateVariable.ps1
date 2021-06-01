@@ -1,5 +1,5 @@
 # Set the Gate variable if the file exists
-$path = "$(System.DefaultWorkingDirectory)/_Build Image Release Artefacts/$AWSImageName/$AWSImageName.txt"
+$path = "$(System.DefaultWorkingDirectory)/_Build Image Release Artefacts/aws-$AWSImageName/$AWSImageName.txt"
 if (Test-Path $path) {
   $amiID = Get-Content -Path $path 
   Write-Host $amiID | Out-Default | Write-Verbose
