@@ -1,11 +1,11 @@
 # Set the Gate variable if the file exists
-$path = "$(System.DefaultWorkingDirectory)/_Build Image Release Artefacts/$ImageName/$ImageName.txt"
+$path = "$(System.DefaultWorkingDirectory)/_Build Image Release Artefacts/$AWSImageName/$AWSImageName.txt"
 if (Test-Path $path) {
   $amiID = Get-Content -Path $path 
   Write-Host $amiID | Out-Default | Write-Verbose
   $id =$amiID
   $imageName = (Get-EC2Image -ImageId $id).Name
-  $imageName -match "$ImageName[-]?[0-9]+"
+  $imageName -match "$AWSImageName[-]?[0-9]+"
   $version = $Matches[0]
   Write-Host "Version : $version"
   $stackname = "$version-$(stackname)"
