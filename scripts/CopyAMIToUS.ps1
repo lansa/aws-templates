@@ -1,4 +1,5 @@
-$path = "$(System.DefaultWorkingDirectory)/_Build Image Release Artefacts/aws-w16d-14-2/w16d-14-2.txt"
+$BaseImageName=$args[0]
+$path = "$(System.DefaultWorkingDirectory)/_Build Image Release Artefacts/aws-$BaseImageName/$BaseImageName.txt"
 if (Test-Path $path) {
   $amiID = Get-Content -Path $path 
   Write-Host $amiID | Out-Default | Write-Verbose

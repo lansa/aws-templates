@@ -1,16 +1,28 @@
+#Expect Below paramter to be passed from pipeline.
+# 1. BaseImageName : Base image name e.g w12r2d-14-2
+# 2. BaseStackName : Stack Name either production or Vpc
+# 3. IsVpcStack : Pass yes if it is VpcStack otherwise no
+
+$BaseImageName=$args[0]
+$BaseStackName=$args[1]
+$IsVpcStack=$args[2]
+
 if ("$(imageReleaseState)" -eq "Production") {
-    $SkuName = "w12r2d-14-2-$(TestVersionPrev-w12r2d-14-2)"
+    $SkuName = "$BaseImageName-$(TestVersionPrev-$BaseImageName)"
 } else {
-    $SkuName = "w12r2d-14-2-$(TestVersion-w12r2d-14-2)"   
+    $SkuName = "$BaseImageName-$(TestVersion-$BaseImageName)"   
 }
 Write-Host $SkuName | Out-Default
 # Get the URL from the stack
-$output = (Get-CFNStack -StackName $(TemplateProduseast1) -region ap-southeast-2).Outputs
+$output = (Get-CFNStack -StackName $(BaseStackName) -region ap-southeast-2).Outputs
 $websiteUrl = $output | Where-Object {$_.OutputKey -eq "WebsiteURL"}
 $url = $websiteUrl.OutputValue
 # Autoscaling Instance Id
-
-$childstack = (Get-CFNStack | Where-Object {$_.StackName -match "$(TemplateProduseast1)-Master" }).StackName[2]
+if ("$(IsVpcStack)" -eq "yes") {
+    $childstack = (Get-CFNStack | Where-Object {$_.StackName -match "$(BaseStackName)" }).StackName[0]
+} else {
+    $childstack = (Get-CFNStack | Where-Object {$_.StackName -match "$(BaseStackName)-Master" }).StackName[2]
+}
 Write-Host $childstack | Out-Default
 
 $webServerGroupResource = (Get-CFNStackResource -StackName $childstack -region ap-southeast-2 -logicalResourceId WebServerGroup)
