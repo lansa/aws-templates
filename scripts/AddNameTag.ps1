@@ -1,4 +1,5 @@
-$BaseImageName=$args[0]
+#e.g AddNameTag.ps1 -BaseImageName w12r2d-14-2
+param ($BaseImageName)
 $imageId = "$(Copy.id)"
 New-EC2Tag -Resources $imageId -Tags @{ Key = "Name" ; Value = "$(Copy.name)"}
 Write-Host "Saving the Copied ami ID $imageId " | Out-Default | Write-Host

@@ -1,4 +1,5 @@
-$BaseImageName=$args[0]
+#e.g CopyAMIToUS.ps1 -BaseImageName w12r2d-14-2
+param ($BaseImageName)
 $path = "$(System.DefaultWorkingDirectory)/_Build Image Release Artefacts/aws-$BaseImageName/$BaseImageName.txt"
 if (Test-Path $path) {
   $amiID = Get-Content -Path $path 

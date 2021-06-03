@@ -1,11 +1,10 @@
 #Expect Below paramter to be passed from pipeline.
-# 1. BaseImageName : Base image name e.g w12r2d-14-2
-# 2. BaseStackName : Stack Name either production or Vpc
-# 3. IsVpcStack : Pass yes if it is VpcStack otherwise no
+# 1. BaseImageName : Base image name e.g -BaseImageName w12r2d-14-2
+# 2. BaseStackName : Stack Name either production or Vpc e.g -BaseStackName production
+# 3. IsVpcStack : Pass yes if it is VpcStack otherwise e.g -IsVpcStack yes
+# RunLiveTests-AWSPowershell.ps1 -BaseImageName w12r2d-14-2 -BaseStackName production -IsVpcStack yes
 
-$BaseImageName=$args[0]
-$BaseStackName=$args[1]
-$IsVpcStack=$args[2]
+param ($BaseImageName, $BaseStackName, $IsVpcStack)
 
 if ("$(imageReleaseState)" -eq "Production") {
     $SkuName = "$BaseImageName-$(TestVersionPrev-$BaseImageName)"
