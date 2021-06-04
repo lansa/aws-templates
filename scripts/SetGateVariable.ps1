@@ -1,5 +1,14 @@
-param ($BaseImageName)
-#SetGateVariable.ps1 -BaseImageName w12r2d-14-2
+param (
+    [Parameter(Mandatory=$true)]
+    [string]
+    $BaseImageName,
+
+    [Parameter(Mandatory=$true)]
+    [string]
+    $stackname
+   )
+
+#SetGateVariable.ps1 -BaseImageName w12r2d-14-2 -stackname BakingDP-ImageRelease
 # Set the Gate variable if the file exists
 Write-Host "##vso[task.setvariable variable=IsEnabled;isOutput=true]False" | Out-Default | Write-Verbose
 $path = "$($env:System_DefaultWorkingDirectory)/_Build Image Release Artefacts/aws-$BaseImageName/$BaseImageName.txt"
@@ -12,7 +21,7 @@ if (Test-Path $path) {
   $imageName -match "$BaseImageName[-]?[0-9]+"
   $version = $Matches[0]
   Write-Host "Version : $version"
-  $stackname = "$version-$(stackname)"
+  $stackname = "$version-$stackname"
   Write-Host "Stack name : $stackname"
   #Set Variables
   Write-Host "##vso[task.setvariable variable=stack;isOutput=true]$stackname" | Out-Default | Write-Verbose

@@ -4,7 +4,19 @@
 # 3. IsVpcStack : Pass yes if it is VpcStack otherwise e.g -IsVpcStack yes
 # RunLiveTests-AWSPowershell.ps1 -BaseImageName w12r2d-14-2 -BaseStackName production -IsVpcStack yes
 
-param ($BaseImageName, $BaseStackName, $IsVpcStack)
+param (
+    [Parameter(Mandatory=$true)]
+    [string]
+    $BaseImageName,
+
+    [Parameter(Mandatory=$true)]
+    [string]
+    $BaseStackName,
+
+    [Parameter(Mandatory=$true)]
+    [string]
+    $IsVpcStack
+   )
 
 if ("$(imageReleaseState)" -eq "Production") {
     $SkuName = "$BaseImageName-$(TestVersionPrev-$BaseImageName)"
