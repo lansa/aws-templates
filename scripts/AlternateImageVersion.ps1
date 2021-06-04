@@ -1,10 +1,15 @@
 param (
     [Parameter(Mandatory=$true)]
     [string]
-    $Gatestack
+    $Gatestack,
+    
+    [Parameter(Mandatory=$true)]
+    [string]
+    $Gateversion
+
 )
 
-$SkuName = "$(Gate.version)"
+$SkuName = "$(Gateversion)"
 Write-Host "$SkuName"
 # Get the URL from the stack
 $output = (Get-CFNStack -StackName $($Gatestack) -region ap-southeast-2).Outputs
