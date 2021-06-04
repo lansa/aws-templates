@@ -5,7 +5,7 @@ param (
     $Gatestack
 )
 
-$stackoutput=(Get-CFNStack -StackName $(Gate.stack)).Outputs[0].OutputValue
+$stackoutput=(Get-CFNStack -StackName $($Gatestack)).Outputs[0].OutputValue
 #Write-Host $stackoutput
 
 $IpAddress =$stackoutput
