@@ -1,11 +1,12 @@
-$SkuName = "$(Gate.version)"
-Write-Host "$SkuName"
-# Get the URL from the stack
 param (
     [Parameter(Mandatory=$true)]
     [string]
     $Gatestack
 )
+
+$SkuName = "$(Gate.version)"
+Write-Host "$SkuName"
+# Get the URL from the stack
 $output = (Get-CFNStack -StackName $($Gatestack) -region ap-southeast-2).Outputs
 $websiteUrl = $output | Where-Object {$_.OutputKey -eq "WebsiteURL"}
 $url = $websiteUrl.OutputValue
