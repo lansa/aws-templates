@@ -3,10 +3,14 @@
 param (
     [Parameter(Mandatory=$true)]
     [string]
-    $BaseImageName
+    $BaseImageName,
+
+    [Parameter(Mandatory=$true)]
+    [string]
+    $Copyid
 )
 
-$imageId = "$(Copy.id)"
+$imageId = "$($Copyid)"
 New-EC2Tag -Resources $imageId -Tags @{ Key = "Name" ; Value = "$(Copy.name)"}
 Write-Host "Saving the Copied ami ID $imageId " | Out-Default | Write-Host
 $line = "$imageId - $(Copy.name)"
