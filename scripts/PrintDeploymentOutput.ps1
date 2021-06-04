@@ -1,4 +1,10 @@
 # Print the Deployment Output
-$stackoutput=(Get-CFNStack -StackName $(Gate.stack)).Outputs[0].OutputValue
+param (
+    [Parameter(Mandatory=$true)]
+    [string]
+    $Gatestack
+)
+
+$stackoutput=(Get-CFNStack -StackName $($Gatestack)).Outputs[0].OutputValue
 Write-Host $stackoutput
 
