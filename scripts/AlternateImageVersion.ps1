@@ -5,7 +5,11 @@ param (
     
     [Parameter(Mandatory=$true)]
     [string]
-    $Gateversion
+    $Gateversion,
+
+    [Parameter(Mandatory=$true)]
+    [string]
+    $CookbooksBranch
 )
 
 $SkuName = "$($Gateversion)"
@@ -14,7 +18,7 @@ Write-Host "$SkuName"
 $output = (Get-CFNStack -StackName $($Gatestack) -region ap-southeast-2).Outputs
 $websiteUrl = $output | Where-Object {$_.OutputKey -eq "WebsiteURL"}
 $url = $websiteUrl.OutputValue
-$CookbooksBranch = "$(CookbooksBranch)"
+$CookbooksBranch = "$($CookbooksBranch)"
 # Autoscaling Instance Id
 
 $childstack = (Get-CFNStack | Where-Object {$_.StackName -match "$($Gatestack)-Web" }).StackName
