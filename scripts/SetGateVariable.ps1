@@ -2,7 +2,7 @@ param ($BaseImageName)
 #SetGateVariable.ps1 -BaseImageName w12r2d-14-2
 # Set the Gate variable if the file exists
 Write-Host "##vso[task.setvariable variable=IsEnabled;isOutput=true]False" | Out-Default | Write-Verbose
-$path = "$(System.DefaultWorkingDirectory)/_Build Image Release Artefacts/aws-$BaseImageName/$BaseImageName.txt"
+$path = "$($env:System_DefaultWorkingDirectory)/_Build Image Release Artefacts/aws-$BaseImageName/$BaseImageName.txt"
 if (Test-Path $path) {
   Write-Host $path | Out-Default | Write-Verbose
   $amiID = Get-Content -Path $path 
