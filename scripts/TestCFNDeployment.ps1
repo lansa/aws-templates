@@ -1,4 +1,9 @@
 # Use the deployment output to extract the IpAddress
+param (
+    [Parameter(Mandatory=$true)]
+    [string]
+    $Gatestack
+)
 
 $stackoutput=(Get-CFNStack -StackName $(Gate.stack)).Outputs[0].OutputValue
 #Write-Host $stackoutput
