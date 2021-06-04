@@ -7,13 +7,17 @@ param (
 
     [Parameter(Mandatory=$true)]
     [string]
-    $Copyid
+    $Copyid,
+  
+    [Parameter(Mandatory=$true)]
+    [string]
+    $Copyname
 )
 
 $imageId = "$($Copyid)"
 New-EC2Tag -Resources $imageId -Tags @{ Key = "Name" ; Value = "$(Copy.name)"}
 Write-Host "Saving the Copied ami ID $imageId " | Out-Default | Write-Host
-$line = "$imageId - $(Copy.name)"
+$line = "$imageId - $($Copyname)"
 Write-Host "$line"
 $path = "$($env:System_DefaultWorkingDirectory)/copy-$BaseImageName.txt"
 Add-Content -Path $path $line
