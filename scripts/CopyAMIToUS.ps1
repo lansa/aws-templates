@@ -15,6 +15,4 @@ Write-Host " Image Copy takes a few minutes"
 #Start-Sleep -Seconds 550
 Write-Host "##vso[task.setvariable variable=name;isOutput=true]$imageName" | Out-Default | Write-Verbose
 Write-Host "##vso[task.setvariable variable=id;isOutput=true]$imageID" | Out-Default | Write-Verbose
-
 }
-
