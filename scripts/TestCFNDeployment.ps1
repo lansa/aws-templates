@@ -33,17 +33,17 @@ forEach($url in $urls) {
         $response = Invoke-WebRequest -Uri $url -TimeoutSec 14
         $ResponseCode = $response.StatusCode
         if($ResponseCode -ne 200) {
-            Write-Host "Response code not equal to 200: $ResponseCode" | Out-Default | Write-Verbose
+            Write-Host "Response code not equal to 200: $ResponseCode"
             $failureCount = $failureCount + 1
         } else {
-            Write-Host $url | Out-Default | Write-Verbose
-            Write-Host $ResponseCode | Out-Default | Write-Verbose
+            Write-Host $url
+            Write-Host $ResponseCode
         }
     } catch {
-        Write-Host $_.Exception | Out-Default | Write-Verbose
+        Write-Host $_.Exception
         $ResponseCode = $_.Exception.Response.StatusCode.Value__
         $failureCount = $failureCount + 1
-        Write-Host $ResponseCode | Out-Default | Write-Verbose
+        Write-Host $ResponseCode
     }
 }
 if($failureCount) {
