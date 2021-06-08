@@ -9,19 +9,19 @@ param (
 
     [Parameter(Mandatory=$true)]
     [string]
-    $region
+    $Region
 )
 
 $SkuName = "$($Gateversion)"
 Write-Host "$SkuName"
 # Get the URL from the stack
-$output = (Get-CFNStack -StackName $($Gatestack) -region $($region)).Outputs
+$output = (Get-CFNStack -StackName $($Gatestack) -Region $($Region)).Outputs
 $websiteUrl = $output | Where-Object {$_.OutputKey -eq "WebsiteURL"}
 $url = $websiteUrl.OutputValue
 
 # Autoscaling Instance Id
 $childstack = (Get-CFNStack | Where-Object {$_.StackName -match "$($Gatestack)-Web" }).StackName
-$webServerGroupResource = (Get-CFNStackResource -StackName $childstack -region $($region) -logicalResourceId WebServerGroup)
+$webServerGroupResource = (Get-CFNStackResource -StackName $childstack -Region $($Region) -logicalResourceId WebServerGroup)
 $instanceDetails = Get-ASAutoScalingInstance | ? {$_.AutoScalingGroupName -eq $webServerGroupResource.PhysicalResourceId} | select -ExpandProperty InstanceId | Get-EC2Instance | select -ExpandProperty RunningInstance | ft InstanceId, PrivateIpAddress
 $instanceId = (Get-ASAutoScalingGroup -AutoScalingGroupName $webServerGroupResource.PhysicalResourceId).Instances.InstanceId
 
