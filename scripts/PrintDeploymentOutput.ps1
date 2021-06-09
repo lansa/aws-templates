@@ -5,6 +5,6 @@ param (
     $Gatestack
 )
 
-$stackoutput=(Get-CFNStack -StackName $($Gatestack)).Outputs[0].OutputValue
-Write-Host $stackoutput
+(Get-CFNStack -StackName $($Gatestack)).Outputs[0].OutputValue | Out-Default | Write-Host
+
 
