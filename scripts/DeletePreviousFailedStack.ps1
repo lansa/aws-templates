@@ -5,7 +5,6 @@ param (
 )
 
 try{
-<<<<<<< HEAD
 Get-CFNStack -StackName $($Gatestack)
 Remove-CFNStack -StackName $($Gatestack) -Force
 $count =0
