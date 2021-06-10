@@ -6,7 +6,7 @@ param (
 )
 
 $stackoutput=(Get-CFNStack -StackName $($Gatestack)).Outputs[0].OutputValue
-#Write-Host $stackoutput
+Write-Host "Stack Output: $stackoutput"
 
 $IpAddress =$stackoutput
 
@@ -29,18 +29,18 @@ add-type @"
 [System.Net.ServicePointManager]::CertificatePolicy = New-Object TrustAllCertsPolicy
 $failureCount = 0
 forEach($url in $urls) {
+    Write-Host $url
     try{
-        $response = Invoke-WebRequest -Uri $url -TimeoutSec 14
+        $response = Invoke-WebRequest -Uri $url -TimeoutSec 60
         $ResponseCode = $response.StatusCode
         if($ResponseCode -ne 200) {
             Write-Host "Response code not equal to 200: $ResponseCode"
             $failureCount = $failureCount + 1
         } else {
-            Write-Host $url
             Write-Host $ResponseCode
         }
     } catch {
-        Write-Host $_.Exception
+        $_.Exception | Out-Default | Write-Host
         $ResponseCode = $_.Exception.Response.StatusCode.Value__
         $failureCount = $failureCount + 1
         Write-Host $ResponseCode

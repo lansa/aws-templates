@@ -5,6 +5,7 @@ param (
 )
 
 try{
+<<<<<<< HEAD
 Get-CFNStack -StackName $($Gatestack)
 Remove-CFNStack -StackName $($Gatestack) -Force
 $count =0
@@ -20,10 +21,8 @@ while($count -lt 20){
          break
           }
      }
-
-Write-Host "Stack deleted"
-}
-catch{
-Write-Host "There is no stack or it was deleted"
+    Write-Host "Stack deleted"
+} catch {
+    Write-Host "There is no stack or it was deleted"
 }
 
