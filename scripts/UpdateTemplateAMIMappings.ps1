@@ -26,11 +26,15 @@ if ( $TemplateJson ) {
 
     Write-Host("JSON loaded" )
 
-    $AMI142 = $TemplateJson.Mappings.AWSRegionArch2AMI142
-    Write-Host "V14 SP2 AMIs $AMI142"
+     #$TemplateJson
+     $AMI142 = $TemplateJson.Mappings.AWSRegionArch2AMI142
 
-    $AMI15 = $TemplateJson.Mappings.AWSRegionArch2AMI15
-    Write-Host "V15 GA AMIs $AMI15"
+     Write-Host( "V14 SP2 AMIs")
+     $AMI142 | Out-Default | Write-Host
+
+     $AMI15 = $TemplateJson.Mappings.AWSRegionArch2AMI15
+     Write-Host( "V15 GA AMIs")
+     $AMI15 | Out-Default | Write-Host
 
     $AMIList = @()
     foreach ( $ImageName in $BaseImageNameArray ) {
@@ -58,36 +62,18 @@ if ( $TemplateJson ) {
         Clear-Variable -name amiID
     }
 
+    Write-Host "AMI List : $AMIList"
+
     $index = 0
     foreach ($win in @("win2012", "win2016", "win2019", "win2016jpn", "win2019jpn")) {
-        # Check whether an AMI exists in the template for this Region/Win version
-        if ( Get-Member -inputobject $AMI142 -name "$Region" ) {
-            if ( Get-Member -inputobject $AMI142.$Region -name "$win" ) {
-                if ( $AMIList[$index] -ne "skip") {
 
-                    $TemplateJson.Mappings.AWSRegionArch2AMI142.$Region.$win = $AMIList[$index]
-                    $index++
-                }
-            } else {
-                Write-Host "$win V14.2 There is no AMI for $win"
-            }
-        } else {
-            Write-Host "$win V14.2 There is no AMI in $Region"
-        }
-
-        if ( Get-Member -inputobject $AMI15 -name "$Region" ) {
-            if ( Get-Member -inputobject $AMI15.$Region -name "$win") {
-                if ( $AMIList[$index] -ne "skip") {
-                    $TemplateJson.Mappings.AWSRegionArch2AMI15.$Region.$win = $AMIList[$index]
-                    $index++
-                }
-            } else {
-                Write-Host "$win V15 There is no AMI for $win"
-            }
-        } else {
-            Write-Host "$win V15 There is no AMI in $Region"
-        }
+        # Update the AMIs in template for Region/Win version
+        $TemplateJson.Mappings.AWSRegionArch2AMI142.$Region.$win = $AMIList[$index]
+        $index++
+        $TemplateJson.Mappings.AWSRegionArch2AMI15.$Region.$win = $AMIList[$index]
+        $index++
     }
+
     $TemplateJson  | ConvertTo-Json | set-content $FilePath
 
 } else {
