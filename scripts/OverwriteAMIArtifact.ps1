@@ -12,4 +12,9 @@ Write-Host "sourcepath = $sourcepath"
 $targetpath = "$($env:System_DefaultWorkingDirectory)/_Build Image Release Artefacts/aws-$BaseImageName/$BaseImageName.txt"
 Write-Host "targetpath = $targetpath"
 
-Copy-Item $sourcepath $targetpath -Force
+Remove-Item $targetpath -ErrorAction SilentlyContinue
+
+if (Test-Path $sourcepath) {
+    Copy-Item $sourcepath $targetpath
+}
+
