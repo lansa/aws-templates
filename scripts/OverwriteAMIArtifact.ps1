@@ -15,6 +15,9 @@ Write-Host "targetpath = $targetpath"
 Remove-Item $targetpath -ErrorAction SilentlyContinue
 
 if (Test-Path $sourcepath) {
+    Write-Host "Copying $sourcepath to $targetpath"
     Copy-Item $sourcepath $targetpath
+} else {
+    Write-Host "$sourcepath does not exist"
 }
 
