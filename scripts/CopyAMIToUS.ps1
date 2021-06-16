@@ -8,14 +8,20 @@ param (
 $path = "$($env:System_DefaultWorkingDirectory)/_Build Image Release Artefacts/aws-$BaseImageName/$BaseImageName.txt"
 Write-Host "Using $path"
 if (Test-Path $path) {
-    $amiID = Get-Content -Path $path
-    Write-Host "AMI ID = $amiID"
-    $imageName = (Get-EC2Image -ImageId $amiID).Name
-    Write-Host "Image Copy takes a few minutes"
-    $imageID = Copy-EC2Image -SourceRegion ap-southeast-2 -SourceImageId $amiID -Region us-east-1 -Name $imageName
-
-    Write-Host "##vso[task.setvariable variable=name;isOutput=true]$imageName"
-    Write-Host "##vso[task.setvariable variable=id;isOutput=true]$imageID"
+    try{
+        $amiID = Get-Content -Path $path
+        Write-Host "AMI ID = $amiID"
+        $imageName = (Get-EC2Image -ImageId $amiID).Name
+        Write-Host "Image Copy takes a few minutes"
+        $imageID = Copy-EC2Image -SourceRegion ap-southeast-2 -SourceImageId $amiID -Region us-east-1 -Name $imageName
+        Write-Host "imageID: $imageID"
+        Write-Host "##vso[task.setvariable variable=name;isOutput=true]$imageName"
+        Write-Host "##vso[task.setvariable variable=id;isOutput=true]$imageID"
+    }
+    catch{
+        Write-Host "Failed to set Task Variable"
+        $_ | Out-Default | Write-Host
+    }
 } else {
     Write-Host "Path does not exist"
 }
