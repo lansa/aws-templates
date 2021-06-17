@@ -17,8 +17,8 @@ if (Test-Path $path) {
     try{
         $amiID = Get-Content -Path $path
         Write-Host "AMI ID $($amiID)"
-        #$imageName = (Get-EC2Image -ImageId $amiID).Name
-        #$imageName -match "$BaseImageName[-]?[0-9]+"
+        $imageName = (Get-EC2Image -ImageId $amiID)
+        $imageName -match "$BaseImageName[-]?[0-9]+"
         $version = $Matches[0]
         Write-Host "Version : $version"
         $stackname = "$version-$stackname"
