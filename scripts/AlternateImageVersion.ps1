@@ -26,16 +26,12 @@ $DebugPreference = "SilentlyContinue"
 $result = Send-SSMCommand -InstanceId $instanceId  -DocumentName "AWS-RunPowerShellScript" -Comment "Checking Image Version" -Parameter @{'commands'=@("c:\lansa\Tests\TestImageVersion.ps1 -ImgName $SkuName")}
 do{
     Start-Sleep -Seconds 5
-    $status = Get-SSMCommandInvocation -InstanceId $instanceId -CommandId $result.CommandId
-} while (($status.Status -eq "Pending") -or ($status.Status -eq "InProgess"))
-Write-Host "Command Completed"
-Write-Host "Command Result Status:"
-$status = Get-SSMCommandInvocation -InstanceId $instanceId -CommandId $result.CommandId
-Out-Default -InputObject $status.Status
+    $Output = Get-SSMCommandInvocation -InstanceId $instanceId -CommandId $result.CommandId
+} while (($Output.Status -eq "Pending") -or ($Output.Status -eq "InProgess"))
+$Output = Get-SSMCommandInvocationDetail -InstanceId $instanceId -CommandId $result.CommandId | Out-Default | Write-Host
+Write-Host $($Output.StandardOutputContent)
 
-Write-Host "Command Result Details:"
-$output = Get-SSMCommandInvocation -CommandId $result.CommandId -Details $true -InstanceId $instanceId
-Out-Default -InputObject $output.Output
+$Output = Get-SSMCommandInvocation -InstanceId $instanceId -CommandId $result.CommandId
+Write-Host "Command Result Status: $($Output.Status)"
+Out-Default -InputObject $Output.Status
 
-Write-Host "Command Result Invocation Details:"
-Get-SSMCommandInvocationDetail -InstanceId $instanceId -CommandId $result.CommandId | Out-Default | Write-Host

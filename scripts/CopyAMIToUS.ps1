@@ -16,6 +16,8 @@ if (Test-Path $path) {
 
     Write-Host "##vso[task.setvariable variable=name;isOutput=true]$imageName"
     Write-Host "##vso[task.setvariable variable=id;isOutput=true]$imageID"
+    Write-Host "##vso[task.setvariable variable=Exists;isOutput=true]True"
 } else {
+    Write-Host "##vso[task.setvariable variable=Exists;isOutput=true]False"
     Write-Host "Path does not exist"
 }
