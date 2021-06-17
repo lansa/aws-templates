@@ -3,6 +3,10 @@ param (
     [string]
     $GitBranch,
 
+    # eg: GitURL you can get it from github repo (i.e. clone https url)
+    # to generate parsonal access token please follow steps mentioned in below url
+    # https://docs.github.com/en/github/authenticating-to-github/keeping-your-account-and-data-secure/creating-a-personal-access-token
+    # eg format for gitURL https://<Personal access token>:x-auth-basic@github.com/lansa/aws-templates.git
     [Parameter(Mandatory=$true)]
     [string]
     $GitURL,
