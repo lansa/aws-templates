@@ -15,7 +15,8 @@ $path = "$($env:System_DefaultWorkingDirectory)/_Build Image Release Artefacts/a
 Write-Host "Using $path"
 if (Test-Path $path) {
     try{
-        $amiID = Get-Content -Path $path -Filter ami*
+        $amiID = Get-Content -Path $path
+        $amiID = $amiID.Split(" ")[0]
         Write-Host "AMI ID $($amiID)"
         $imageName = (Get-EC2Image -ImageId $amiID).Name
         $imageName -match "$BaseImageName[-]?[0-9]+"
