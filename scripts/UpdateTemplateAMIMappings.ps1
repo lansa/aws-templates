@@ -1,13 +1,17 @@
 param (
     [Parameter(Mandatory=$true)]
     [string]
-    [ValidateSet("Production", "Development")]
+    [ValidateSet("Production", "Development", "Debug")]
     $ImageType
-    )
+)
 
-$FilePath = "$($env:System_DefaultWorkingDirectory)\_lansa_aws-templates\CloudFormationWindows\lansa-master-win.cfn.template"
+If ( $ImageType -eq "Debug") {
+    $FilePath = "C:\DevOps\Lansa-AWS\lansa-master-win.cfn.template"
+} else {
+    $FilePath = "$($env:System_DefaultWorkingDirectory)\_lansa_aws-templates\CloudFormationWindows\lansa-master-win.cfn.template"
+}
 
-$TemplateJson = Get-Content -Path  $FilePath | ConvertFrom-Json
+$TemplateJson = Get-Content -Path $FilePath | ConvertFrom-Json
 
 $BaseImageNameArray = @(
     'w12r2d-14-2'
@@ -37,6 +41,7 @@ if ( $TemplateJson ) {
      $AMI15 | Out-Default | Write-Host
 
     $AMIList = @()
+    $amiID = ""
     foreach ( $ImageName in $BaseImageNameArray ) {
         switch ($ImageType)
         {
@@ -50,10 +55,14 @@ if ( $TemplateJson ) {
                 $path = "$($env:System_DefaultWorkingDirectory)/copy-$ImageName.txt"
                 $Region = 'us-east-1'
             }
+            Debug
+            {
+                $path = "C:\DevOps\Lansa-AWS\AMIIDS\$ImageName.txt"
+                $Region = 'us-east-1'
+            }
         }
-
-        $amiID = Get-Content -Path $path
-        if ( $amiID ) {
+        if ( Test-Path $path ) {
+            $amiID = [string](Get-Content -Path $path)
             $AMIList += $amiID
         } else {
             $AMIList += "skip"
@@ -62,19 +71,45 @@ if ( $TemplateJson ) {
         Clear-Variable -name amiID
     }
 
-    Write-Host "AMI List : $AMIList"
+    Write-Host "AMI List:"
+    $AMIList | Out-Default | Write-Host
 
     $index = 0
     foreach ($win in @("win2012", "win2016", "win2019", "win2016jpn", "win2019jpn")) {
 
         # Update the AMIs in template for Region/Win version
-        $TemplateJson.Mappings.AWSRegionArch2AMI142.$Region.$win = $AMIList[$index]
+        if  ( $AMIList[$index] -ne "skip" ) {
+            $TemplateJson.Mappings.AWSRegionArch2AMI142.$Region.$win = $AMIList[$index]
+        }
         $index++
-        $TemplateJson.Mappings.AWSRegionArch2AMI15.$Region.$win = $AMIList[$index]
-        $index++
+        if  ( $AMIList[$index] -ne "skip" ) {
+            $TemplateJson.Mappings.AWSRegionArch2AMI15.$Region.$win = $AMIList[$index]
+        }
+        $index++;
     }
 
-    $TemplateJson  | ConvertTo-Json | set-content $FilePath
+    $Members = Get-Member -inputobject $TemplateJson.Parameters
+    foreach ( $Member in $members ) {
+        if ( $Member.MemberType -eq 8 ) {  # Only Processing MemberType 8 which is Method
+            $MemberName = $Member.Name
+
+            $Description = $TemplateJson.Parameters.$MemberName.Description
+            if ( $Description ) {
+                $Description = $Description -replace "\\", "\\"
+                $DescriptionInJson = $Description | ConvertTo-Json
+                $TemplateJson.Parameters.$MemberName.Description = $DescriptionInJson.Trim('"')
+            }
+
+            $AllowedPattern = $TemplateJson.Parameters.$MemberName.AllowedPattern
+            if ( $AllowedPattern ) {
+                $AllowedPattern = $AllowedPattern -replace "\\\\", "\"
+                $AllowedPatternInJson = $AllowedPattern | ConvertTo-Json
+                $TemplateJson.Parameters.$MemberName.AllowedPattern = $AllowedPatternInJson.Trim('"')
+            }
+        }
+    }
+
+    $TemplateJson  | ConvertTo-Json -Depth 12 | % { [System.Text.RegularExpressions.Regex]::Unescape($_) } | set-content $FilePath
 
 } else {
     Throw "Template file $FilePath does not exist"
