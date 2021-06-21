@@ -115,6 +115,9 @@ if ( $TemplateJson ) {
     Throw "Template file $FilePath does not exist"
 }
 
+#goto current source folder
+$path = "$($env:System_DefaultWorkingDirectory)/_lansa_aws-templates"
+cd $path
 
 # git add files
 git add .
