@@ -3,14 +3,6 @@ param (
     [string]
     [ValidateSet("Production", "Development", "Debug")]
     $ImageType
-
-    [Parameter(Mandatory=$true)]
-    [string]
-    $GitSourceBranch
-
-    [Parameter(Mandatory=$true)]
-    [string]
-    $GitTargetBranch
     )
 
 If ( $ImageType -eq "Debug") {
@@ -123,23 +115,12 @@ if ( $TemplateJson ) {
     Throw "Template file $FilePath does not exist"
 }
 
-# git commands to commit and push
-git checkout $GitSourceBranch
 
 # git add files
 git add .
 
-# git commit files
-git commit -m "added master templates changes"
+# git commit template files
+git commit -m "Update Template AMI Mappings"
 
-# git push to source branch
-git push origin $GitSourceBranch
-
-# git checkout to GitTargetBranch
-git checkout $GitTargetBranch
-
-# git merge changes to GitTargetBranch
-git merge $GitTargetBranch
-
-# push changes to TargetBranch
-git push origin $GitTargetBranch
+# git push to GitTargetBranch branch
+git push
