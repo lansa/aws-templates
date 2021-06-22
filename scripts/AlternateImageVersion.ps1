@@ -30,7 +30,7 @@ do{
 } while (($Output.Status -eq "Pending") -or ($Output.Status -eq "InProgess"))
 Write-Host "Command Result Status: $($Output.Status)"
 
-$Output = Get-SSMCommandInvocation -InstanceId $instanceId -CommandId $result.CommandId
+$Output = Get-SSMCommandInvocationDetail -InstanceId $instanceId -CommandId $result.CommandId
 $Output.StandardOutputContent | Out-Default | Write-Host
 
 if ($Output.StandardErrorContent -ne ""){
