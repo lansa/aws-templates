@@ -34,6 +34,6 @@ $Output = Get-SSMCommandInvocation -InstanceId $instanceId -CommandId $result.Co
 $Output.StandardOutputContent | Out-Default | Write-Host
 
 if ($Output.StandardErrorContent -ne ""){
-    Write-Error ($Output.StandardErrorContent | Out-String )
+    $Output.StandardErrorContent | Out-Default | Write-Host
 throw
 }
