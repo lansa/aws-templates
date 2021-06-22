@@ -21,6 +21,8 @@ $webServerGroupResource = (Get-CFNStackResource -StackName $childstack -Region $
 $instanceDetails = Get-ASAutoScalingInstance | ? {$_.AutoScalingGroupName -eq $webServerGroupResource.PhysicalResourceId} | select -ExpandProperty InstanceId | Get-EC2Instance | select -ExpandProperty RunningInstance | ft InstanceId, PrivateIpAddress
 $instanceId = (Get-ASAutoScalingGroup -AutoScalingGroupName $webServerGroupResource.PhysicalResourceId).Instances.InstanceId
 
+$fail = $False
+
 #Send command
 $DebugPreference = "SilentlyContinue"
 $result = Send-SSMCommand -InstanceId $instanceId  -DocumentName "AWS-RunPowerShellScript" -Comment "Checking Image Version" -Parameter @{'commands'=@("c:\lansa\Tests\TestImageVersion.ps1 -ImgName $SkuName")}
@@ -28,10 +30,18 @@ do{
     Start-Sleep -Seconds 5
     $Output = Get-SSMCommandInvocation -InstanceId $instanceId -CommandId $result.CommandId
 } while (($Output.Status -eq "Pending") -or ($Output.Status -eq "InProgess"))
+$result | Out-Default | Write-Host
 $Output = Get-SSMCommandInvocationDetail -InstanceId $instanceId -CommandId $result.CommandId | Out-Default | Write-Host
 Write-Host $($Output.StandardOutputContent)
+
+if ($Output.StandardErrorContent -ne "") { 
+    $fail = $True
+}
 
 $Output = Get-SSMCommandInvocation -InstanceId $instanceId -CommandId $result.CommandId
 Write-Host "Command Result Status: $($Output.Status)"
 Out-Default -InputObject $Output.Status
 
+if ($fail) {
+    throw $Output.StandardErrorContent
+}
