@@ -23,5 +23,6 @@ if (Test-Path $path) {
         Throw "Failed to set Task Variable"
     }
 } else {
+    Write-Host "##vso[task.setvariable variable=Exists;isOutput=true]False"
     Write-Host "Path does not exist"
 }
