@@ -753,7 +753,7 @@
         "win2019jpn": ""
       },
       "ap-southeast-2": {
-        "win2012": "ami-0eb708a9a4289e72e",
+        "win2012": "ami-0b35ee049778d7304",
         "win2016": "ami-046cedace49532a6b",
         "win2019": "ami-0c363029eae1b2d69",
         "win2016jpn": "",
@@ -1735,15 +1735,24 @@
                       "3AZCondition",
                       [
                         {
-                          "Fn::GetAtt": [ "VpcStack", "Outputs.ELBSubnetId1" ]
+                          "Fn::GetAtt": [
+                            "VpcStack",
+                            "Outputs.ELBSubnetId1"
+                          ]
                         },
                         {
-                          "Fn::GetAtt": [ "VpcStack", "Outputs.ELBSubnetId2" ]
+                          "Fn::GetAtt": [
+                            "VpcStack",
+                            "Outputs.ELBSubnetId2"
+                          ]
                         }
                       ],
                       [
                         {
-                          "Fn::GetAtt": [ "VpcStack", "Outputs.ELBSubnetId1" ]
+                          "Fn::GetAtt": [
+                            "VpcStack",
+                            "Outputs.ELBSubnetId1"
+                          ]
                         }
                       ]
                     ]
@@ -2064,15 +2073,24 @@
                       "3AZCondition",
                       [
                         {
-                          "Fn::GetAtt": [ "VpcStack", "Outputs.ELBSubnetId1" ]
+                          "Fn::GetAtt": [
+                            "VpcStack",
+                            "Outputs.ELBSubnetId1"
+                          ]
                         },
                         {
-                          "Fn::GetAtt": [ "VpcStack", "Outputs.ELBSubnetId2" ]
+                          "Fn::GetAtt": [
+                            "VpcStack",
+                            "Outputs.ELBSubnetId2"
+                          ]
                         }
                       ],
                       [
                         {
-                          "Fn::GetAtt": [ "VpcStack", "Outputs.ELBSubnetId1" ]
+                          "Fn::GetAtt": [
+                            "VpcStack",
+                            "Outputs.ELBSubnetId1"
+                          ]
                         }
                       ]
                     ]
