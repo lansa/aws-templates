@@ -109,7 +109,7 @@ if ( $TemplateJson ) {
         }
     }
 
-    $TemplateJson  | ConvertTo-Json -Depth 13 | % { [System.Text.RegularExpressions.Regex]::Unescape($_) } | set-content $FilePath
+    $TemplateJson  | ConvertTo-Json -Depth 14 | % { [System.Text.RegularExpressions.Regex]::Unescape($_) } | set-content $FilePath
 
 } else {
     Throw "Template file $FilePath does not exist"
