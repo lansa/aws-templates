@@ -43,16 +43,18 @@ if ( $TemplateJson ) {
     $AMIList = @()
     $amiID = ""
     foreach ( $ImageName in $BaseImageNameArray ) {
+
+        #Developement and Production uses same file path location
+        $path = "$($env:System_DefaultWorkingDirectory)/_Build Image Release Artefacts/aws-$ImageName/$ImageName.txt"
+
         switch ($ImageType)
         {
             Development
             {
-                $path = "$($env:System_DefaultWorkingDirectory)/_Build Image Release Artefacts/aws-$ImageName/$ImageName.txt"
                 $Region = 'ap-southeast-2'
             }
             Production
             {
-                $path = "$($env:System_DefaultWorkingDirectory)/copy-$ImageName.txt"
                 $Region = 'us-east-1'
             }
             Debug
