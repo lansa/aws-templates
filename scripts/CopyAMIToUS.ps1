@@ -5,7 +5,7 @@ param (
     $BaseImageName
 )
 
-$path = "$($env:System_DefaultWorkingDirectory)/_Build Image Release Artefacts/aws-$BaseImageName/$BaseImageName.txt"
+$path = "$($env:System_DefaultWorkingDirectory)/_Build Image Release Artefacts/aws/$BaseImageName.txt"
 Write-Host "Using $path"
 if (Test-Path $path) {
     $amiID = Get-Content -Path $path
