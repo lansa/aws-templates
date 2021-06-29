@@ -123,9 +123,21 @@ cd $path
 
 # git add files
 git add .
+if (-not $?) {
+  Write-Host("git add . failed");
+  exit 1
+}
 
 # git commit template files
 git commit -m "Update Template AMI Mappings"
+if (-not $?) {
+  Write-Host("git commit -m failed");
+  exit 1
+}
 
 # git push to GitTargetBranch branch
 git push
+if (-not $?) {
+  Write-Host("git push failed");
+  exit 1
+}

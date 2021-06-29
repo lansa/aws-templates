@@ -30,27 +30,27 @@ cd "$($env:System_DefaultWorkingDirectory)/$($GitRepoName)"
 # git checkout to branch
 git checkout $GitBranch
 if (-not $?) {
-  Write-Error ("git checkout $GitBranch failed");
+  Write-Host("git checkout $GitBranch failed");
   exit 1
 }
 
 # git configure email
 git config --global user.email "$($GitUserEmail)"
 if (-not $?) {
-  Write-Error ("git config --global user.email failed");
+  Write-Host("git config --global user.email failed");
   exit 1
 }
 
 # git configure name
 git config --global user.name "$($GitUserName)"
 if (-not $?) {
-  Write-Error ("git config --global user.name failed");
+  Write-Host("git config --global user.name failed");
   exit 1
 }
 
 # git set remote origin url with personal access token
 git remote set-url origin $GitURL
 if (-not $?) {
-  Write-Error ("git remote set-url failed");
+  Write-Host("git remote set-url failed");
   exit 1
 }
