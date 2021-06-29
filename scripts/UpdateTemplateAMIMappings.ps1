@@ -128,16 +128,20 @@ if (-not $?) {
   exit 1
 }
 
-# git commit template files
-git commit -m "Update Template AMI Mappings"
-if (-not $?) {
-  Write-Host("git commit -m failed");
-  exit 1
-}
+$ChangedFiles = $(git status --porcelain | Measure-Object | Select-Object -expand Count)
+if ($ChangedFiles -gt 0)
+{
+  # git commit template files
+  git commit -m "Update Template AMI Mappings"
+  if (-not $?) {
+    Write-Host("git commit -m failed");
+    exit 1
+  }
 
-# git push to GitTargetBranch branch
-git push
-if (-not $?) {
-  Write-Host("git push failed");
-  exit 1
+  # git push to GitTargetBranch branch
+  git push
+  if (-not $?) {
+    Write-Host("git push failed");
+    exit 1
+  }
 }
