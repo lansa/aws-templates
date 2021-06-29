@@ -1,4 +1,3 @@
-Write-Host "726ehhjhewhhwe3"
 param (
     [Parameter(Mandatory=$true)]
     [string]
@@ -29,6 +28,7 @@ param (
 cd "$($env:System_DefaultWorkingDirectory)/$($GitRepoName)"
 
 # git checkout to branch
+Write-Host "test123"
 git checkout $GitBranch
 if (-not $?) {
   Write-Host("git checkout $GitBranch failed");
