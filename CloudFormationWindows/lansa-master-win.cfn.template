@@ -753,7 +753,7 @@
         "win2019jpn": ""
       },
       "ap-southeast-2": {
-        "win2012": "ami-01a211535826faa83",
+        "win2012": "ami-0c2a3f06d81bbb745",
         "win2016": "ami-08f88bf429f38a678",
         "win2019": "ami-09a06d92658da4184",
         "win2016jpn": "",
