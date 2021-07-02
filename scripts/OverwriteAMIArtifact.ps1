@@ -6,7 +6,7 @@ Write-Host "sourcepath = $sourcepath"
 $targetpath = "$($env:System_DefaultWorkingDirectory)/_Build Image Release Artefacts/aws"
 Write-Host "targetpath = $targetpath"
 
-Remove-Item $targetpath -ErrorAction SilentlyContinue
+Remove-Item $targetpath/* -ErrorAction SilentlyContinue
 
 if (Test-Path $sourcepath) {
     Write-Host "Copying $sourcepath to $targetpath"
