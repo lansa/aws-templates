@@ -27,11 +27,13 @@ $result = Send-SSMCommand -InstanceId $instanceId  -DocumentName "AWS-RunPowerSh
 do{
     Start-Sleep -Seconds 5
     $Output = Get-SSMCommandInvocation -InstanceId $instanceId -CommandId $result.CommandId
-} while (($Output.Status -eq "Pending") -or ($Output.Status -eq "InProgess"))
-$Output = Get-SSMCommandInvocationDetail -InstanceId $instanceId -CommandId $result.CommandId | Out-Default | Write-Host
-Write-Host $($Output.StandardOutputContent)
-
-$Output = Get-SSMCommandInvocation -InstanceId $instanceId -CommandId $result.CommandId
+} while (($Output.Status -eq "Pending") -or ($Output.Status -eq "InProgress"))
 Write-Host "Command Result Status: $($Output.Status)"
-Out-Default -InputObject $Output.Status
 
+$Output = Get-SSMCommandInvocationDetail -InstanceId $instanceId -CommandId $result.CommandId
+$Output.StandardOutputContent | Out-Default | Write-Host
+
+if ($Output.StandardErrorContent -ne ""){
+    $Output.StandardErrorContent | Out-Default | Write-Host
+throw
+}
