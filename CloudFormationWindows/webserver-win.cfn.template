@@ -603,6 +603,7 @@
                                         [
                                             "@powershell -NoProfile -ExecutionPolicy unrestricted -command ",
                                             "\"& {",
+                                                "[Console]::OutputEncoding = [System.Text.Encoding]::UTF8;",
                                                 "if ('yes' -eq '",
                                                 { "Ref": "UpdateManagementScripts" },
                                                 "') {",
@@ -641,6 +642,7 @@
                                         "",
                                         [
                                             "@powershell -NoProfile -ExecutionPolicy unrestricted -command \"& {",
+                                            "[Console]::OutputEncoding = [System.Text.Encoding]::UTF8;",
                                             "Set-ItemProperty -Path \"HKLM:\\Software\\lansa\" -Name \"Installing\" -Value 1",
                                             ";exit $LastExitCode",
                                             "}\""
@@ -659,6 +661,7 @@
                                         "",
                                         [
                                             "@powershell -NoProfile -ExecutionPolicy unrestricted -command \"& {",
+                                            "[Console]::OutputEncoding = [System.Text.Encoding]::UTF8;",
                                             "Set-ItemProperty -Path \"HKLM:\\Software\\lansa\" -Name \"Installing\" -Value 0",
                                             ";exit $LastExitCode",
                                             "}\""
@@ -677,6 +680,7 @@
                                         "",
                                         [
                                             "@powershell -NoProfile -ExecutionPolicy unrestricted -command \"& {",
+                                            "[Console]::OutputEncoding = [System.Text.Encoding]::UTF8;",
                                             "C:\\LANSA\\scripts\\Restart-IfNeeded.ps1",
                                             ";exit $LastExitCode",
                                             "}\""
@@ -695,6 +699,7 @@
                                         "",
                                         [
                                             "@powershell -NoProfile -ExecutionPolicy unrestricted -command \"& {",
+                                            "[Console]::OutputEncoding = [System.Text.Encoding]::UTF8;",
                                             "C:\\LANSA\\scripts\\install-logging.ps1",
                                             " -stack ",
                                             { "Ref": "AWS::StackName" },
@@ -719,6 +724,7 @@
                                         "",
                                         [
                                             "@powershell -NoProfile -ExecutionPolicy unrestricted -command \"& {",
+                                            "[Console]::OutputEncoding = [System.Text.Encoding]::UTF8;",
                                             "C:\\lansa\\scripts\\WindowsUpdatesSettings.ps1",
                                             ";exit $LastExitCode",
                                             "}\""
@@ -742,6 +748,7 @@
                                         "",
                                         [
                                             "@powershell -NoProfile -ExecutionPolicy unrestricted -command \"& {",
+                                            "[Console]::OutputEncoding = [System.Text.Encoding]::UTF8;",
                                             "C:\\LANSA\\scripts\\install-lansa-msi.ps1",
                                             " -server_name ",
                                             { "Ref" : "DBEndPoint" },
@@ -792,6 +799,7 @@
                                         "",
                                         [
                                             "@powershell -NoProfile -ExecutionPolicy unrestricted -command \"& {",
+                                            "[Console]::OutputEncoding = [System.Text.Encoding]::UTF8;",
                                             "C:\\LANSA\\scripts\\install-lansa-msi.ps1",
                                             " -server_name ",
                                             { "Ref" : "DBEndPoint" },
@@ -835,6 +843,7 @@
                                         "",
                                         [
                                             "@powershell -NoProfile -ExecutionPolicy unrestricted -command \"& {",
+                                            "[Console]::OutputEncoding = [System.Text.Encoding]::UTF8;",
                                             "C:\\LANSA\\scripts\\copy-s3-install-patches.ps1",
                                             " -dbpassword ",
                                             { "Ref": "04DBPassword" },
@@ -865,6 +874,7 @@
                                         "",
                                         [
                                             "@powershell -NoProfile -ExecutionPolicy unrestricted -command \"& {",
+                                            "[Console]::OutputEncoding = [System.Text.Encoding]::UTF8;",
                                             "C:\\LANSA\\scripts\\cloud-watch-config.ps1",
                                             ";exit $LastExitCode",
                                             "}\""
@@ -886,7 +896,18 @@
                     "run-windows-update": {
                         "commands": {
                             "01_windows_updates": {
-                                "command": "@powershell -NoProfile -ExecutionPolicy unrestricted -command \"& {C:\\lansa\\scripts\\win-updates.ps1;exit $LastExitCode}\"",
+                                "command": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "@powershell -NoProfile -ExecutionPolicy unrestricted -command \"& {",
+                                            "[Console]::OutputEncoding = [System.Text.Encoding]::UTF8;",
+                                            "C:\\LANSA\\scripts\\win-updates.ps1",
+                                            ";exit $LastExitCode",
+                                            "}\""
+                                        ]
+                                    ]
+                                },
                                 "waitAfterCompletion": "90"
                             }
                         }
@@ -899,6 +920,7 @@
                                         "",
                                         [
                                             "@powershell -NoProfile -ExecutionPolicy unrestricted -command \"& {",
+                                            "[Console]::OutputEncoding = [System.Text.Encoding]::UTF8;",
                                             "C:\\LANSA\\scripts\\webconfig.ps1",
                                             " -server_name ",
                                             { "Ref" : "DBEndPoint" },
@@ -944,9 +966,10 @@
                                         "",
                                         [
                                             "@powershell -NoProfile -ExecutionPolicy unrestricted -command \"& {",
+                                            "$OutputEncoding = [Console]::OutputEncoding;",
                                             "C:\\LANSA\\scripts\\run-chef.ps1 ",
                                             "-cookbook VLWebServer::MainRecipe ",
-                                            "-WorkingDirectory C:\\recipes\\chef-repo\\cookbooks",
+                                            "-WorkingDirectory C:\\lansa\\cookbooks",
                                             ";exit $LastExitCode",
                                             "}\""
                                         ]
@@ -970,8 +993,8 @@
                             "",
                             [
                                 "<powershell>\n",
-                                "# Only install MSI if the url has been provided",
-                                "\n",
+                                "# Only install MSI if the url has been provided\n",
+                                "[Console]::OutputEncoding = [System.Text.Encoding]::UTF8\n",
                                 "if ('' -ne '",
                                 { "Ref": "01LansaMSI" },
                                 "') {",

@@ -7,7 +7,7 @@
             "Type": "String",
             "Default": "Small",
             "AllowedValues": [
-                "Dev",
+                "Development",
                 "Test",
                 "Small",
                 "Medium",
@@ -97,6 +97,15 @@
             "Description": "Git branch to checkout from Lansa Git repository and the S3 folder from which the nested templates are loaded. This pulls in the script files which are used to assemble the Icing. This is performed during the initial launch and also everytime a Trigger is fired.",
             "Type": "String"
         },
+        "UpdateManagementScripts": {
+            "Default": "No",
+            "Description": "Setting this parameter to Yes is not recommended. It is intended for internal developer usage. Doing so will pull changes from a LANSA-managed github repo named robe070/cookbooks",
+            "Type": "String",
+            "AllowedValues": [
+                "No",
+                "Yes"
+            ]
+        },
         "11WebserverOSVersion": {
             "Default": "win2019",
             "Description": "WebServer Windows operating system version.",
@@ -104,42 +113,68 @@
             "AllowedValues": [
                 "win2012",
                 "win2016",
-                "win2019"
+                "win2019",
+                "win2016jpn",
+                "win2019jpn"
             ]
         },
-        "25TriggerWebConfig": {
-            "Type": "String",
-            "Default": "1",
-            "Description": "Update Stack: Increment this by one to trigger an update to the web configuration"
-        },
-        "26TriggerIcingUpdate": {
-            "Type": "String",
-            "Default": "1",
-            "Description": "Update Stack: Increment this by one to trigger an MSI Upgrade. Obtains the specified MSI and installs it. Ensure the LansaMSI parameter is set correctly."
-        },
-        "27TriggerPatchInstall": {
-            "Type": "String",
-            "Default": "1",
-            "Description": "Update Stack: Increment this by one to trigger patches to be installed.  Obtains all MSPs from the PatchBucket and PatchFolder and applies those not already applied. The PatchFolder is usually specified as just the folder in which the patches are located. e.g. 'app/Test'. Its also possible to limit it to a particular file match e.g. to limit it to just install the patches for a particular version - 'app/Test/AWAMAPP_v1.0.0.' N.B. ensure there is a '.' on the end of the name to ensure that only patches for this version are applied."
-        },
-        "28PatchBucketName": {
-            "Type": "String",
-            "Default": "lansa",
-            "Description": "Update Stack: S3 Bucket which will contain the patches. (case sensitive). See TriggerPatchInstall parameter for more details."
-        },
-        "29PatchFolderName": {
-            "Type": "String",
-            "Default": "/change me",
-            "Description": "Update Stack: S3 folder which will contain the patches. (case sensitive). Note that ALL sub-directories are searched so ensure the directory used to store the patches has no sub directories. For the demo use app/test-patches. See TriggerPatchInstall parameter for more details."
-        },
         "LansaVersion": {
+            "Default": "V15 GA",
             "Type": "String",
             "AllowedValues": [
                 "V15 GA",
                 "V14 SP2"
             ],
-            "Default": "V15 GA",
             "Description": "Visual LANSA Version"
+        },
+        "ImageSource": {
+            "Default": "Marketplace",
+            "Type": "String",
+            "AllowedValues": [
+               "Marketplace",
+               "Custom"
+            ],
+            "Description": "Location from where the image must be picked"
+        },
+        "AMIId": {
+            "Default": "",
+            "Type": "String",
+            "Description": "The AMI Id of the custom image. Not required when Image Source is set to Marketplace"
+        },
+        "DBCCSID": {
+            "Default": "",
+            "Description": "Database Server Collation. Defaults to SQL Server default of English US when left unspecified",
+            "Type": "String"
+        },
+        "DBTimeZone": {
+            "Default": "",
+            "Description": "Database Server Time Zone. It is recommended not to change this setting. Defaults to SQL Server default of UTC/GMT when left unspecified",
+            "Type": "String"
+        },
+        "25TriggerWebConfig": {
+            "Default": "1",
+            "Type": "String",
+            "Description": "Update Stack: Increment this by one to trigger an update to the web configuration"
+        },
+        "26TriggerIcingUpdate": {
+            "Default": "1",
+            "Type": "String",
+            "Description": "Update Stack: Increment this by one to trigger an MSI Upgrade. Obtains the specified MSI and installs it. Ensure the LansaMSI parameter is set correctly."
+        },
+        "27TriggerPatchInstall": {
+            "Default": "1",
+            "Type": "String",
+            "Description": "Update Stack: Increment this by one to trigger patches to be installed.  Obtains all MSPs from the PatchBucket and PatchFolder and applies those not already applied. The PatchFolder is usually specified as just the folder in which the patches are located. e.g. 'app/Test'. Its also possible to limit it to a particular file match e.g. to limit it to just install the patches for a particular version - 'app/Test/AWAMAPP_v1.0.0.' N.B. ensure there is a '.' on the end of the name to ensure that only patches for this version are applied."
+        },
+        "28PatchBucketName": {
+            "Default": "lansa",
+            "Type": "String",
+            "Description": "Update Stack: S3 Bucket which will contain the patches. (case sensitive). See TriggerPatchInstall parameter for more details."
+        },
+        "29PatchFolderName": {
+            "Default": "/change me",
+            "Type": "String",
+            "Description": "Update Stack: S3 folder which will contain the patches. (case sensitive). Note that ALL sub-directories are searched so ensure the directory used to store the patches has no sub directories. For the demo use app/test-patches. See TriggerPatchInstall parameter for more details."
         }
     },
     "Metadata": {
@@ -170,10 +205,19 @@
                     ]
                 },
                 {
+                    "Label": { "default":"Database Server Configuration" },
+                    "Parameters" : [
+                        "DBCCSID",
+                        "DBTimeZone"
+                    ]
+                },
+                {
                     "Label": { "default":"Web Server Configuration" },
                     "Parameters" : [
                         "LansaVersion",
-                        "11WebserverOSVersion"
+                        "11WebserverOSVersion",
+                        "ImageSource",
+                        "AMIId"
                     ]
                 },
                 {
@@ -185,6 +229,13 @@
                         "28PatchBucketName",
                         "29PatchFolderName"
                     ]
+                },
+                {
+                  "Label" : { "default":"Advanced Configuration" },
+                  "Parameters" : [
+                      "UpdateManagementScripts",
+                      "10LansaGitRepoBranch"
+                   ]
                 }
             ],
             "ParameterLabels": {
@@ -203,8 +254,13 @@
                 "07KeyName": { "default": "Keypair Name" },
                 "08RemoteAccessLocation": { "default": "Remote Access Location CIDR" },
 
+                "DBCCSID" : { "default" : "SQL Server Collation" },
+                "DBTImeZone" : { "default" : "SQL Server Time Zone" },
+
                 "LansaVersion":  { "default":  "Visual LANSA Version"},
                 "11WebserverOSVersion":  { "default":  "OS Version"},
+                "ImageSource" :  { "default" :  "Image Source"},
+                "AMIId" :  { "default" :  "AMI Id"},
 
                 "25TriggerWebConfig": { "default": "Trigger Web Config" },
                 "26TriggerIcingUpdate": { "default": "Trigger Icing Update" },
@@ -212,7 +268,8 @@
                 "28PatchBucketName": { "default": "Patch Bucket Name" },
                 "29PatchFolderName": { "default": "Patch Folder Name" },
 
-                "10LansaGitRepoBranch": { "default": "Git Repository Branch" }
+                "10LansaGitRepoBranch": { "default": "Git Repository Branch" },
+                "UpdateManagementScripts" : { "default" : "Update Management Scripts"}
             }
         }
     },
@@ -260,9 +317,13 @@
                     "15DBEngine": { "Fn::FindInMap" : [ "StackDifferences", "15DBEngine", { "Ref": "StackType" }]},
                     "19DBAllocatedStorage": { "Fn::FindInMap" : [ "StackDifferences", "19DBAllocatedStorage", { "Ref": "StackType" }]},
                     "20DBIops":{ "Fn::FindInMap" : [ "StackDifferences", "20DBIops", { "Ref": "StackType" }]},
+                    "DBCCSID": { "Ref": "DBCCSID" },
+                    "DBTimeZone": { "Ref": "DBTimeZone" },
 
                     "LansaVersion": { "Ref" : "LansaVersion" },
                     "11WebserverOSVersion": { "Ref" : "11WebserverOSVersion" },
+                    "ImageSource" : { "Ref" : "ImageSource"},
+                    "AMIId" : { "Ref" : "AMIId"},
                     "11WebServerInstanceTyp" : { "Fn::FindInMap" : [ "StackDifferences", "11WebServerInstanceTyp", { "Ref": "StackType" }]},
                     "12WebServerMaxConnec" : { "Fn::FindInMap" : [ "StackDifferences", "12WebServerMaxConnec", { "Ref": "StackType" }]},
 
@@ -272,7 +333,8 @@
                     "28PatchBucketName": { "Ref" : "28PatchBucketName" },
                     "29PatchFolderName": { "Ref" : "29PatchFolderName" },
 
-                    "10LansaGitRepoBranch": { "Ref" : "10LansaGitRepoBranch" }
+                    "10LansaGitRepoBranch": { "Ref" : "10LansaGitRepoBranch" },
+                    "UpdateManagementScripts": { "Ref" : "UpdateManagementScripts" }
                 }
             }
         }
