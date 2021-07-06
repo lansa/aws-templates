@@ -1,22 +1,34 @@
 param (
-    [Parameter(Mandatory=$true)]
+    [Parameter(Mandatory=$false)]
     [string]
     $Gatestack,
 
-    [Parameter(Mandatory=$true)]
+    [Parameter(Mandatory=$false)]
     [string]
     $Gateversion,
 
-    [Parameter(Mandatory=$true)]
+    [Parameter(Mandatory=$false)]
     [string]
-    $Region
+    $Region,
+
+    [Parameter(Mandatory=$false)]
+    [string]
+    $SkuName,
+
+    [Parameter(Mandatory=$false)]
+    [string]
+    $childstack
 )
 
-$SkuName = "$($Gateversion)"
+# Autoscaling Instance Id
+if ( $Gatestack -ne "" )
+{
+    $SkuName = "$($Gateversion)"
+    $childstack = (Get-CFNStack | Where-Object {$_.StackName -match "$($Gatestack)-Web" }).StackName
+}
+
 Write-Host "Image Name $SkuName"
 
-# Autoscaling Instance Id
-$childstack = (Get-CFNStack | Where-Object {$_.StackName -match "$($Gatestack)-Web" }).StackName
 $webServerGroupResource = (Get-CFNStackResource -StackName $childstack -Region $($Region) -logicalResourceId WebServerGroup)
 $instanceDetails = Get-ASAutoScalingInstance | ? {$_.AutoScalingGroupName -eq $webServerGroupResource.PhysicalResourceId} | select -ExpandProperty InstanceId | Get-EC2Instance | select -ExpandProperty RunningInstance | ft InstanceId, PrivateIpAddress
 $instanceId = (Get-ASAutoScalingGroup -AutoScalingGroupName $webServerGroupResource.PhysicalResourceId).Instances.InstanceId
