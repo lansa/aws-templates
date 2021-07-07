@@ -284,7 +284,7 @@
             "12WebServerMaxConnec": { "Development": "10", "Test" : "20",  "Small" : "20",  "Medium" : "60",  "Large" : "120" }
         },
         "CustomVariable": {
-            "TemplateRoot": { "Value": "https://s3-ap-southeast-2.amazonaws.com/lansa/templates/" },
+            "TemplateRoot": { "Value": "https://s3-ap-southeast-2.amazonaws.com/lansa/templates/support/scalable" },
             "MasterTemplate": { "Value": "lansa-master-win.cfn.template" },
             "TemplateLevel": { "Value": "R" }
         }
@@ -296,7 +296,7 @@
         "MasterStackApp": {
             "Type": "AWS::CloudFormation::Stack",
             "Properties": {
-                "TemplateURL": "https://lansa.s3-ap-southeast-2.amazonaws.com/templates/support/scalable/marketplace/lansa-master-win.cfn.template",
+                "TemplateURL": "https://lansa.s3-ap-southeast-2.amazonaws.com/templates/support/scalable/lansa-master-win.cfn.template",
                 "Parameters": {
                     "CreateVPC": { "Ref" : "CreateVPC" },
                     "CurrentVPC": { "Ref" : "CurrentVPC" },
