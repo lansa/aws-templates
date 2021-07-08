@@ -1,1182 +1,2214 @@
 {
-    "AWSTemplateFormatVersion" : "2010-09-09",
-    "Description"              : "Custom Stack LANSA Windows template: There are simpler templates provided by LANSA in AWS Marketplace. You may wish to consider those first. This template installs a highly-available, scalable LANSA deployment using a multi-AZ Amazon RDS database instance for storage.  Parameters described as Update Stack: are only modified after the stack has been created. **WARNING** This template creates AWS resources. You will be billed for the AWS resources used if you create a stack from this template.",
-    "Parameters": {
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Custom Stack LANSA Windows template: There are simpler templates provided by LANSA in AWS Marketplace. You may wish to consider those first. This template installs a highly-available, scalable LANSA deployment using a multi-AZ Amazon RDS database instance for storage.  Parameters described as Update Stack: are only modified after the stack has been created. **WARNING** This template creates AWS resources. You will be billed for the AWS resources used if you create a stack from this template.",
+  "Parameters": {
+    "CreateVPC": {
+      "Description": "Create a new VPC with necessary access control lists (ACLs) and security groups",
+      "Type": "String",
+      "Default": "No",
+      "AllowedValues": [
+        "Yes",
+        "No"
+      ]
+    },
+    "CurrentVPC": {
+      "Description": "Existing VPC id. If creating a new VPC you must still select a valid existing VPC in order to pass CFT validation.",
+      "Type": "AWS::EC2::VPC::Id"
+    },
+    "AvailabilityZones": {
+      "Description": "List of Availability Zones to use for the subnets in the VPC. Note: The logical order is preserved. If using an existing VPC you must still select a valid Availability Zone in order to pass CFT validation.",
+      "Type": "List<AWS::EC2::AvailabilityZone::Name>"
+    },
+    "NumberOfAZs": {
+      "Default": "3",
+      "Description": "Number of Availability Zones to use in the VPC. This must match your selections in the list of Availability Zones parameter.",
+      "Type": "String",
+      "AllowedValues": [
+        "2",
+        "3"
+      ]
+    },
+    "DBSubnetGroupName": {
+      "Description": "The name of the DB Subnet Group which needs to be provided if using an existing VPC. DB Subnet Group Name can be checked in the Amazon RDS console in the Subnet section along with the VPC in which it was created.",
+      "Type": "String"
+    },
+    "ELBSubnetIds": {
+      "Description": "List of Subnet IDs for ELB which needs to be provided if using an existing VPC. If you are creating a new VPC you must still select a valid subnet in order to pass CFT validation.",
+      "Type": "List<AWS::EC2::Subnet::Id>"
+    },
+    "01LansaMSI": {
+      "Type": "String",
+      "Description": "URL of the LANSA MSI to install. The MSI must have been previously uploaded to the specified location in Amazon S3 BLOB storage. Here is an example application you may use https://s3-ap-southeast-2.amazonaws.com/lansa/app/Test/AWAMAPP_v14.2.21217_en-us.msi"
+    },
+    "02LansaMSIBitness": {
+      "Default": "1",
+      "Description": "Set to 1 if the MSI is a 32-bit application. Set to 0 if the MSI is a 64-bit application.",
+      "Type": "String",
+      "AllowedValues": [
+        "1",
+        "0"
+      ],
+      "ConstraintDescription": "Must be either 1 (true) or 0 (false)."
+    },
+    "03DBUsername": {
+      "Default": "admin",
+      "Description": "The LANSA database administrator account username. Must begin with a letter and contain only alphanumeric characters. Maximum length 16.",
+      "Type": "String",
+      "MinLength": "1",
+      "MaxLength": "16",
+      "AllowedPattern": "[a-zA-Z][a-zA-Z0-9]*"
+    },
+    "04DBPassword": {
+      "NoEcho": "true",
+      "Description": "The LANSA database administrator account password. Minimum length 8, maximum length 41. There must be at least one character from each of the following character classes: uppercase letters, lowercase letters and numeric digits. Only printable ASCII characters, not including '/', '@', '\"', and space, may be used.",
+      "Type": "String",
+      "MinLength": "8",
+      "MaxLength": "41",
+      "AllowedPattern": "(?!.*[/\"@\\s])(?=.*\\d)(?=.*[A-Z])(?=.*[a-z]).{8,41}"
+    },
+    "05WebUser": {
+      "Type": "String",
+      "Default": "PCXUSER2",
+      "Description": "User to use for running web jobs."
+    },
+    "06WebPassword": {
+      "NoEcho": "true",
+      "Type": "String",
+      "Description": "Password for WebUser. Minimum length 8, maximum length 41. There must be at least one character from each of the following character classes: uppercase letters, lowercase letters and numeric digits. A space must not be used. This password must conform to Account Policy rules. E.g. The whole user name must not be in the password. With user name 'lansa', 'lansa!@#$abc' will NOT be accepted as a password. With user name 'lansa2', 'lansa!123' will be accepted as a password. See https://technet.microsoft.com/en-au/library/cc786468(v=ws.10).aspx for more information.",
+      "MinLength": "8",
+      "MaxLength": "41",
+      "AllowedPattern": "(?!.*[\\s])(?=.*\\d)(?=.*[A-Z])(?=.*[a-z]).{8,41}"
+    },
+    "07KeyName": {
+      "Description": "Name of an existing EC2 KeyPair to enable remote access to the instances via RDP (case sensitive). e.g. linux-keypair",
+      "Type": "AWS::EC2::KeyPair::KeyName"
+    },
+    "08RemoteAccessLocation": {
+      "Description": "The IP address range that may be used to remotely access the EC2 instances. Must be a valid IP CIDR range of the form x.x.x.x/x. e.g. 103.231.169.65/32 This is a security feature which limits remote access to your EC2 instances.",
+      "Type": "String",
+      "MinLength": "9",
+      "MaxLength": "18",
+      "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
+    },
+    "UpdateManagementScripts": {
+      "Default": "No",
+      "Description": "Setting this parameter to Yes is not recommended. It is intended for internal developer usage. Doing so will pull changes from a LANSA-managed github repo named robe070/cookbooks",
+      "Type": "String",
+      "AllowedValues": [
+        "No",
+        "Yes"
+      ]
+    },
+    "10LansaGitRepoBranch": {
+      "Default": "support/scalable",
+      "Description": "Git branch to checkout from Lansa Git repository and the S3 folder from which the nested templates are loaded. This pulls in the script files which are used to assemble the Icing. This is performed during the initial launch and also everytime a Trigger is fired.",
+      "Type": "String"
+    },
+    "TemplateS3Namespace": {
+      "Default": "",
+      "Description": "Usually left empty. Adds another sub folder level to the template location in S3 so that developers and CI/CD pipelines may segregate their template versions. ",
+      "Type": "String"
+    },
+    "11WebserverOSVersion": {
+      "Default": "win2019",
+      "Description": "WebServer Windows operating system version.",
+      "Type": "String",
+      "AllowedValues": [
+        "win2012",
+        "win2016",
+        "win2019",
+        "win2016jpn",
+        "win2019jpn"
+      ]
+    },
+    "11WebServerInstanceTyp": {
+      "Description": "WebServer EC2 instance type. See http://aws.amazon.com/ec2/instance-types/ for more information.",
+      "Type": "String",
+      "Default": "t3.medium",
+      "AllowedValues": [
+        "c4.large",
+        "c4.xlarge",
+        "c4.2xlarge",
+        "c4.4xlarge",
+        "c4.8xlarge",
+        "c5.large",
+        "c5.xlarge",
+        "c5.2xlarge",
+        "c5.4xlarge",
+        "c5.9xlarge",
+        "c5.12xlarge",
+        "c5.18xlarge",
+        "c5.24xlarge",
+        "c5.metal",
+        "c5d.large",
+        "c5d.xlarge",
+        "c5d.2xlarge",
+        "c5d.4xlarge",
+        "c5d.9xlarge",
+        "c5d.12xlarge",
+        "c5d.18xlarge",
+        "c5d.24xlarge",
+        "c5d.metal",
+        "c5n.large",
+        "c5n.xlarge",
+        "c5n.2xlarge",
+        "c5n.4xlarge",
+        "c5n.9xlarge",
+        "c5n.18xlarge",
+        "c5n.metal",
+        "d2.xlarge",
+        "d2.2xlarge",
+        "d2.4xlarge",
+        "d2.8xlarge",
+        "g3.4xlarge",
+        "g3.8xlarge",
+        "g3.16xlarge",
+        "i3.large",
+        "i3.xlarge",
+        "i3.2xlarge",
+        "i3.4xlarge",
+        "i3.8xlarge",
+        "i3.16xlarge",
+        "i3.metal",
+        "m4.large",
+        "m4.xlarge",
+        "m4.2xlarge",
+        "m4.4xlarge",
+        "m4.10xlarge",
+        "m4.16xlarge",
+        "m5.large",
+        "m5.2xlarge",
+        "m5.4xlarge",
+        "m5.8xlarge",
+        "m5.12xlarge",
+        "m5.16xlarge",
+        "m5.24xlarge",
+        "m5.metal",
+        "m5a.large",
+        "m5a.xlarge",
+        "m5a.2xlarge",
+        "m5a.4xlarge",
+        "m5a.8xlarge",
+        "m5a.12xlarge",
+        "m5a.16xlarge",
+        "m5a.24xlarge",
+        "m5ad.large",
+        "m5ad.xlarge",
+        "m5ad.2xlarge",
+        "m5ad.4xlarge",
+        "m5ad.8xlarge",
+        "m5ad.12xlarge",
+        "m5ad.24xlarge",
+        "m5d.large",
+        "m5d.xlarge",
+        "m5d.2xlarge",
+        "m5d.4xlarge",
+        "m5d.8xlarge",
+        "m5d.12xlarge",
+        "m5d.16xlarge",
+        "m5d.24xlarge",
+        "m5d.metal",
+        "m5dn.large",
+        "m5dn.xlarge",
+        "m5dn.2xlarge",
+        "m5dn.4xlarge",
+        "m5dn.8xlarge",
+        "m5dn.12xlarge",
+        "m5dn.16xlarge",
+        "m5dn.24xlarge",
+        "m5n.large",
+        "m5n.xlarge",
+        "m5n.2xlarge",
+        "m5n.4xlarge",
+        "m5n.8xlarge",
+        "m5n.12xlarge",
+        "m5n.16xlarge",
+        "m5n.24xlarge",
+        "p2.xlarge",
+        "p2.8xlarge",
+        "p2.16xlarge",
+        "p3.2xlarge",
+        "p3.8xlarge",
+        "p3.16xlarge",
+        "r4.large",
+        "r4.xlarge",
+        "r4.2xlarge",
+        "r4.4xlarge",
+        "r4.8xlarge",
+        "r4.16xlarge",
+        "r5.large",
+        "r5.xlarge",
+        "r5.2xlarge",
+        "r5.4xlarge",
+        "r5.8xlarge",
+        "r5.12xlarge",
+        "r5.16xlarge",
+        "r5.24xlarge",
+        "r5.metal",
+        "r5d.large",
+        "r5d.xlarge",
+        "r5d.2xlarge",
+        "r5d.4xlarge",
+        "r5d.8xlarge",
+        "r5d.12xlarge",
+        "r5d.16xlarge",
+        "r5d.24xlarge",
+        "r5d.metal",
+        "t2.nano",
+        "t2.micro",
+        "t2.small",
+        "t2.medium",
+        "t2.large",
+        "t2.xlarge",
+        "t2.2xlarge",
+        "t3.nano",
+        "t3.micro",
+        "t3.small",
+        "t3.medium",
+        "t3.large",
+        "t3.xlarge",
+        "t3.2xlarge",
+        "t3a.nano",
+        "t3a.micro",
+        "t3a.small",
+        "t3a.medium",
+        "t3a.large",
+        "t3a.xlarge",
+        "t3a.2xlarge",
+        "x1.16xlarge",
+        "x1.32xlarge",
+        "x1e.xlarge",
+        "x1e.2xlarge",
+        "x1e.4xlarge",
+        "x1e.8xlarge",
+        "x1e.16xlarge",
+        "x1e.32xlarge"
+      ]
+    },
+    "12WebServerMaxConnec": {
+      "Description": "The maximum number of LANSA jobs to run on each Web Server. Setting TriggerWebConfig will cause this value to be updated.",
+      "Type": "Number",
+      "Default": 20
+    },
+    "13DBInstanceClass": {
+      "Default": "db.t3.small",
+      "Description": "A valid database instance class. See http://aws.amazon.com/rds/details/ for more information.",
+      "Type": "String",
+      "AllowedValues": [
+        "db.m4.large",
+        "db.m4.xlarge",
+        "db.m4.2xlarge",
+        "db.m4.4xlarge",
+        "db.m4.10xlarge",
+        "db.m4.16xlarge",
+        "db.m5.large",
+        "db.m5.xlarge",
+        "db.m5.2xlarge",
+        "db.m5.4xlarge",
+        "db.m5.8xlarge",
+        "db.m5.12xlarge",
+        "db.m5.16xlarge",
+        "db.m5.24xlarge",
+        "db.r5.large",
+        "db.r5.xlarge",
+        "db.r5.2xlarge",
+        "db.r5.4xlarge",
+        "db.r5.8xlarge",
+        "db.r5.12xlarge",
+        "db.r5.16xlarge",
+        "db.r5.24xlarge",
+        "db.t3.micro",
+        "db.t3.small",
+        "db.t3.medium",
+        "db.t3.large",
+        "db.t3.xlarge",
+        "db.t3.2xlarge"
+      ]
+    },
+    "14DBName": {
+      "Default": "lansa",
+      "Description": "LANSA database name. Must begin with a letter and contain only alphanumeric characters. Maximum length 64.",
+      "Type": "String",
+      "MinLength": "1",
+      "MaxLength": "64",
+      "AllowedPattern": "[a-zA-Z][a-zA-Z0-9]*"
+    },
+    "15DBEngine": {
+      "Description": "Database engine type. Must be a valid SQL Server engine type. Note that to support mirroring you need to choose 'sqlserver-ee' or 'sqlserver-se'. Otherwise you may choose 'sqlserver-web'.",
+      "Type": "String",
+      "Default": "sqlserver-web",
+      "AllowedValues": [
+        "sqlserver-web",
+        "sqlserver-se",
+        "sqlserver-ee"
+      ]
+    },
+    "DBCCSID": {
+      "Default": "",
+      "Description": "Database Server Collation. Defaults to SQL Server default of English US when left unspecified",
+      "Type": "String"
+    },
+    "DBTimeZone": {
+      "Default": "",
+      "Description": "Database Server Time Zone. It is recommended not to change this setting. Defaults to SQL Server default of UTC/GMT when left unspecified",
+      "Type": "String"
+    },
+    "17UserScriptHook": {
+      "Type": "String",
+      "Default": "https://s3-ap-southeast-2.amazonaws.com/lansa/scripts/user-script.ps1",
+      "Description": "URL of a Powershell script to execute after installing the LANSA MSI. The script must have been previously uploaded to the specified location in Amazon S3 BLOB storage."
+    },
+    "18WebServerCapacity": {
+      "Default": "1",
+      "Description": "The initial number of EXTRA WebServer EC2 instances. Must be between at least 1. Default maximum allowed by AWS in an account is 50.",
+      "Type": "Number",
+      "MinValue": "1"
+    },
+    "19DBAllocatedStorage": {
+      "Default": "100",
+      "Description": "The maximum size of the database. Must be between 100 and 4096 GB. Minimum 200 for 'sqlserver-ee' and 'sqlserver-se'.",
+      "Type": "Number",
+      "MinValue": "100",
+      "MaxValue": "4096"
+    },
+    "20DBIops": {
+      "Default": "1000",
+      "Description": "The fixed number of I/O operations per second supported by this DB instance. This number must be 10 times the size of DBAllocatedStorage and in increments of 1000. E.g. If DBAllocatedStorage = 200 then DBIops = 2000",
+      "Type": "Number",
+      "MinValue": "1000",
+      "MaxValue": "10000"
+    },
+    "21ELBTimeout": {
+      "Description": "Time to wait for a response from the application. Must be between 2 and 60. Health check interval and IIS timeouts are based on this time too.",
+      "Type": "Number",
+      "MinValue": "2",
+      "MaxValue": "60",
+      "Default": "30"
+    },
+    "22TriggerCakeUpdate": {
+      "Type": "String",
+      "Default": "1",
+      "Description": "Update Stack: Increment this by one to update the supporting software and trigger a Windows Update. This is the same as triggerring both a ChefUpdate and a WindowsUpdate. Mainly to ensure that Windows Updates have been applied."
+    },
+    "23TriggerChefUpdate": {
+      "Type": "String",
+      "Default": "1",
+      "Description": "Update Stack: Increment this by one to update the supporting software."
+    },
+    "24TriggerWinUpdate": {
+      "Type": "String",
+      "Default": "1",
+      "Description": "Update Stack: Increment this by one to trigger a Windows Update."
+    },
+    "25TriggerWebConfig": {
+      "Type": "String",
+      "Default": "1",
+      "Description": "Update Stack: Increment this by one to trigger an update to the web configuration"
+    },
+    "26TriggerIcingUpdate": {
+      "Type": "String",
+      "Default": "1",
+      "Description": "Update Stack: Increment this by one to trigger an MSI Upgrade. Obtains the specified MSI and installs it. Ensure the LansaMSI parameter is set correctly."
+    },
+    "27TriggerPatchInstall": {
+      "Type": "String",
+      "Default": "1",
+      "Description": "Update Stack: Increment this by one to trigger patches to be installed.  Obtains all MSPs from the PatchBucket and PatchFolder and applies those not already applied. The PatchFolder is usually specified as just the folder in which the patches are located. e.g. 'app/Test'. Its also possible to limit it to a particular file match e.g. to limit it to just install the patches for a particular version - 'app/Test/AWAMAPP_v1.0.0.' N.B. ensure there is a '.' on the end of the name to ensure that only patches for this version are applied."
+    },
+    "28PatchBucketName": {
+      "Type": "String",
+      "Default": "lansa",
+      "Description": "Update Stack: S3 Bucket which will contain the patches. (case sensitive). See TriggerPatchInstall parameter for more details."
+    },
+    "29PatchFolderName": {
+      "Type": "String",
+      "Default": "/change me",
+      "Description": "Update Stack: S3 folder which will contain the patches. (case sensitive). Note that ALL sub-directories are searched so ensure the directory used to store the patches has no sub directories. For the demo use app/test-patches. See TriggerPatchInstall parameter for more details."
+    },
+    "LansaVersion": {
+      "Type": "String",
+      "AllowedValues": [
+        "V15 GA",
+        "V14 SP2"
+      ],
+      "Default": "V15 GA",
+      "Description": "Visual LANSA Version"
+    },
+    "ImageSource": {
+      "Type": "String",
+      "AllowedValues": [
+        "Marketplace",
+        "Custom"
+      ],
+      "Default": "Marketplace",
+      "Description": "Location from where the image must be picked"
+    },
+    "AMIId": {
+      "Type": "String",
+      "Default": "",
+      "Description": "The AMI Id of the custom image. Not required when Image Source is set to Marketplace"
+    }
+  },
+  "Metadata": {
+    "AWS::CloudFormation::Interface": {
+      "ParameterGroups": [
+        {
+          "Label": {
+            "default": "Essential Parameters"
+          },
+          "Parameters": [
+            "01LansaMSI",
+            "02LansaMSIBitness",
+            "03DBUsername",
+            "04DBPassword",
+            "05WebUser",
+            "06WebPassword",
+            "07KeyName",
+            "08RemoteAccessLocation"
+          ]
+        },
+        {
+          "Label": {
+            "default": "Use Existing VPC or add a new VPC"
+          },
+          "Parameters": [
+            "CreateVPC",
+            "CurrentVPC",
+            "AvailabilityZones",
+            "NumberOfAZs",
+            "DBSubnetGroupName",
+            "ELBSubnetIds"
+          ]
+        },
+        {
+          "Label": {
+            "default": "Database Configuration"
+          },
+          "Parameters": [
+            "13DBInstanceClass",
+            "14DBName",
+            "15DBEngine",
+            "DBCCSID",
+            "DBTimeZone",
+            "19DBAllocatedStorage",
+            "20DBIops"
+          ]
+        },
+        {
+          "Label": {
+            "default": "Web Server Configuration"
+          },
+          "Parameters": [
+            "LansaVersion",
+            "11WebserverOSVersion",
+            "ImageSource",
+            "AMIId",
+            "11WebServerInstanceTyp",
+            "12WebServerMaxConnec",
+            "18WebServerCapacity"
+          ]
+        },
+        {
+          "Label": {
+            "default": "Stack Maintenance"
+          },
+          "Parameters": [
+            "22TriggerCakeUpdate",
+            "23TriggerChefUpdate",
+            "24TriggerWinUpdate",
+            "25TriggerWebConfig",
+            "26TriggerIcingUpdate",
+            "27TriggerPatchInstall",
+            "28PatchBucketName",
+            "29PatchFolderName"
+          ]
+        },
+        {
+          "Label": {
+            "default": "Advanced Configuration"
+          },
+          "Parameters": [
+            "21ELBTimeout",
+            "17UserScriptHook",
+            "UpdateManagementScripts",
+            "10LansaGitRepoBranch",
+            "TemplateS3Namespace"
+          ]
+        }
+      ],
+      "ParameterLabels": {
         "CreateVPC": {
-            "Description": "Create a new VPC with necessary access control lists (ACLs) and security groups",
-            "Type": "String",
-            "Default": "No",
-            "AllowedValues": [
-                "Yes",
-                "No"
-                ]
+          "default": "Create new VPC "
         },
         "CurrentVPC": {
-            "Description": "Existing VPC id. If creating a new VPC you must still select a valid existing VPC in order to pass CFT validation.",
-            "Type": "AWS::EC2::VPC::Id"
+          "default": "Provide existing VPC Id"
         },
         "AvailabilityZones": {
-            "Description": "List of Availability Zones to use for the subnets in the VPC. Note: The logical order is preserved. If using an existing VPC you must still select a valid Availability Zone in order to pass CFT validation.",
-            "Type": "List<AWS::EC2::AvailabilityZone::Name>"
+          "default": "Availability Zones"
         },
         "NumberOfAZs": {
-            "Default": "3",
-            "Description": "Number of Availability Zones to use in the VPC. This must match your selections in the list of Availability Zones parameter.",
-            "Type": "String",
-            "AllowedValues": [
-                "2",
-                "3"
-            ]
+          "default": "Number of Availability Zones"
         },
         "DBSubnetGroupName": {
-            "Description": "The name of the DB Subnet Group which needs to be provided if using an existing VPC. DB Subnet Group Name can be checked in the Amazon RDS console in the Subnet section along with the VPC in which it was created.",
-            "Type": "String"
+          "default": "DB Subnet Group Name"
         },
         "ELBSubnetIds": {
-            "Description": "List of Subnet IDs for ELB which needs to be provided if using an existing VPC. If you are creating a new VPC you must still select a valid subnet in order to pass CFT validation.",
-            "Type": "List<AWS::EC2::Subnet::Id>"
+          "default": "Subnet IDs for ELB"
         },
         "01LansaMSI": {
-            "Type": "String",
-            "Description": "URL of the LANSA MSI to install. The MSI must have been previously uploaded to the specified location in Amazon S3 BLOB storage. Here is an example application you may use https://s3-ap-southeast-2.amazonaws.com/lansa/app/Test/AWAMAPP_v14.2.21217_en-us.msi"
+          "default": "Lansa MSI URL"
         },
         "02LansaMSIBitness": {
-            "Default": "1",
-            "Description": "Set to 1 if the MSI is a 32-bit application. Set to 0 if the MSI is a 64-bit application.",
-            "Type": "String",
-            "AllowedValues": [
-                "1",
-                "0"
-            ],
-            "ConstraintDescription": "Must be either 1 (true) or 0 (false)."
+          "default": "MSI Bitness"
         },
         "03DBUsername": {
-            "Default": "admin",
-            "Description": "The LANSA database administrator account username. Must begin with a letter and contain only alphanumeric characters. Maximum length 16.",
-            "Type": "String",
-            "MinLength": "1",
-            "MaxLength": "16",
-            "AllowedPattern": "[a-zA-Z][a-zA-Z0-9]*"
+          "default": "Database User Name"
         },
         "04DBPassword": {
-            "NoEcho": "true",
-            "Description": "The LANSA database administrator account password. Minimum length 8, maximum length 41. There must be at least one character from each of the following character classes: uppercase letters, lowercase letters and numeric digits. Only printable ASCII characters, not including '/', '@', '\"', and space, may be used.",
-            "Type": "String",
-            "MinLength": "8",
-            "MaxLength": "41",
-            "AllowedPattern": "(?!.*[/\"@\\s])(?=.*\\d)(?=.*[A-Z])(?=.*[a-z]).{8,41}"
+          "default": "Database Password"
         },
         "05WebUser": {
-            "Type": "String",
-            "Default": "PCXUSER2",
-            "Description": "User to use for running web jobs."
+          "default": "Web Server User"
         },
         "06WebPassword": {
-            "NoEcho": "true",
-            "Type": "String",
-            "Description": "Password for WebUser. Minimum length 8, maximum length 41. There must be at least one character from each of the following character classes: uppercase letters, lowercase letters and numeric digits. A space must not be used. This password must conform to Account Policy rules. E.g. The whole user name must not be in the password. With user name 'lansa', 'lansa!@#$abc' will NOT be accepted as a password. With user name 'lansa2', 'lansa!123' will be accepted as a password. See https://technet.microsoft.com/en-au/library/cc786468(v=ws.10).aspx for more information.",
-            "MinLength": "8",
-            "MaxLength": "41",
-            "AllowedPattern": "(?!.*[\\s])(?=.*\\d)(?=.*[A-Z])(?=.*[a-z]).{8,41}"
+          "default": "Web Server Password"
         },
         "07KeyName": {
-            "Description": "Name of an existing EC2 KeyPair to enable remote access to the instances via RDP (case sensitive). e.g. linux-keypair",
-            "Type": "AWS::EC2::KeyPair::KeyName"
+          "default": "Keypair Name"
         },
         "08RemoteAccessLocation": {
-            "Description": "The IP address range that may be used to remotely access the EC2 instances. Must be a valid IP CIDR range of the form x.x.x.x/x. e.g. 103.231.169.65/32 This is a security feature which limits remote access to your EC2 instances.",
-            "Type": "String",
-            "MinLength": "9",
-            "MaxLength": "18",
-            "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
-        },
-        "UpdateManagementScripts": {
-            "Default": "No",
-            "Description": "Setting this parameter to Yes is not recommended. It is intended for internal developer usage. Doing so will pull changes from a LANSA-managed github repo named robe070/cookbooks",
-            "Type": "String",
-            "AllowedValues": [
-                "No",
-                "Yes"
-            ]
-        },
-        "10LansaGitRepoBranch": {
-            "Default": "support/scalable",
-            "Description": "Git branch to checkout from Lansa Git repository and the S3 folder from which the nested templates are loaded. This pulls in the script files which are used to assemble the Icing. This is performed during the initial launch and also everytime a Trigger is fired.",
-            "Type": "String"
-        },
-        "TemplateS3Namespace": {
-            "Default" : "",
-            "Description": "Usually left empty. Adds another sub folder level to the template location in S3 so that developers and CI/CD pipelines may segregate their template versions. ",
-            "Type": "String"
-        },
-        "11WebserverOSVersion": {
-            "Default": "win2019",
-            "Description": "WebServer Windows operating system version.",
-            "Type": "String",
-            "AllowedValues": [
-                "win2012",
-                "win2016",
-                "win2019",
-                "win2016jpn",
-                "win2019jpn"
-            ]
-        },
-        "11WebServerInstanceTyp": {
-            "Description": "WebServer EC2 instance type. See http://aws.amazon.com/ec2/instance-types/ for more information.",
-            "Type": "String",
-            "Default": "t3.medium",
-            "AllowedValues": [
-                "c4.large",
-                "c4.xlarge",
-                "c4.2xlarge",
-                "c4.4xlarge",
-                "c4.8xlarge",
-                "c5.large",
-                "c5.xlarge",
-                "c5.2xlarge",
-                "c5.4xlarge",
-                "c5.9xlarge",
-                "c5.12xlarge",
-                "c5.18xlarge",
-                "c5.24xlarge",
-                "c5.metal",
-                "c5d.large",
-                "c5d.xlarge",
-                "c5d.2xlarge",
-                "c5d.4xlarge",
-                "c5d.9xlarge",
-                "c5d.12xlarge",
-                "c5d.18xlarge",
-                "c5d.24xlarge",
-                "c5d.metal",
-                "c5n.large",
-                "c5n.xlarge",
-                "c5n.2xlarge",
-                "c5n.4xlarge",
-                "c5n.9xlarge",
-                "c5n.18xlarge",
-                "c5n.metal",
-                "d2.xlarge",
-                "d2.2xlarge",
-                "d2.4xlarge",
-                "d2.8xlarge",
-                "g3.4xlarge",
-                "g3.8xlarge",
-                "g3.16xlarge",
-                "i3.large",
-                "i3.xlarge",
-                "i3.2xlarge",
-                "i3.4xlarge",
-                "i3.8xlarge",
-                "i3.16xlarge",
-                "i3.metal",
-                "m4.large",
-                "m4.xlarge",
-                "m4.2xlarge",
-                "m4.4xlarge",
-                "m4.10xlarge",
-                "m4.16xlarge",
-                "m5.large",
-                "m5.2xlarge",
-                "m5.4xlarge",
-                "m5.8xlarge",
-                "m5.12xlarge",
-                "m5.16xlarge",
-                "m5.24xlarge",
-                "m5.metal",
-                "m5a.large",
-                "m5a.xlarge",
-                "m5a.2xlarge",
-                "m5a.4xlarge",
-                "m5a.8xlarge",
-                "m5a.12xlarge",
-                "m5a.16xlarge",
-                "m5a.24xlarge",
-                "m5ad.large",
-                "m5ad.xlarge",
-                "m5ad.2xlarge",
-                "m5ad.4xlarge",
-                "m5ad.8xlarge",
-                "m5ad.12xlarge",
-                "m5ad.24xlarge",
-                "m5d.large",
-                "m5d.xlarge",
-                "m5d.2xlarge",
-                "m5d.4xlarge",
-                "m5d.8xlarge",
-                "m5d.12xlarge",
-                "m5d.16xlarge",
-                "m5d.24xlarge",
-                "m5d.metal",
-                "m5dn.large",
-                "m5dn.xlarge",
-                "m5dn.2xlarge",
-                "m5dn.4xlarge",
-                "m5dn.8xlarge",
-                "m5dn.12xlarge",
-                "m5dn.16xlarge",
-                "m5dn.24xlarge",
-                "m5n.large",
-                "m5n.xlarge",
-                "m5n.2xlarge",
-                "m5n.4xlarge",
-                "m5n.8xlarge",
-                "m5n.12xlarge",
-                "m5n.16xlarge",
-                "m5n.24xlarge",
-                "p2.xlarge",
-                "p2.8xlarge",
-                "p2.16xlarge",
-                "p3.2xlarge",
-                "p3.8xlarge",
-                "p3.16xlarge",
-                "r4.large",
-                "r4.xlarge",
-                "r4.2xlarge",
-                "r4.4xlarge",
-                "r4.8xlarge",
-                "r4.16xlarge",
-                "r5.large",
-                "r5.xlarge",
-                "r5.2xlarge",
-                "r5.4xlarge",
-                "r5.8xlarge",
-                "r5.12xlarge",
-                "r5.16xlarge",
-                "r5.24xlarge",
-                "r5.metal",
-                "r5d.large",
-                "r5d.xlarge",
-                "r5d.2xlarge",
-                "r5d.4xlarge",
-                "r5d.8xlarge",
-                "r5d.12xlarge",
-                "r5d.16xlarge",
-                "r5d.24xlarge",
-                "r5d.metal",
-                "t2.nano",
-                "t2.micro",
-                "t2.small",
-                "t2.medium",
-                "t2.large",
-                "t2.xlarge",
-                "t2.2xlarge",
-                "t3.nano",
-                "t3.micro",
-                "t3.small",
-                "t3.medium",
-                "t3.large",
-                "t3.xlarge",
-                "t3.2xlarge",
-                "t3a.nano",
-                "t3a.micro",
-                "t3a.small",
-                "t3a.medium",
-                "t3a.large",
-                "t3a.xlarge",
-                "t3a.2xlarge",
-                "x1.16xlarge",
-                "x1.32xlarge",
-                "x1e.xlarge",
-                "x1e.2xlarge",
-                "x1e.4xlarge",
-                "x1e.8xlarge",
-                "x1e.16xlarge",
-                "x1e.32xlarge"            ]
-        },
-        "12WebServerMaxConnec": {
-            "Description": "The maximum number of LANSA jobs to run on each Web Server. Setting TriggerWebConfig will cause this value to be updated.",
-            "Type": "Number",
-            "Default": 20
+          "default": "Remote Access Location CIDR"
         },
         "13DBInstanceClass": {
-            "Default": "db.t3.small",
-            "Description": "A valid database instance class. See http://aws.amazon.com/rds/details/ for more information.",
-            "Type": "String",
-            "AllowedValues": [
-                "db.m4.large",
-                "db.m4.xlarge",
-                "db.m4.2xlarge",
-                "db.m4.4xlarge",
-                "db.m4.10xlarge",
-                "db.m4.16xlarge",
-                "db.m5.large",
-                "db.m5.xlarge",
-                "db.m5.2xlarge",
-                "db.m5.4xlarge",
-                "db.m5.8xlarge",
-                "db.m5.12xlarge",
-                "db.m5.16xlarge",
-                "db.m5.24xlarge",
-                "db.r5.large",
-                "db.r5.xlarge",
-                "db.r5.2xlarge",
-                "db.r5.4xlarge",
-                "db.r5.8xlarge",
-                "db.r5.12xlarge",
-                "db.r5.16xlarge",
-                "db.r5.24xlarge",
-                "db.t3.micro",
-                "db.t3.small",
-                "db.t3.medium",
-                "db.t3.large",
-                "db.t3.xlarge",
-                "db.t3.2xlarge"
-            ]
+          "default": "Instance Class"
         },
         "14DBName": {
-            "Default": "lansa",
-            "Description": "LANSA database name. Must begin with a letter and contain only alphanumeric characters. Maximum length 64.",
-            "Type": "String",
-            "MinLength": "1",
-            "MaxLength": "64",
-            "AllowedPattern": "[a-zA-Z][a-zA-Z0-9]*"
+          "default": "Name"
         },
         "15DBEngine": {
-            "Description": "Database engine type. Must be a valid SQL Server engine type. Note that to support mirroring you need to choose 'sqlserver-ee' or 'sqlserver-se'. Otherwise you may choose 'sqlserver-web'.",
-            "Type": "String",
-            "Default": "sqlserver-web",
-            "AllowedValues": [
-                "sqlserver-web",
-                "sqlserver-se",
-                "sqlserver-ee"
-            ]
+          "default": "SQL Server Engine Type"
         },
         "DBCCSID": {
-            "Default": "",
-            "Description": "Database Server Collation. Defaults to SQL Server default of English US when left unspecified",
-            "Type": "String"
+          "default": "SQL Server Collation"
         },
-        "DBTimeZone": {
-            "Default": "",
-            "Description": "Database Server Time Zone. It is recommended not to change this setting. Defaults to SQL Server default of UTC/GMT when left unspecified",
-            "Type": "String"
-        },
-        "17UserScriptHook": {
-            "Type": "String",
-            "Default": "https://s3-ap-southeast-2.amazonaws.com/lansa/scripts/user-script.ps1",
-            "Description": "URL of a Powershell script to execute after installing the LANSA MSI. The script must have been previously uploaded to the specified location in Amazon S3 BLOB storage."
-        },
-        "18WebServerCapacity": {
-            "Default": "1",
-            "Description": "The initial number of EXTRA WebServer EC2 instances. Must be between at least 1. Default maximum allowed by AWS in an account is 50.",
-            "Type": "Number",
-            "MinValue": "1"
+        "DBTImeZone": {
+          "default": "SQL Server Time Zone"
         },
         "19DBAllocatedStorage": {
-            "Default": "100",
-            "Description": "The maximum size of the database. Must be between 100 and 4096 GB. Minimum 200 for 'sqlserver-ee' and 'sqlserver-se'.",
-            "Type": "Number",
-            "MinValue": "100",
-            "MaxValue": "4096"
+          "default": "Maximum Size"
         },
         "20DBIops": {
-            "Default": "1000",
-            "Description": "The fixed number of I/O operations per second supported by this DB instance. This number must be 10 times the size of DBAllocatedStorage and in increments of 1000. E.g. If DBAllocatedStorage = 200 then DBIops = 2000",
-            "Type": "Number",
-            "MinValue": "1000",
-            "MaxValue": "10000"
+          "default": "I/O OPS"
         },
-        "21ELBTimeout": {
-            "Description": "Time to wait for a response from the application. Must be between 2 and 60. Health check interval and IIS timeouts are based on this time too.",
-            "Type": "Number",
-            "MinValue": "2",
-            "MaxValue": "60",
-            "Default": "30"
+        "11WebserverOSVersion": {
+          "default": "OS Version"
+        },
+        "11WebServerInstanceTyp": {
+          "default": "Instance Type"
+        },
+        "12WebServerMaxConnec": {
+          "default": "Maximum Web Jobs"
+        },
+        "18WebServerCapacity": {
+          "default": "Minimum Number of Instances"
         },
         "22TriggerCakeUpdate": {
-            "Type": "String",
-            "Default": "1",
-            "Description": "Update Stack: Increment this by one to update the supporting software and trigger a Windows Update. This is the same as triggerring both a ChefUpdate and a WindowsUpdate. Mainly to ensure that Windows Updates have been applied."
+          "default": "Trigger Cake Update"
         },
         "23TriggerChefUpdate": {
-            "Type": "String",
-            "Default": "1",
-            "Description": "Update Stack: Increment this by one to update the supporting software."
+          "default": "Trigger Chef Update"
         },
         "24TriggerWinUpdate": {
-            "Type": "String",
-            "Default": "1",
-            "Description": "Update Stack: Increment this by one to trigger a Windows Update."
+          "default": "Trigger Win Update"
         },
         "25TriggerWebConfig": {
-            "Type": "String",
-            "Default": "1",
-            "Description": "Update Stack: Increment this by one to trigger an update to the web configuration"
+          "default": "Trigger Web Config"
         },
         "26TriggerIcingUpdate": {
-            "Type": "String",
-            "Default": "1",
-            "Description": "Update Stack: Increment this by one to trigger an MSI Upgrade. Obtains the specified MSI and installs it. Ensure the LansaMSI parameter is set correctly."
+          "default": "Trigger Icing Update"
         },
         "27TriggerPatchInstall": {
-            "Type": "String",
-            "Default": "1",
-            "Description": "Update Stack: Increment this by one to trigger patches to be installed.  Obtains all MSPs from the PatchBucket and PatchFolder and applies those not already applied. The PatchFolder is usually specified as just the folder in which the patches are located. e.g. 'app/Test'. Its also possible to limit it to a particular file match e.g. to limit it to just install the patches for a particular version - 'app/Test/AWAMAPP_v1.0.0.' N.B. ensure there is a '.' on the end of the name to ensure that only patches for this version are applied."
+          "default": "Trigger Patch Install"
         },
         "28PatchBucketName": {
-            "Type": "String",
-            "Default": "lansa",
-            "Description": "Update Stack: S3 Bucket which will contain the patches. (case sensitive). See TriggerPatchInstall parameter for more details."
+          "default": "Patch Bucket Name"
         },
         "29PatchFolderName": {
-            "Type": "String",
-            "Default": "/change me",
-            "Description": "Update Stack: S3 folder which will contain the patches. (case sensitive). Note that ALL sub-directories are searched so ensure the directory used to store the patches has no sub directories. For the demo use app/test-patches. See TriggerPatchInstall parameter for more details."
+          "default": "Patch Folder Name"
+        },
+        "21ELBTimeout": {
+          "default": "Load Balancer Timeout"
+        },
+        "17UserScriptHook": {
+          "default": "User Script Hook"
+        },
+        "UpdateManagementScripts": {
+          "default": "Update Management Scripts"
+        },
+        "10LansaGitRepoBranch": {
+          "default": "Git Repository Branch"
+        },
+        "TemplateS3Namespace": {
+          "default": "Template S3 Namespace"
         },
         "LansaVersion": {
-            "Type": "String",
-            "AllowedValues": [
-               "V15 GA",
-               "V14 SP2"
-            ],
-            "Default": "V15 GA",
-            "Description": "Visual LANSA Version"
+          "default": "Visual LANSA Version"
         },
         "ImageSource": {
-            "Type": "String",
-            "AllowedValues": [
-               "Marketplace",
-               "Custom"
-            ],
-            "Default": "Marketplace",
-            "Description": "Location from where the image must be picked"
+          "default": "Image Source"
         },
         "AMIId": {
-            "Type": "String",
-            "Default": "",
-            "Description": "The AMI Id of the custom image. Not required when Image Source is set to Marketplace"
+          "default": ""
         }
+      }
+    }
+  },
+  "Mappings": {
+    "AWSRegionArch2AMI142": {
+      "Metadata": {
+        "Comment1": "This mapping is updated whenever a new AMI is submitted to Marketplace"
+      },
+      "us-east-1": {
+        "win2012": "ami-01f7a802b1ba30339",
+        "win2016": "ami-099da0d705810c17c",
+        "win2019": "ami-0202dfdfa554de124",
+        "win2016jpn": "",
+        "win2019jpn": ""
+      },
+      "us-east-2": {
+        "win2012": "ami-",
+        "win2016": "",
+        "win2019": "",
+        "win2016jpn": "",
+        "win2019jpn": ""
+      },
+      "us-west-1": {
+        "win2012": "ami-",
+        "win2016": "",
+        "win2019": "",
+        "win2016jpn": "",
+        "win2019jpn": ""
+      },
+      "us-west-2": {
+        "win2012": "ami-",
+        "win2016": "",
+        "win2019": "",
+        "win2016jpn": "",
+        "win2019jpn": ""
+      },
+      "ca-central-1": {
+        "win2012": "ami-",
+        "win2016": "",
+        "win2019": "",
+        "win2016jpn": "",
+        "win2019jpn": ""
+      },
+      "eu-central-1": {
+        "win2012": "ami-",
+        "win2016": "",
+        "win2019": "",
+        "win2016jpn": "",
+        "win2019jpn": ""
+      },
+      "eu-west-1": {
+        "win2012": "ami-",
+        "win2016": "",
+        "win2019": "",
+        "win2016jpn": "",
+        "win2019jpn": ""
+      },
+      "eu-west-2": {
+        "win2012": "ami-",
+        "win2016": "",
+        "win2019": "",
+        "win2016jpn": "",
+        "win2019jpn": ""
+      },
+      "eu-west-3": {
+        "win2012": "ami-",
+        "win2016": "",
+        "win2019": "",
+        "win2016jpn": "",
+        "win2019jpn": ""
+      },
+      "eu-north-1": {
+        "win2012": "ami-",
+        "win2016": "",
+        "win2019": "",
+        "win2016jpn": "",
+        "win2019jpn": ""
+      },
+      "eu-south-1": {
+        "win2012": "",
+        "win2016": "",
+        "win2019": "",
+        "win2016jpn": "",
+        "win2019jpn": ""
+      },
+      "ap-southeast-1": {
+        "win2012": "ami-",
+        "win2016": "",
+        "win2019": "",
+        "win2016jpn": "",
+        "win2019jpn": ""
+      },
+      "ap-southeast-2": {
+        "win2012": "ami-0c2a3f06d81bbb745",
+        "win2016": "ami-08f88bf429f38a678",
+        "win2019": "ami-09a06d92658da4184",
+        "win2016jpn": "",
+        "win2019jpn": "ami-022ebba0083f01d96"
+      },
+      "ap-south-1": {
+        "win2012": "ami-",
+        "win2016": "",
+        "win2019": "",
+        "win2016jpn": "",
+        "win2019jpn": ""
+      },
+      "ap-northeast-1": {
+        "win2012": "ami-",
+        "win2016": "",
+        "win2019": "",
+        "win2016jpn": "",
+        "win2019jpn": ""
+      },
+      "ap-northeast-2": {
+        "win2012": "ami-",
+        "win2016": "",
+        "win2019": "",
+        "win2016jpn": "",
+        "win2019jpn": ""
+      },
+      "ap-east-1": {
+        "win2012": "",
+        "win2016": "",
+        "win2019": "",
+        "win2016jpn": "",
+        "win2019jpn": ""
+      },
+      "af-south-1": {
+        "win2012": "",
+        "win2016": "",
+        "win2019": "",
+        "win2016jpn": "",
+        "win2019jpn": ""
+      },
+      "me-south-1": {
+        "win2012": "",
+        "win2016": "",
+        "win2019": "",
+        "win2016jpn": "",
+        "win2019jpn": ""
+      },
+      "sa-east-1": {
+        "win2012": "ami-",
+        "win2016": "",
+        "win2019": "",
+        "win2016jpn": "",
+        "win2019jpn": ""
+      }
     },
-   "Metadata" : {
-     "AWS::CloudFormation::Interface" : {
-       "ParameterGroups" : [
-         {
-           "Label" : { "default" : "Essential Parameters" },
-           "Parameters" : [
-               "01LansaMSI",
-               "02LansaMSIBitness",
-               "03DBUsername",
-               "04DBPassword",
-               "05WebUser",
-               "06WebPassword",
-               "07KeyName",
-               "08RemoteAccessLocation"
-            ]
-         },
-         {
-            "Label": {
-              "default": "Use Existing VPC or add a new VPC"
+    "AWSRegionArch2AMI15": {
+      "Metadata": {
+        "Comment1": "This mapping is updated whenever a new AMI is submitted to Marketplace"
+      },
+      "us-east-1": {
+        "win2012": "ami-08315dfc171e5a1a7",
+        "win2016": "ami-0d1f87a1dd9f347b0",
+        "win2019": "ami-0ec8818382ced7ff4",
+        "win2016jpn": "",
+        "win2019jpn": ""
+      },
+      "us-east-2": {
+        "win2012": "ami-",
+        "win2016": "",
+        "win2019": "",
+        "win2016jpn": "",
+        "win2019jpn": ""
+      },
+      "us-west-1": {
+        "win2012": "ami-",
+        "win2016": "",
+        "win2019": "",
+        "win2016jpn": "",
+        "win2019jpn": ""
+      },
+      "us-west-2": {
+        "win2012": "ami-",
+        "win2016": "",
+        "win2019": "",
+        "win2016jpn": "",
+        "win2019jpn": ""
+      },
+      "ca-central-1": {
+        "win2012": "ami-",
+        "win2016": "",
+        "win2019": "",
+        "win2016jpn": "",
+        "win2019jpn": ""
+      },
+      "eu-central-1": {
+        "win2012": "ami-",
+        "win2016": "",
+        "win2019": "",
+        "win2016jpn": "",
+        "win2019jpn": ""
+      },
+      "eu-west-1": {
+        "win2012": "ami-",
+        "win2016": "",
+        "win2019": "",
+        "win2016jpn": "",
+        "win2019jpn": ""
+      },
+      "eu-west-2": {
+        "win2012": "ami-",
+        "win2016": "",
+        "win2019": "",
+        "win2016jpn": "",
+        "win2019jpn": ""
+      },
+      "eu-west-3": {
+        "win2012": "ami-",
+        "win2016": "",
+        "win2019": "",
+        "win2016jpn": "",
+        "win2019jpn": ""
+      },
+      "eu-north-1": {
+        "win2012": "ami-",
+        "win2016": "",
+        "win2019": "",
+        "win2016jpn": "",
+        "win2019jpn": ""
+      },
+      "eu-south-1": {
+        "win2012": "",
+        "win2016": "",
+        "win2019": "",
+        "win2016jpn": "",
+        "win2019jpn": ""
+      },
+      "ap-southeast-1": {
+        "win2012": "ami-",
+        "win2016": "",
+        "win2019": "",
+        "win2016jpn": "",
+        "win2019jpn": "ami-0bedeb84bee729631"
+      },
+      "ap-southeast-2": {
+        "win2012": "ami-0c9f401a97769e38c",
+        "win2016": "ami-0adfd49867b4d1d42",
+        "win2019": "ami-093419f1db7d06327",
+        "win2016jpn": "",
+        "win2019jpn": ""
+      },
+      "ap-south-1": {
+        "win2012": "ami-",
+        "win2016": "",
+        "win2019": "",
+        "win2016jpn": "",
+        "win2019jpn": ""
+      },
+      "ap-northeast-1": {
+        "win2012": "ami-",
+        "win2016": "",
+        "win2019": "",
+        "win2016jpn": "",
+        "win2019jpn": ""
+      },
+      "ap-northeast-2": {
+        "win2012": "ami-",
+        "win2016": "",
+        "win2019": "",
+        "win2016jpn": "",
+        "win2019jpn": ""
+      },
+      "ap-east-1": {
+        "win2012": "",
+        "win2016": "",
+        "win2019": "",
+        "win2016jpn": "",
+        "win2019jpn": ""
+      },
+      "af-south-1": {
+        "win2012": "",
+        "win2016": "",
+        "win2019": "",
+        "win2016jpn": "",
+        "win2019jpn": ""
+      },
+      "me-south-1": {
+        "win2012": "",
+        "win2016": "",
+        "win2019": "",
+        "win2016jpn": "",
+        "win2019jpn": ""
+      },
+      "sa-east-1": {
+        "win2012": "ami-",
+        "win2016": "",
+        "win2019": "",
+        "win2016jpn": "",
+        "win2019jpn": ""
+      }
+    },
+    "CustomVariable": {
+      "TemplateRoot": {
+        "Value": "https://s3-ap-southeast-2.amazonaws.com/lansa/templates/"
+      },
+      "WebServerTemplate": {
+        "Value": "webserver-win.cfn.template"
+      },
+      "TemplateLevel": {
+        "Value": "R"
+      },
+      "NestedVPCTemplate": {
+        "Value": "nested-vpc.cfn.template"
+      }
+    }
+  },
+  "Conditions": {
+    "CreateNewVPCResources": {
+      "Fn::Equals": [
+        {
+          "Ref": "CreateVPC"
+        },
+        "Yes"
+      ]
+    },
+    "IsReleaseLevel": {
+      "Fn::Equals": [
+        {
+          "Fn::FindInMap": [
+            "CustomVariable",
+            "TemplateLevel",
+            "Value"
+          ]
+        },
+        "R"
+      ]
+    },
+    "IsEmptyNamespace": {
+      "Fn::Equals": [
+        {
+          "Ref": "TemplateS3Namespace"
+        },
+        ""
+      ]
+    },
+    "IsEmptyDBCCSID": {
+      "Fn::Equals": [
+        {
+          "Ref": "DBCCSID"
+        },
+        ""
+      ]
+    },
+    "IsEmptyDBTimeZone": {
+      "Fn::Equals": [
+        {
+          "Ref": "DBTimeZone"
+        },
+        ""
+      ]
+    },
+    "DoesNotHaveUserScript": {
+      "Fn::Equals": [
+        {
+          "Ref": "17UserScriptHook"
+        },
+        ""
+      ]
+    },
+    "HasUserScript": {
+      "Fn::Not": [
+        {
+          "Condition": "DoesNotHaveUserScript"
+        }
+      ]
+    },
+    "IsLansaVersion142": {
+      "Fn::Equals": [
+        {
+          "Ref": "LansaVersion"
+        },
+        "V14 SP2"
+      ]
+    },
+    "IsCustomImageSource": {
+      "Fn::Equals": [
+        {
+          "Ref": "ImageSource"
+        },
+        "Custom"
+      ]
+    },
+    "3AZCondition": {
+      "Fn::Equals": [
+        {
+          "Ref": "NumberOfAZs"
+        },
+        "3"
+      ]
+    }
+  },
+  "Resources": {
+    "VpcStack": {
+      "Type": "AWS::CloudFormation::Stack",
+      "Condition": "CreateNewVPCResources",
+      "Properties": {
+        "TemplateURL": {
+          "Fn::If": [
+            "IsReleaseLevel",
+            {
+              "Fn::If": [
+                "IsEmptyNamespace",
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::FindInMap": [
+                          "CustomVariable",
+                          "TemplateRoot",
+                          "Value"
+                        ]
+                      },
+                      {
+                        "Ref": "10LansaGitRepoBranch"
+                      },
+                      "/",
+                      {
+                        "Fn::FindInMap": [
+                          "CustomVariable",
+                          "NestedVPCTemplate",
+                          "Value"
+                        ]
+                      }
+                    ]
+                  ]
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::FindInMap": [
+                          "CustomVariable",
+                          "TemplateRoot",
+                          "Value"
+                        ]
+                      },
+                      {
+                        "Ref": "10LansaGitRepoBranch"
+                      },
+                      "/",
+                      {
+                        "Ref": "TemplateS3Namespace"
+                      },
+                      "/",
+                      {
+                        "Fn::FindInMap": [
+                          "CustomVariable",
+                          "NestedVPCTemplate",
+                          "Value"
+                        ]
+                      }
+                    ]
+                  ]
+                }
+              ]
             },
-            "Parameters": [
-              "CreateVPC",
-              "CurrentVPC",
-              "AvailabilityZones",
-              "NumberOfAZs",
-              "DBSubnetGroupName",
-              "ELBSubnetIds"
+            {
+              "Fn::If": [
+                "IsEmptyNamespace",
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::FindInMap": [
+                          "CustomVariable",
+                          "TemplateRoot",
+                          "Value"
+                        ]
+                      },
+                      {
+                        "Ref": "10LansaGitRepoBranch"
+                      },
+                      "/beta/",
+                      {
+                        "Fn::FindInMap": [
+                          "CustomVariable",
+                          "NestedVPCTemplate",
+                          "Value"
+                        ]
+                      }
+                    ]
+                  ]
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::FindInMap": [
+                          "CustomVariable",
+                          "TemplateRoot",
+                          "Value"
+                        ]
+                      },
+                      {
+                        "Ref": "10LansaGitRepoBranch"
+                      },
+                      "/beta/",
+                      {
+                        "Ref": "TemplateS3Namespace"
+                      },
+                      "/",
+                      {
+                        "Fn::FindInMap": [
+                          "CustomVariable",
+                          "NestedVPCTemplate",
+                          "Value"
+                        ]
+                      }
+                    ]
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "Parameters": {
+          "AvailabilityZones": {
+            "Fn::Join": [
+              ",",
+              {
+                "Ref": "AvailabilityZones"
+              }
             ]
           },
-         {
-           "Label" : { "default":"Database Configuration" },
-           "Parameters" : [
-               "13DBInstanceClass",
-               "14DBName",
-               "15DBEngine",
-               "DBCCSID",
-               "DBTimeZone",
-               "19DBAllocatedStorage",
-               "20DBIops"
-            ]
-         },
-         {
-           "Label" : { "default":"Web Server Configuration" },
-           "Parameters" : [
-               "LansaVersion",
-               "11WebserverOSVersion",
-               "ImageSource",
-               "AMIId",
-               "11WebServerInstanceTyp",
-               "12WebServerMaxConnec",
-               "18WebServerCapacity"
-            ]
-         },
-         {
-           "Label" : { "default":"Stack Maintenance" },
-           "Parameters" : [
-               "22TriggerCakeUpdate",
-               "23TriggerChefUpdate",
-               "24TriggerWinUpdate",
-               "25TriggerWebConfig",
-               "26TriggerIcingUpdate",
-               "27TriggerPatchInstall",
-               "28PatchBucketName",
-               "29PatchFolderName"
-            ]
-         },
-         {
-           "Label" : { "default":"Advanced Configuration" },
-           "Parameters" : [
-               "21ELBTimeout",
-               "17UserScriptHook",
-               "UpdateManagementScripts",
-               "10LansaGitRepoBranch",
-               "TemplateS3Namespace"
-            ]
-         }
-       ],
-       "ParameterLabels" : {
-         "CreateVPC": { "default": "Create new VPC " },
-         "CurrentVPC": { "default": "Provide existing VPC Id" },
-         "AvailabilityZones": { "default": "Availability Zones" },
-         "NumberOfAZs": { "default": "Number of Availability Zones" },
-         "DBSubnetGroupName": { "default": "DB Subnet Group Name"},
-         "ELBSubnetIds": { "default": "Subnet IDs for ELB"},
-         "01LansaMSI" : { "default" : "Lansa MSI URL" },
-         "02LansaMSIBitness" : { "default" : "MSI Bitness" },
-         "03DBUsername" : { "default" : "Database User Name" },
-         "04DBPassword" : { "default" : "Database Password" },
-         "05WebUser" : { "default" : "Web Server User" },
-         "06WebPassword" : { "default" : "Web Server Password" },
-         "07KeyName" : { "default" : "Keypair Name" },
-         "08RemoteAccessLocation" : { "default" : "Remote Access Location CIDR" },
-         "13DBInstanceClass" : { "default" : "Instance Class" },
-         "14DBName" : { "default" : "Name" },
-         "15DBEngine" : { "default" : "SQL Server Engine Type" },
-         "DBCCSID" : { "default" : "SQL Server Collation" },
-         "DBTImeZone" : { "default" : "SQL Server Time Zone" },
-         "19DBAllocatedStorage" : { "default" : "Maximum Size" },
-         "20DBIops" : { "default" : "I/O OPS" },
-         "11WebserverOSVersion" :  { "default" :  "OS Version"},
-         "11WebServerInstanceTyp" : { "default" : "Instance Type" },
-         "12WebServerMaxConnec" : { "default" : "Maximum Web Jobs" },
-         "18WebServerCapacity" : { "default" : "Minimum Number of Instances" },
-         "22TriggerCakeUpdate" : { "default" : "Trigger Cake Update" },
-         "23TriggerChefUpdate" : { "default" : "Trigger Chef Update" },
-         "24TriggerWinUpdate" : { "default" : "Trigger Win Update" },
-         "25TriggerWebConfig" : { "default" : "Trigger Web Config" },
-         "26TriggerIcingUpdate" : { "default" : "Trigger Icing Update" },
-         "27TriggerPatchInstall" : { "default" : "Trigger Patch Install" },
-         "28PatchBucketName" : { "default" : "Patch Bucket Name" },
-         "29PatchFolderName" : { "default" : "Patch Folder Name" },
-         "21ELBTimeout" : { "default" : "Load Balancer Timeout" },
-         "17UserScriptHook" : { "default" : "User Script Hook" },
-         "UpdateManagementScripts" : { "default" : "Update Management Scripts"},
-         "10LansaGitRepoBranch" : { "default" : "Git Repository Branch" },
-         "TemplateS3Namespace" : { "default" : "Template S3 Namespace" },
-         "LansaVersion" :  { "default" :  "Visual LANSA Version"},
-         "ImageSource" :  { "default" :  "Image Source"},
-         "AMIId" :  { "default" :  ""}
-       }
-     }
-   },
-   "Mappings"                 : {
-      "AWSRegionArch2AMI142": {
-         "Metadata": { "Comment1": "This mapping is updated whenever a new AMI is submitted to Marketplace" },
-         "us-east-1": { "win2012": "ami-01f7a802b1ba30339", "win2016" : "ami-033edb23200d5b92a",  "win2019" : "ami-03afa9098fb49c3b1", "win2016jpn" : "", "win2019jpn" : "" },
-         "us-east-2": { "win2012": "ami-", "win2016" : "",  "win2019" : "", "win2016jpn" : "", "win2019jpn" : "" },
-         "us-west-1": { "win2012": "ami-", "win2016" : "",  "win2019" : "", "win2016jpn" : "", "win2019jpn" : "" },
-         "us-west-2": { "win2012": "ami-", "win2016" : "",  "win2019" : "", "win2016jpn" : "", "win2019jpn" : "" },
-         "ca-central-1": { "win2012": "ami-", "win2016" : "",  "win2019" : "", "win2016jpn" : "", "win2019jpn" : "" },
-         "eu-central-1": { "win2012": "ami-", "win2016" : "",  "win2019" : "", "win2016jpn" : "", "win2019jpn" : "" },
-         "eu-west-1": { "win2012": "ami-", "win2016" : "",  "win2019" : "", "win2016jpn" : "", "win2019jpn" : "" },
-         "eu-west-2": { "win2012": "ami-", "win2016" : "",  "win2019" : "", "win2016jpn" : "", "win2019jpn" : "" },
-         "eu-west-3": { "win2012": "ami-", "win2016" : "",  "win2019" : "", "win2016jpn" : "", "win2019jpn" : "" },
-         "eu-north-1": { "win2012": "ami-", "win2016" : "",  "win2019" : "", "win2016jpn" : "", "win2019jpn" : "" },
-         "eu-south-1": { "win2012": "", "win2016" : "",  "win2019" : "", "win2016jpn" : "", "win2019jpn" : "" },
-         "ap-southeast-1": { "win2012": "ami-", "win2016" : "",  "win2019" : "", "win2016jpn" : "", "win2019jpn" : "" },
-         "ap-southeast-2": { "win2012": "ami-06d7874f3cf20f619", "win2016" : "ami-05c7db64f54a77abd",  "win2019" : "ami-0e5a7db5b27bbb0a9", "win2016jpn" : "", "win2019jpn" : "ami-022ebba0083f01d96" },
-         "ap-south-1": { "win2012": "ami-", "win2016" : "",  "win2019" : "", "win2016jpn" : "", "win2019jpn" : "" },
-         "ap-northeast-1": { "win2012": "ami-", "win2016" : "",  "win2019" : "", "win2016jpn" : "", "win2019jpn" : "" },
-         "ap-northeast-2": { "win2012": "ami-", "win2016" : "",  "win2019" : "", "win2016jpn" : "", "win2019jpn" : "" },
-         "ap-east-1": { "win2012": "", "win2016" : "",  "win2019" : "", "win2016jpn" : "", "win2019jpn" : "" },
-         "af-south-1": { "win2012": "", "win2016" : "",  "win2019" : "", "win2016jpn" : "", "win2019jpn" : "" },
-         "me-south-1": { "win2012": "", "win2016" : "",  "win2019" : "", "win2016jpn" : "", "win2019jpn" : "" },
-         "sa-east-1": { "win2012": "ami-", "win2016" : "",  "win2019" : "", "win2016jpn" : "", "win2019jpn" : "" }
-      },
-      "AWSRegionArch2AMI15": {
-        "Metadata": { "Comment1": "This mapping is updated whenever a new AMI is submitted to Marketplace" },
-        "us-east-1": { "win2012": "ami-08315dfc171e5a1a7", "win2016" : "ami-08163cec1b04c40aa",  "win2019" : "ami-0784dffeef59772ca", "win2016jpn" : "", "win2019jpn" : "" },
-        "us-east-2": { "win2012": "ami-", "win2016" : "",  "win2019" : "", "win2016jpn" : "", "win2019jpn" : "" },
-        "us-west-1": { "win2012": "ami-", "win2016" : "",  "win2019" : "", "win2016jpn" : "", "win2019jpn" : "" },
-        "us-west-2": { "win2012": "ami-", "win2016" : "",  "win2019" : "", "win2016jpn" : "", "win2019jpn" : "" },
-        "ca-central-1": { "win2012": "ami-", "win2016" : "",  "win2019" : "", "win2016jpn" : "", "win2019jpn" : "" },
-        "eu-central-1": { "win2012": "ami-", "win2016" : "",  "win2019" : "", "win2016jpn" : "", "win2019jpn" : "" },
-        "eu-west-1": { "win2012": "ami-", "win2016" : "",  "win2019" : "", "win2016jpn" : "", "win2019jpn" : "" },
-        "eu-west-2": { "win2012": "ami-", "win2016" : "",  "win2019" : "", "win2016jpn" : "", "win2019jpn" : "" },
-        "eu-west-3": { "win2012": "ami-", "win2016" : "",  "win2019" : "", "win2016jpn" : "", "win2019jpn" : "" },
-        "eu-north-1": { "win2012": "ami-", "win2016" : "",  "win2019" : "", "win2016jpn" : "", "win2019jpn" : "" },
-        "eu-south-1": { "win2012": "", "win2016" : "",  "win2019" : "", "win2016jpn" : "", "win2019jpn" : "" },
-        "ap-southeast-1": { "win2012": "ami-", "win2016" : "",  "win2019" : "", "win2016jpn" : "", "win2019jpn" : "ami-0bedeb84bee729631" },
-        "ap-southeast-2": { "win2012": "ami-0c9bff9fe226976b7", "win2016" : "ami-0d76613af7c40732e",  "win2019" : "ami-03c27699916008eb3", "win2016jpn" : "", "win2019jpn" : "" },
-        "ap-south-1": { "win2012": "ami-", "win2016" : "",  "win2019" : "", "win2016jpn" : "", "win2019jpn" : "" },
-        "ap-northeast-1": { "win2012": "ami-", "win2016" : "",  "win2019" : "", "win2016jpn" : "", "win2019jpn" : "" },
-        "ap-northeast-2": { "win2012": "ami-", "win2016" : "",  "win2019" : "", "win2016jpn" : "", "win2019jpn" : "" },
-        "ap-east-1": { "win2012": "", "win2016" : "",  "win2019" : "", "win2016jpn" : "", "win2019jpn" : "" },
-        "af-south-1": { "win2012": "", "win2016" : "",  "win2019" : "", "win2016jpn" : "", "win2019jpn" : "" },
-        "me-south-1": { "win2012": "", "win2016" : "",  "win2019" : "", "win2016jpn" : "", "win2019jpn" : "" },
-        "sa-east-1": { "win2012": "ami-", "win2016" : "",  "win2019" : "", "win2016jpn" : "", "win2019jpn" : "" }
-     },
-    "CustomVariable" : {
-         "TemplateRoot"      : { "Value" : "https://s3-ap-southeast-2.amazonaws.com/lansa/templates/" },
-         "WebServerTemplate" : { "Value" : "webserver-win.cfn.template"},
-         "TemplateLevel"     : { "Value" : "R"},
-         "NestedVPCTemplate" : { "Value" : "nested-vpc.cfn.template"}
-       }
+          "NumberOfAZs": {
+            "Ref": "NumberOfAZs"
+          }
+        }
+      }
     },
-    "Conditions" : {
-       "CreateNewVPCResources" : { "Fn::Equals" : [ { "Ref" : "CreateVPC" }, "Yes" ] },
-       "IsReleaseLevel" : {"Fn::Equals" : [{ "Fn::FindInMap" : [ "CustomVariable", "TemplateLevel", "Value" ] }, "R"]},
-       "IsEmptyNamespace" : {"Fn::Equals" : [{"Ref" : "TemplateS3Namespace"}, "" ]},
-       "IsEmptyDBCCSID" : {"Fn::Equals" : [{"Ref" : "DBCCSID"}, "" ]},
-       "IsEmptyDBTimeZone" : {"Fn::Equals" : [{"Ref" : "DBTimeZone"}, "" ]},
-       "DoesNotHaveUserScript" : {"Fn::Equals" : [{"Ref" : "17UserScriptHook"}, ""]},
-       "HasUserScript" : {"Fn::Not" : [{"Condition" : "DoesNotHaveUserScript"}]},
-       "IsLansaVersion142": {"Fn::Equals" : [{"Ref" : "LansaVersion"}, "V14 SP2"]},
-       "IsCustomImageSource": {"Fn::Equals" : [{"Ref": "ImageSource"}, "Custom"]},
-       "3AZCondition": {
-        "Fn::Equals": [
-              {
-                "Ref": "NumberOfAZs"
+    "CloudWatchLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": {
+          "Ref": "AWS::StackName"
+        },
+        "RetentionInDays": 30
+      }
+    },
+    "IAMRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  {
+                    "Fn::Join": [
+                      ".",
+                      [
+                        "ec2",
+                        {
+                          "Ref": "AWS::URLSuffix"
+                        }
+                      ]
+                    ]
+                  }
+                ]
               },
-              "3"
+              "Action": [
+                "sts:AssumeRole"
+              ]
+            }
+          ]
+        },
+        "ManagedPolicyArns": [
+          "arn:aws:iam::aws:policy/AWSHealthFullAccess",
+          "arn:aws:iam::aws:policy/AWSConfigUserAccess",
+          "arn:aws:iam::aws:policy/AmazonSSMFullAccess",
+          "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore",
+          "arn:aws:iam::aws:policy/AWSResourceGroupsReadOnlyAccess",
+          "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy",
+          "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"
+        ],
+        "Path": "/"
+      }
+    },
+    "IAMRoleInstanceProfile": {
+      "Type": "AWS::IAM::InstanceProfile",
+      "Properties": {
+        "Path": "/",
+        "Roles": [
+          {
+            "Ref": "IAMRole"
+          }
+        ]
+      }
+    },
+    "WebServerELB": {
+      "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
+      "Metadata": {
+        "Comment1": "Configure the Load Balancer with a simple health check and cookie-based stickiness",
+        "Comment2": "Use install path for healthcheck to avoid redirects. Refer to LANSA report to place the right tag here for health check - ELB healthcheck does not handle 302 return codes"
+      },
+      "Properties": {
+        "Subnets": {
+          "Fn::If": [
+            "CreateNewVPCResources",
+            {
+              "Fn::If": [
+                "3AZCondition",
+                [
+                  {
+                    "Fn::GetAtt": [
+                      "VpcStack",
+                      "Outputs.ELBSubnetId1"
+                    ]
+                  },
+                  {
+                    "Fn::GetAtt": [
+                      "VpcStack",
+                      "Outputs.ELBSubnetId2"
+                    ]
+                  }
+                ],
+                [
+                  {
+                    "Fn::GetAtt": [
+                      "VpcStack",
+                      "Outputs.ELBSubnetId1"
+                    ]
+                  }
+                ]
+              ]
+            },
+            {
+              "Ref": "ELBSubnetIds"
+            }
+          ]
+        },
+        "CrossZone": "true",
+        "LBCookieStickinessPolicy": [
+          {
+            "PolicyName": "CookieBasedPolicy",
+            "CookieExpirationPeriod": "600"
+          }
+        ],
+        "Listeners": [
+          {
+            "LoadBalancerPort": "80",
+            "InstancePort": "80",
+            "Protocol": "HTTP",
+            "PolicyNames": [
+              "CookieBasedPolicy"
             ]
           }
-    },
-    "Resources": {
-        "VpcStack": {
-          "Type": "AWS::CloudFormation::Stack",
-          "Condition": "CreateNewVPCResources",
-          "Properties": {
-            "TemplateURL" : { "Fn::If" : [ "IsReleaseLevel",
-                                    { "Fn::If" : [ "IsEmptyNamespace",
-                                        {
-                                            "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
-                                        { "Ref" : "10LansaGitRepoBranch" },
-                                        "/",
-                                        { "Fn::FindInMap" : [ "CustomVariable", "NestedVPCTemplate", "Value" ] }
-                                    ]]}  ,
-                                        {
-                                            "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
-                                        { "Ref" : "10LansaGitRepoBranch" },
-                                            "/",
-                                            {  "Ref" : "TemplateS3Namespace" },
-                                            "/",
-                                            { "Fn::FindInMap" : [ "CustomVariable", "NestedVPCTemplate", "Value" ] }
-                                        ]]}
-                                    ]},
-                                    { "Fn::If" : [ "IsEmptyNamespace",
-                                        {
-                                            "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
-                                            { "Ref" : "10LansaGitRepoBranch" },
-                                        "/beta/",
-                                        { "Fn::FindInMap" : [ "CustomVariable", "NestedVPCTemplate", "Value" ] }
-                                        ]]},
-                                        {
-                                            "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
-                                            { "Ref" : "10LansaGitRepoBranch" },
-                                            "/beta/",
-                                            { "Ref" : "TemplateS3Namespace" },
-                                            "/",
-                                            { "Fn::FindInMap" : [ "CustomVariable", "NestedVPCTemplate", "Value" ]}
-                                    ]]}
-                                    ]}
-                                ]},
-            "Parameters": {
-                "AvailabilityZones": { "Fn::Join": [",", { "Ref": "AvailabilityZones" }]},
-                "NumberOfAZs": { "Ref": "NumberOfAZs"}
-             }
-            }
+        ],
+        "ConnectionDrainingPolicy": {
+          "Enabled": "true",
+          "Timeout": "300"
         },
-       "CloudWatchLogGroup":  {
-           "Type" : "AWS::Logs::LogGroup",
-           "Properties" : {
-               "LogGroupName" : { "Ref": "AWS::StackName" },
-               "RetentionInDays" : 30
-           }
-        },
-        "IAMRole": {
-            "Type": "AWS::IAM::Role",
-            "Properties": {
-                "AssumeRolePolicyDocument": {
-                    "Version": "2012-10-17",
-                    "Statement": [
-                        {
-                            "Effect": "Allow",
-                            "Principal": {
-                                "Service": [
-                                    {
-                                        "Fn::Join": [
-                                            ".",
-                                            [
-                                                "ec2",
-                                                { "Ref": "AWS::URLSuffix" }
-                                            ]
-                                        ]
-                                    }
-                                ]
-                            },
-                            "Action": [ "sts:AssumeRole" ]
-                        }
-                    ]
-                },
-                "ManagedPolicyArns": [
-                   "arn:aws:iam::aws:policy/AWSHealthFullAccess",
-                   "arn:aws:iam::aws:policy/AWSConfigUserAccess",
-                   "arn:aws:iam::aws:policy/AmazonSSMFullAccess",
-                   "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore",
-                   "arn:aws:iam::aws:policy/AWSResourceGroupsReadOnlyAccess",
-                   "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy",
-                   "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"
-                ],
-                "Path": "/"
-            }
-        },
-        "IAMRoleInstanceProfile": {
-            "Type": "AWS::IAM::InstanceProfile",
-            "Properties": {
-                "Path": "/",
-                "Roles": [ { "Ref": "IAMRole" } ]
-            }
-        },
-        "WebServerELB": {
-            "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
-            "Metadata": {
-                "Comment1": "Configure the Load Balancer with a simple health check and cookie-based stickiness",
-                "Comment2": "Use install path for healthcheck to avoid redirects. Refer to LANSA report to place the right tag here for health check - ELB healthcheck does not handle 302 return codes"
-            },
-            "Properties": {
-                "Subnets" : {
-                    "Fn::If" : [
-                        "CreateNewVPCResources",
-                        {
-                             "Fn::If" : [ "3AZCondition",
-                            [
-                                { "Fn::GetAtt": [ "VpcStack", "Outputs.ELBSubnetId1" ] },
-                                { "Fn::GetAtt": [ "VpcStack", "Outputs.ELBSubnetId2" ] }
-                            ],
-                            [
-                                { "Fn::GetAtt": [ "VpcStack", "Outputs.ELBSubnetId1" ] }
-                            ] ]
-                        },
-                        {"Ref" : "ELBSubnetIds"}
-                      ]
-                },
-                "CrossZone": "true",
-                "LBCookieStickinessPolicy": [
-                    {
-                        "PolicyName": "CookieBasedPolicy",
-                        "CookieExpirationPeriod": "600"
-                    }
-                ],
-                "Listeners": [
-                    {
-                        "LoadBalancerPort": "80",
-                        "InstancePort": "80",
-                        "Protocol": "HTTP",
-                        "PolicyNames": [ "CookieBasedPolicy" ]
-                    }
-                ],
-                "ConnectionDrainingPolicy": {
-                    "Enabled": "true",
-                    "Timeout": "300"
-                },
-                "SecurityGroups":[
-                    {
-                      "Ref":"WBELBSecurityGroup"
-                    }
-                  ],
-                "HealthCheck": {
-                    "Target": "HTTP:80/cgi-bin/probe",
-                    "HealthyThreshold": "3",
-                    "UnhealthyThreshold": "5",
-                    "Interval": "90",
-                    "Timeout": {
-                        "Ref": "21ELBTimeout"
-                    }
-                }
-            }
-        },
-        "DBInstance": {
-            "Type": "AWS::RDS::DBInstance",
-            "Properties": {
-                "DBSubnetGroupName": {
-                    "Fn::If" : [
-                        "CreateNewVPCResources",
-                        { "Fn::GetAtt": [ "VpcStack", "Outputs.DBSubnetGroupName" ] },
-                        {"Ref" : "DBSubnetGroupName"}
-                      ]
-                },
-                "Engine": {
-                    "Ref": "15DBEngine"
-                },
-                "MasterUsername": {
-                    "Ref": "03DBUsername"
-                },
-                "DBInstanceClass": {
-                    "Ref": "13DBInstanceClass"
-                },
-                "VPCSecurityGroups": [
-                    {
-                        "Fn::GetAtt": [ "DBSecurityGroup", "GroupId" ]
-                    }
-                ],
-                "AllocatedStorage": {
-                    "Ref": "19DBAllocatedStorage"
-                },
-                "Iops": {
-                    "Ref": "20DBIops"
-                },
-                "MasterUserPassword": {
-                    "Ref": "04DBPassword"
-                },
-                "AllowMajorVersionUpgrade": "false",
-                "AutoMinorVersionUpgrade": "true",
-                "CharacterSetName" : {
-                    "Fn::If" : [
-                        "IsEmptyDBCCSID",
-                        {"Ref": "AWS::NoValue"},
-                        {"Ref": "DBCCSID"}
-                    ]
-                },
-                "Timezone" : {
-                    "Fn::If" : [
-                        "IsEmptyDBTimeZone",
-                        {"Ref": "AWS::NoValue"},
-                        {"Ref": "DBTimeZone"}
-                    ]
-                },
-                "LicenseModel": "license-included",
-                "Tags": [
-                    {
-                        "Key": "Network",
-                        "Value": "Private"
-                    }
-                ]
-            },
-            "DeletionPolicy": "Snapshot"
-        },
-        "DBSecurityGroup": {
-            "Type": "AWS::EC2::SecurityGroup",
-            "Properties": {
-                "GroupDescription": "Enable SQL Server Access",
-                "SecurityGroupIngress": [
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "1433",
-                        "ToPort": "1433",
-                        "CidrIp": {
-                            "Ref": "08RemoteAccessLocation"
-                        }
-                    }
-                ],
-                "VpcId": {
-                    "Fn::If" : [
-                      "CreateNewVPCResources",
-                      { "Fn::GetAtt": [ "VpcStack", "Outputs.VpcId" ] },
-                      {"Ref" : "CurrentVPC"}
-                    ]
-                  }
-            }
-        },
-        "SGDBIngress": {
-            "Type": "AWS::EC2::SecurityGroupIngress",
-            "Properties": {
-               "GroupId":{
-                    "Fn::GetAtt":[
-                      "DBSecurityGroup",
-                      "GroupId"
-                    ]
-                  },
-                "IpProtocol": "tcp",
-                "FromPort": "1433",
-                "ToPort": "1433",
-                "SourceSecurityGroupId": {  "Fn::GetAtt":[
-                    "LansaSecurityGroup",
-                    "GroupId"
-                  ]
-                }
-            }
-        },
-        "WBELBSecurityGroup": {
-            "Type": "AWS::EC2::SecurityGroup",
-            "Properties": {
-                "GroupDescription": "Security Group for ELB belonging to non-default VPC",
-                "SecurityGroupIngress": [
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "80",
-                        "ToPort": "80",
-                        "CidrIp": {
-                            "Ref": "08RemoteAccessLocation"
-                        }
-                    }
-                ],
-                "VpcId": {
-                    "Fn::If" : [
-                      "CreateNewVPCResources",
-                      { "Fn::GetAtt": [ "VpcStack", "Outputs.VpcId" ] },
-                      {"Ref" : "CurrentVPC"}
-                    ]
-                  }
-            }
-        },
-        "WBELBIngress": {
-            "Type": "AWS::EC2::SecurityGroupIngress",
-            "Properties": {
-               "GroupId":{
-                    "Fn::GetAtt":[
-                      "LansaSecurityGroup",
-                      "GroupId"
-                    ]
-                  },
-                "IpProtocol": "tcp",
-                "FromPort": "80",
-                "ToPort": "80",
-                "SourceSecurityGroupId": {  "Fn::GetAtt":[
-                    "WBELBSecurityGroup",
-                    "GroupId"
-                  ]
-                }
-            }
-        },
-        "LansaSecurityGroup": {
-            "Type": "AWS::EC2::SecurityGroup",
-            "Properties": {
-                "GroupDescription": "Enable HTTP access via port 80 locked down to the load balancers + SSH access + RDP access",
-                "VpcId": {
-                    "Fn::If" : [
-                      "CreateNewVPCResources",
-                      { "Fn::GetAtt": [ "VpcStack", "Outputs.VpcId" ] },
-                      {"Ref" : "CurrentVPC"}
-                    ]
-                  },
-                  "SecurityGroupIngress": [
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "22",
-                        "ToPort": "22",
-                        "CidrIp": {
-                            "Ref": "08RemoteAccessLocation"
-                        }
-                    },
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "3389",
-                        "ToPort": "3389",
-                        "CidrIp": {
-                            "Ref": "08RemoteAccessLocation"
-                        }
-                    }
-                ]
-            }
-        },
-        "DBWebServerApp" : {
-            "Type" : "AWS::CloudFormation::Stack",
-            "Metadata" : {
-                "Comment1" : "The MaxInstanceLifetime property value for DB ASG is set to 5,270,400 seconds = 61 days. This is a prime number(close to two months) to reduce the likelihood that this instance will be unavailable when the Web ASG instance is also unavailable",
-                "Comment2" : "Using prime numbers ensures that the DB instances and Web instances will not be refreshed on the same day"
-            },
-            "Properties" : {
-                "TemplateURL" : { "Fn::If" : [ "IsReleaseLevel",
-                                    { "Fn::If" : [ "IsEmptyNamespace",
-                                        {
-                                            "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
-                                        { "Ref" : "10LansaGitRepoBranch" },
-                                        "/",
-                                        { "Fn::FindInMap" : [ "CustomVariable", "WebServerTemplate", "Value" ] }
-                                    ]]}  ,
-                                        {
-                                            "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
-                                        { "Ref" : "10LansaGitRepoBranch" },
-                                            "/",
-                                            {  "Ref" : "TemplateS3Namespace" },
-                                            "/",
-                                            { "Fn::FindInMap" : [ "CustomVariable", "WebServerTemplate", "Value" ] }
-                                        ]]}
-                                    ]},
-                                    { "Fn::If" : [ "IsEmptyNamespace",
-                                        {
-                                            "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
-                                            { "Ref" : "10LansaGitRepoBranch" },
-                                        "/beta/",
-                                        { "Fn::FindInMap" : [ "CustomVariable", "WebServerTemplate", "Value" ] }
-                                        ]]},
-                                        {
-                                            "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
-                                            { "Ref" : "10LansaGitRepoBranch" },
-                                            "/beta/",
-                                            { "Ref" : "TemplateS3Namespace" },
-                                            "/",
-                                            { "Fn::FindInMap" : [ "CustomVariable", "WebServerTemplate", "Value" ]}
-                                    ]]}
-                                    ]}
-                                ]},
-                "Parameters" : {
-                    "AMI"                         : { "Fn::If": [ "IsCustomImageSource", { "Ref" : "AMIId" }, { "Fn::If" : ["IsLansaVersion142", { "Fn::FindInMap" : [ "AWSRegionArch2AMI142", { "Ref" : "AWS::Region" }, { "Ref": "11WebserverOSVersion" } ] }, { "Fn::FindInMap" : [ "AWSRegionArch2AMI15", { "Ref" : "AWS::Region" }, { "Ref": "11WebserverOSVersion" }]} ] }]},
-                    "DBEndPoint"                  : { "Fn::GetAtt" : ["DBInstance", "Endpoint.Address"] },
-                    "WebServerSubnet" : {
-                        "Fn::If" : [
-                            "CreateNewVPCResources",
-                            { "Fn::Join" : [
-                                ",",
-                                {
-                                    "Fn::If" : [ "3AZCondition",
-                                   [
-                                       { "Fn::GetAtt": [ "VpcStack", "Outputs.ELBSubnetId1" ] },
-                                       { "Fn::GetAtt": [ "VpcStack", "Outputs.ELBSubnetId2" ] }
-                                   ],
-                                   [
-                                       { "Fn::GetAtt": [ "VpcStack", "Outputs.ELBSubnetId1" ] }
-                                   ] ]
-                               }
-                            ] }
-                            ,
-                            { "Fn::Join": [",", {"Ref" : "ELBSubnetIds"}]}
-                          ]
-                    },
-                    "IAMRoleInstanceProfile"      : { "Ref" : "IAMRoleInstanceProfile" },
-                    "LansaSecurityGroup"          : { "Ref" : "LansaSecurityGroup" },
-                    "Sudb"                        : "1",
-                    "TemplateRoot"                : { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
-                    "WebServerELB"                : { "Ref" : "WebServerELB" },
-                    "WebServerName"               : "DB Web Server Instance",
-                    "01LansaMSI"                  : { "Ref" : "01LansaMSI" },
-                    "02LansaMSIBitness"           : { "Ref" : "02LansaMSIBitness"},
-                    "03DBUsername"                : { "Ref" : "03DBUsername" },
-                    "04DBPassword"                : { "Ref" : "04DBPassword" },
-                    "05WebUser"                   : { "Ref" : "05WebUser" },
-                    "06WebPassword"               : { "Ref" : "06WebPassword" },
-                    "07KeyName"                   : { "Ref" : "07KeyName" },
-                    "8RemoteAccessLocation"       : { "Ref" : "08RemoteAccessLocation" },
-                    "90LansaTemplateLevel"        : { "Fn::FindInMap" : [ "CustomVariable", "TemplateLevel", "Value" ] },
-                    "UpdateManagementScripts"     : { "Ref" : "UpdateManagementScripts" },
-                    "10LansaGitRepoBranch"        : { "Ref" : "10LansaGitRepoBranch" },
-                    "11WebServerInstanceTyp"      : { "Ref" : "11WebServerInstanceTyp" },
-                    "12WebServerMaxConnec"        : { "Ref" : "12WebServerMaxConnec" },
-                    "14DBName"                    : { "Ref" : "14DBName" },
-                    "17UserScriptHook"            : { "Ref" : "17UserScriptHook" },
-                    "18WebServerCapacity"         : 1,
-                    "18WebServerCapacityMaxSize"  : 1,
-                    "21ELBTimeout"                : { "Ref" : "21ELBTimeout" },
-                    "22TriggerCakeUpdate"         : { "Ref" : "22TriggerCakeUpdate"},
-                    "23TriggerChefUpdate"         : { "Ref" : "23TriggerChefUpdate"},
-                    "24TriggerWinUpdate"          : { "Ref" : "24TriggerWinUpdate"},
-                    "25TriggerWebConfig"          : { "Ref" : "25TriggerWebConfig" },
-                    "26TriggerIcingUpdate"        : { "Ref" : "26TriggerIcingUpdate"},
-                    "27TriggerPatchInstall"       : { "Ref" : "27TriggerPatchInstall"},
-                    "28PatchBucketName"           : { "Ref" : "28PatchBucketName"},
-                    "29PatchFolderName"           : { "Ref" : "29PatchFolderName"},
-                    "MaxInstanceLifetime"         : 5270400
-                }
-            }
-        },
-        "WebServerApp" : {
-            "Type" : "AWS::CloudFormation::Stack",
-            "Metadata" : {
-                "Comment1" : "The MaxInstanceLifetime property value for Web ASG is set to 5,788,800 seconds = 67 days. This is a prime number(close to two months) to reduce the likelihood that this instance will be unavailable when the DB ASG instance is also unavailable",
-                "Comment2" : "Using prime numbers ensures that the DB instances and Web instances will not be refreshed on the same day"
-            },
-            "Properties" : {
-                "TemplateURL" : { "Fn::If" : [ "IsReleaseLevel",
-                                    { "Fn::If" : [ "IsEmptyNamespace",
-                                        {
-                                            "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
-                                        { "Ref" : "10LansaGitRepoBranch" },
-                                        "/",
-                                        { "Fn::FindInMap" : [ "CustomVariable", "WebServerTemplate", "Value" ] }
-                                    ]]}  ,
-                                        {
-                                            "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
-                                        { "Ref" : "10LansaGitRepoBranch" },
-                                            "/",
-                                            {  "Ref" : "TemplateS3Namespace" },
-                                            "/",
-                                            { "Fn::FindInMap" : [ "CustomVariable", "WebServerTemplate", "Value" ] }
-                                        ]]}
-                                    ]},
-                                    { "Fn::If" : [ "IsEmptyNamespace",
-                                        {
-                                            "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
-                                            { "Ref" : "10LansaGitRepoBranch" },
-                                        "/beta/",
-                                        { "Fn::FindInMap" : [ "CustomVariable", "WebServerTemplate", "Value" ] }
-                                        ]]},
-                                        {
-                                            "Fn::Join" : ["", [ { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
-                                            { "Ref" : "10LansaGitRepoBranch" },
-                                            "/beta/",
-                                            { "Ref" : "TemplateS3Namespace" },
-                                            "/",
-                                            { "Fn::FindInMap" : [ "CustomVariable", "WebServerTemplate", "Value" ]}
-                                    ]]}
-                                    ]}
-                                ]},
-                "Parameters" : {
-                    "AMI"                         : { "Fn::If": [ "IsCustomImageSource", { "Ref" : "AMIId" }, { "Fn::If" : ["IsLansaVersion142", { "Fn::FindInMap" : [ "AWSRegionArch2AMI142", { "Ref" : "AWS::Region" }, { "Ref": "11WebserverOSVersion" } ] }, { "Fn::FindInMap" : [ "AWSRegionArch2AMI15", { "Ref" : "AWS::Region" }, { "Ref": "11WebserverOSVersion" }]} ] }]},
-                    "DBEndPoint"                  : { "Fn::GetAtt" : ["DBInstance", "Endpoint.Address"] },
-                    "DummyRef"                    : { "Ref" : "DBWebServerApp" },
-                    "IAMRoleInstanceProfile"      : { "Ref" : "IAMRoleInstanceProfile" },
-                    "LansaSecurityGroup"          : { "Ref" : "LansaSecurityGroup" },
-                    "Sudb"                        : "0",
-                    "TemplateRoot"                : { "Fn::FindInMap" : [ "CustomVariable", "TemplateRoot", "Value" ] },
-                    "WebServerELB"                : { "Ref" : "WebServerELB" },
-                    "WebServerName"               : "Web Server Instance",
-                    "WebServerSubnet" : {
-                        "Fn::If" : [
-                            "CreateNewVPCResources",
-                            { "Fn::Join" : [
-                                ",",
-                                {
-                                    "Fn::If" : [ "3AZCondition",
-                                   [
-                                       { "Fn::GetAtt": [ "VpcStack", "Outputs.ELBSubnetId1" ] },
-                                       { "Fn::GetAtt": [ "VpcStack", "Outputs.ELBSubnetId2" ] }
-                                   ],
-                                   [
-                                       { "Fn::GetAtt": [ "VpcStack", "Outputs.ELBSubnetId1" ] }
-                                   ] ]
-                               }
-                            ] }
-                            ,
-                            { "Fn::Join": [",", {"Ref" : "ELBSubnetIds"}]}
-                          ]
-                    },
-                    "01LansaMSI"                  : { "Ref" : "01LansaMSI" },
-                    "02LansaMSIBitness"           : { "Ref" : "02LansaMSIBitness"},
-                    "03DBUsername"                : { "Ref" : "03DBUsername" },
-                    "04DBPassword"                : { "Ref" : "04DBPassword" },
-                    "05WebUser"                   : { "Ref" : "05WebUser" },
-                    "06WebPassword"               : { "Ref" : "06WebPassword" },
-                    "07KeyName"                   : { "Ref" : "07KeyName" },
-                    "8RemoteAccessLocation"       : { "Ref" : "08RemoteAccessLocation" },
-                    "90LansaTemplateLevel"        : { "Fn::FindInMap" : [ "CustomVariable", "TemplateLevel", "Value" ] },
-                    "UpdateManagementScripts"     : { "Ref" : "UpdateManagementScripts" },
-                    "10LansaGitRepoBranch"        : { "Ref" : "10LansaGitRepoBranch" },
-                    "11WebServerInstanceTyp"      : { "Ref" : "11WebServerInstanceTyp" },
-                    "12WebServerMaxConnec"        : { "Ref" : "12WebServerMaxConnec" },
-                    "14DBName"                    : { "Ref" : "14DBName" },
-                    "17UserScriptHook"            : { "Ref" : "17UserScriptHook" },
-                    "18WebServerCapacity"         : { "Ref": "18WebServerCapacity" },
-                    "18WebServerCapacityMaxSize"  : 150,
-                    "21ELBTimeout"                : { "Ref" : "21ELBTimeout" },
-                    "22TriggerCakeUpdate"         : { "Ref" : "22TriggerCakeUpdate"},
-                    "23TriggerChefUpdate"         : { "Ref" : "23TriggerChefUpdate"},
-                    "24TriggerWinUpdate"          : { "Ref" : "24TriggerWinUpdate"},
-                    "25TriggerWebConfig"          : { "Ref" : "25TriggerWebConfig" },
-                    "26TriggerIcingUpdate"        : { "Ref" : "26TriggerIcingUpdate"},
-                    "27TriggerPatchInstall"       : { "Ref" : "27TriggerPatchInstall"},
-                    "28PatchBucketName"           : { "Ref" : "28PatchBucketName"},
-                    "29PatchFolderName"           : { "Ref" : "29PatchFolderName"},
-                    "MaxInstanceLifetime"         : 5788800
-                }
-            }
+        "SecurityGroups": [
+          {
+            "Ref": "WBELBSecurityGroup"
+          }
+        ],
+        "HealthCheck": {
+          "Target": "HTTP:80/cgi-bin/probe",
+          "HealthyThreshold": "3",
+          "UnhealthyThreshold": "5",
+          "Interval": "90",
+          "Timeout": {
+            "Ref": "21ELBTimeout"
+          }
         }
-    },
-    "Outputs"                  : {
-      "WebsiteURL" : {
-         "Value" : { "Fn::Join" : [ "", [ "http://", { "Fn::GetAtt" : [ "WebServerELB", "DNSName" ]  } ] ] },
-         "Description" : "LANSA App Website"
       }
-   }
+    },
+    "DBInstance": {
+      "Type": "AWS::RDS::DBInstance",
+      "Properties": {
+        "DBSubnetGroupName": {
+          "Fn::If": [
+            "CreateNewVPCResources",
+            {
+              "Fn::GetAtt": [
+                "VpcStack",
+                "Outputs.DBSubnetGroupName"
+              ]
+            },
+            {
+              "Ref": "DBSubnetGroupName"
+            }
+          ]
+        },
+        "Engine": {
+          "Ref": "15DBEngine"
+        },
+        "MasterUsername": {
+          "Ref": "03DBUsername"
+        },
+        "DBInstanceClass": {
+          "Ref": "13DBInstanceClass"
+        },
+        "VPCSecurityGroups": [
+          {
+            "Fn::GetAtt": [
+              "DBSecurityGroup",
+              "GroupId"
+            ]
+          }
+        ],
+        "AllocatedStorage": {
+          "Ref": "19DBAllocatedStorage"
+        },
+        "Iops": {
+          "Ref": "20DBIops"
+        },
+        "MasterUserPassword": {
+          "Ref": "04DBPassword"
+        },
+        "AllowMajorVersionUpgrade": "false",
+        "AutoMinorVersionUpgrade": "true",
+        "CharacterSetName": {
+          "Fn::If": [
+            "IsEmptyDBCCSID",
+            {
+              "Ref": "AWS::NoValue"
+            },
+            {
+              "Ref": "DBCCSID"
+            }
+          ]
+        },
+        "Timezone": {
+          "Fn::If": [
+            "IsEmptyDBTimeZone",
+            {
+              "Ref": "AWS::NoValue"
+            },
+            {
+              "Ref": "DBTimeZone"
+            }
+          ]
+        },
+        "LicenseModel": "license-included",
+        "Tags": [
+          {
+            "Key": "Network",
+            "Value": "Private"
+          }
+        ]
+      },
+      "DeletionPolicy": "Snapshot"
+    },
+    "DBSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Enable SQL Server Access",
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "1433",
+            "ToPort": "1433",
+            "CidrIp": {
+              "Ref": "08RemoteAccessLocation"
+            }
+          }
+        ],
+        "VpcId": {
+          "Fn::If": [
+            "CreateNewVPCResources",
+            {
+              "Fn::GetAtt": [
+                "VpcStack",
+                "Outputs.VpcId"
+              ]
+            },
+            {
+              "Ref": "CurrentVPC"
+            }
+          ]
+        }
+      }
+    },
+    "SGDBIngress": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Fn::GetAtt": [
+            "DBSecurityGroup",
+            "GroupId"
+          ]
+        },
+        "IpProtocol": "tcp",
+        "FromPort": "1433",
+        "ToPort": "1433",
+        "SourceSecurityGroupId": {
+          "Fn::GetAtt": [
+            "LansaSecurityGroup",
+            "GroupId"
+          ]
+        }
+      }
+    },
+    "WBELBSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Security Group for ELB belonging to non-default VPC",
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "80",
+            "ToPort": "80",
+            "CidrIp": {
+              "Ref": "08RemoteAccessLocation"
+            }
+          }
+        ],
+        "VpcId": {
+          "Fn::If": [
+            "CreateNewVPCResources",
+            {
+              "Fn::GetAtt": [
+                "VpcStack",
+                "Outputs.VpcId"
+              ]
+            },
+            {
+              "Ref": "CurrentVPC"
+            }
+          ]
+        }
+      }
+    },
+    "WBELBIngress": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Fn::GetAtt": [
+            "LansaSecurityGroup",
+            "GroupId"
+          ]
+        },
+        "IpProtocol": "tcp",
+        "FromPort": "80",
+        "ToPort": "80",
+        "SourceSecurityGroupId": {
+          "Fn::GetAtt": [
+            "WBELBSecurityGroup",
+            "GroupId"
+          ]
+        }
+      }
+    },
+    "LansaSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Enable HTTP access via port 80 locked down to the load balancers + SSH access + RDP access",
+        "VpcId": {
+          "Fn::If": [
+            "CreateNewVPCResources",
+            {
+              "Fn::GetAtt": [
+                "VpcStack",
+                "Outputs.VpcId"
+              ]
+            },
+            {
+              "Ref": "CurrentVPC"
+            }
+          ]
+        },
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "22",
+            "ToPort": "22",
+            "CidrIp": {
+              "Ref": "08RemoteAccessLocation"
+            }
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "3389",
+            "ToPort": "3389",
+            "CidrIp": {
+              "Ref": "08RemoteAccessLocation"
+            }
+          }
+        ]
+      }
+    },
+    "DBWebServerApp": {
+      "Type": "AWS::CloudFormation::Stack",
+      "Metadata": {
+        "Comment1": "The MaxInstanceLifetime property value for DB ASG is set to 5,270,400 seconds = 61 days. This is a prime number(close to two months) to reduce the likelihood that this instance will be unavailable when the Web ASG instance is also unavailable",
+        "Comment2": "Using prime numbers ensures that the DB instances and Web instances will not be refreshed on the same day"
+      },
+      "Properties": {
+        "TemplateURL": {
+          "Fn::If": [
+            "IsReleaseLevel",
+            {
+              "Fn::If": [
+                "IsEmptyNamespace",
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::FindInMap": [
+                          "CustomVariable",
+                          "TemplateRoot",
+                          "Value"
+                        ]
+                      },
+                      {
+                        "Ref": "10LansaGitRepoBranch"
+                      },
+                      "/",
+                      {
+                        "Fn::FindInMap": [
+                          "CustomVariable",
+                          "WebServerTemplate",
+                          "Value"
+                        ]
+                      }
+                    ]
+                  ]
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::FindInMap": [
+                          "CustomVariable",
+                          "TemplateRoot",
+                          "Value"
+                        ]
+                      },
+                      {
+                        "Ref": "10LansaGitRepoBranch"
+                      },
+                      "/",
+                      {
+                        "Ref": "TemplateS3Namespace"
+                      },
+                      "/",
+                      {
+                        "Fn::FindInMap": [
+                          "CustomVariable",
+                          "WebServerTemplate",
+                          "Value"
+                        ]
+                      }
+                    ]
+                  ]
+                }
+              ]
+            },
+            {
+              "Fn::If": [
+                "IsEmptyNamespace",
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::FindInMap": [
+                          "CustomVariable",
+                          "TemplateRoot",
+                          "Value"
+                        ]
+                      },
+                      {
+                        "Ref": "10LansaGitRepoBranch"
+                      },
+                      "/beta/",
+                      {
+                        "Fn::FindInMap": [
+                          "CustomVariable",
+                          "WebServerTemplate",
+                          "Value"
+                        ]
+                      }
+                    ]
+                  ]
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::FindInMap": [
+                          "CustomVariable",
+                          "TemplateRoot",
+                          "Value"
+                        ]
+                      },
+                      {
+                        "Ref": "10LansaGitRepoBranch"
+                      },
+                      "/beta/",
+                      {
+                        "Ref": "TemplateS3Namespace"
+                      },
+                      "/",
+                      {
+                        "Fn::FindInMap": [
+                          "CustomVariable",
+                          "WebServerTemplate",
+                          "Value"
+                        ]
+                      }
+                    ]
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "Parameters": {
+          "AMI": {
+            "Fn::If": [
+              "IsCustomImageSource",
+              {
+                "Ref": "AMIId"
+              },
+              {
+                "Fn::If": [
+                  "IsLansaVersion142",
+                  {
+                    "Fn::FindInMap": [
+                      "AWSRegionArch2AMI142",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      {
+                        "Ref": "11WebserverOSVersion"
+                      }
+                    ]
+                  },
+                  {
+                    "Fn::FindInMap": [
+                      "AWSRegionArch2AMI15",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      {
+                        "Ref": "11WebserverOSVersion"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "DBEndPoint": {
+            "Fn::GetAtt": [
+              "DBInstance",
+              "Endpoint.Address"
+            ]
+          },
+          "WebServerSubnet": {
+            "Fn::If": [
+              "CreateNewVPCResources",
+              {
+                "Fn::Join": [
+                  ",",
+                  {
+                    "Fn::If": [
+                      "3AZCondition",
+                      [
+                        {
+                          "Fn::GetAtt": [
+                            "VpcStack",
+                            "Outputs.ELBSubnetId1"
+                          ]
+                        },
+                        {
+                          "Fn::GetAtt": [
+                            "VpcStack",
+                            "Outputs.ELBSubnetId2"
+                          ]
+                        }
+                      ],
+                      [
+                        {
+                          "Fn::GetAtt": [
+                            "VpcStack",
+                            "Outputs.ELBSubnetId1"
+                          ]
+                        }
+                      ]
+                    ]
+                  }
+                ]
+              },
+              {
+                "Fn::Join": [
+                  ",",
+                  {
+                    "Ref": "ELBSubnetIds"
+                  }
+                ]
+              }
+            ]
+          },
+          "IAMRoleInstanceProfile": {
+            "Ref": "IAMRoleInstanceProfile"
+          },
+          "LansaSecurityGroup": {
+            "Ref": "LansaSecurityGroup"
+          },
+          "Sudb": "1",
+          "TemplateRoot": {
+            "Fn::FindInMap": [
+              "CustomVariable",
+              "TemplateRoot",
+              "Value"
+            ]
+          },
+          "WebServerELB": {
+            "Ref": "WebServerELB"
+          },
+          "WebServerName": "DB Web Server Instance",
+          "01LansaMSI": {
+            "Ref": "01LansaMSI"
+          },
+          "02LansaMSIBitness": {
+            "Ref": "02LansaMSIBitness"
+          },
+          "03DBUsername": {
+            "Ref": "03DBUsername"
+          },
+          "04DBPassword": {
+            "Ref": "04DBPassword"
+          },
+          "05WebUser": {
+            "Ref": "05WebUser"
+          },
+          "06WebPassword": {
+            "Ref": "06WebPassword"
+          },
+          "07KeyName": {
+            "Ref": "07KeyName"
+          },
+          "8RemoteAccessLocation": {
+            "Ref": "08RemoteAccessLocation"
+          },
+          "90LansaTemplateLevel": {
+            "Fn::FindInMap": [
+              "CustomVariable",
+              "TemplateLevel",
+              "Value"
+            ]
+          },
+          "UpdateManagementScripts": {
+            "Ref": "UpdateManagementScripts"
+          },
+          "10LansaGitRepoBranch": {
+            "Ref": "10LansaGitRepoBranch"
+          },
+          "11WebServerInstanceTyp": {
+            "Ref": "11WebServerInstanceTyp"
+          },
+          "12WebServerMaxConnec": {
+            "Ref": "12WebServerMaxConnec"
+          },
+          "14DBName": {
+            "Ref": "14DBName"
+          },
+          "17UserScriptHook": {
+            "Ref": "17UserScriptHook"
+          },
+          "18WebServerCapacity": 1,
+          "18WebServerCapacityMaxSize": 1,
+          "21ELBTimeout": {
+            "Ref": "21ELBTimeout"
+          },
+          "22TriggerCakeUpdate": {
+            "Ref": "22TriggerCakeUpdate"
+          },
+          "23TriggerChefUpdate": {
+            "Ref": "23TriggerChefUpdate"
+          },
+          "24TriggerWinUpdate": {
+            "Ref": "24TriggerWinUpdate"
+          },
+          "25TriggerWebConfig": {
+            "Ref": "25TriggerWebConfig"
+          },
+          "26TriggerIcingUpdate": {
+            "Ref": "26TriggerIcingUpdate"
+          },
+          "27TriggerPatchInstall": {
+            "Ref": "27TriggerPatchInstall"
+          },
+          "28PatchBucketName": {
+            "Ref": "28PatchBucketName"
+          },
+          "29PatchFolderName": {
+            "Ref": "29PatchFolderName"
+          },
+          "MaxInstanceLifetime": 5270400
+        }
+      }
+    },
+    "WebServerApp": {
+      "Type": "AWS::CloudFormation::Stack",
+      "Metadata": {
+        "Comment1": "The MaxInstanceLifetime property value for Web ASG is set to 5,788,800 seconds = 67 days. This is a prime number(close to two months) to reduce the likelihood that this instance will be unavailable when the DB ASG instance is also unavailable",
+        "Comment2": "Using prime numbers ensures that the DB instances and Web instances will not be refreshed on the same day"
+      },
+      "Properties": {
+        "TemplateURL": {
+          "Fn::If": [
+            "IsReleaseLevel",
+            {
+              "Fn::If": [
+                "IsEmptyNamespace",
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::FindInMap": [
+                          "CustomVariable",
+                          "TemplateRoot",
+                          "Value"
+                        ]
+                      },
+                      {
+                        "Ref": "10LansaGitRepoBranch"
+                      },
+                      "/",
+                      {
+                        "Fn::FindInMap": [
+                          "CustomVariable",
+                          "WebServerTemplate",
+                          "Value"
+                        ]
+                      }
+                    ]
+                  ]
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::FindInMap": [
+                          "CustomVariable",
+                          "TemplateRoot",
+                          "Value"
+                        ]
+                      },
+                      {
+                        "Ref": "10LansaGitRepoBranch"
+                      },
+                      "/",
+                      {
+                        "Ref": "TemplateS3Namespace"
+                      },
+                      "/",
+                      {
+                        "Fn::FindInMap": [
+                          "CustomVariable",
+                          "WebServerTemplate",
+                          "Value"
+                        ]
+                      }
+                    ]
+                  ]
+                }
+              ]
+            },
+            {
+              "Fn::If": [
+                "IsEmptyNamespace",
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::FindInMap": [
+                          "CustomVariable",
+                          "TemplateRoot",
+                          "Value"
+                        ]
+                      },
+                      {
+                        "Ref": "10LansaGitRepoBranch"
+                      },
+                      "/beta/",
+                      {
+                        "Fn::FindInMap": [
+                          "CustomVariable",
+                          "WebServerTemplate",
+                          "Value"
+                        ]
+                      }
+                    ]
+                  ]
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::FindInMap": [
+                          "CustomVariable",
+                          "TemplateRoot",
+                          "Value"
+                        ]
+                      },
+                      {
+                        "Ref": "10LansaGitRepoBranch"
+                      },
+                      "/beta/",
+                      {
+                        "Ref": "TemplateS3Namespace"
+                      },
+                      "/",
+                      {
+                        "Fn::FindInMap": [
+                          "CustomVariable",
+                          "WebServerTemplate",
+                          "Value"
+                        ]
+                      }
+                    ]
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "Parameters": {
+          "AMI": {
+            "Fn::If": [
+              "IsCustomImageSource",
+              {
+                "Ref": "AMIId"
+              },
+              {
+                "Fn::If": [
+                  "IsLansaVersion142",
+                  {
+                    "Fn::FindInMap": [
+                      "AWSRegionArch2AMI142",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      {
+                        "Ref": "11WebserverOSVersion"
+                      }
+                    ]
+                  },
+                  {
+                    "Fn::FindInMap": [
+                      "AWSRegionArch2AMI15",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      {
+                        "Ref": "11WebserverOSVersion"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "DBEndPoint": {
+            "Fn::GetAtt": [
+              "DBInstance",
+              "Endpoint.Address"
+            ]
+          },
+          "DummyRef": {
+            "Ref": "DBWebServerApp"
+          },
+          "IAMRoleInstanceProfile": {
+            "Ref": "IAMRoleInstanceProfile"
+          },
+          "LansaSecurityGroup": {
+            "Ref": "LansaSecurityGroup"
+          },
+          "Sudb": "0",
+          "TemplateRoot": {
+            "Fn::FindInMap": [
+              "CustomVariable",
+              "TemplateRoot",
+              "Value"
+            ]
+          },
+          "WebServerELB": {
+            "Ref": "WebServerELB"
+          },
+          "WebServerName": "Web Server Instance",
+          "WebServerSubnet": {
+            "Fn::If": [
+              "CreateNewVPCResources",
+              {
+                "Fn::Join": [
+                  ",",
+                  {
+                    "Fn::If": [
+                      "3AZCondition",
+                      [
+                        {
+                          "Fn::GetAtt": [
+                            "VpcStack",
+                            "Outputs.ELBSubnetId1"
+                          ]
+                        },
+                        {
+                          "Fn::GetAtt": [
+                            "VpcStack",
+                            "Outputs.ELBSubnetId2"
+                          ]
+                        }
+                      ],
+                      [
+                        {
+                          "Fn::GetAtt": [
+                            "VpcStack",
+                            "Outputs.ELBSubnetId1"
+                          ]
+                        }
+                      ]
+                    ]
+                  }
+                ]
+              },
+              {
+                "Fn::Join": [
+                  ",",
+                  {
+                    "Ref": "ELBSubnetIds"
+                  }
+                ]
+              }
+            ]
+          },
+          "01LansaMSI": {
+            "Ref": "01LansaMSI"
+          },
+          "02LansaMSIBitness": {
+            "Ref": "02LansaMSIBitness"
+          },
+          "03DBUsername": {
+            "Ref": "03DBUsername"
+          },
+          "04DBPassword": {
+            "Ref": "04DBPassword"
+          },
+          "05WebUser": {
+            "Ref": "05WebUser"
+          },
+          "06WebPassword": {
+            "Ref": "06WebPassword"
+          },
+          "07KeyName": {
+            "Ref": "07KeyName"
+          },
+          "8RemoteAccessLocation": {
+            "Ref": "08RemoteAccessLocation"
+          },
+          "90LansaTemplateLevel": {
+            "Fn::FindInMap": [
+              "CustomVariable",
+              "TemplateLevel",
+              "Value"
+            ]
+          },
+          "UpdateManagementScripts": {
+            "Ref": "UpdateManagementScripts"
+          },
+          "10LansaGitRepoBranch": {
+            "Ref": "10LansaGitRepoBranch"
+          },
+          "11WebServerInstanceTyp": {
+            "Ref": "11WebServerInstanceTyp"
+          },
+          "12WebServerMaxConnec": {
+            "Ref": "12WebServerMaxConnec"
+          },
+          "14DBName": {
+            "Ref": "14DBName"
+          },
+          "17UserScriptHook": {
+            "Ref": "17UserScriptHook"
+          },
+          "18WebServerCapacity": {
+            "Ref": "18WebServerCapacity"
+          },
+          "18WebServerCapacityMaxSize": 150,
+          "21ELBTimeout": {
+            "Ref": "21ELBTimeout"
+          },
+          "22TriggerCakeUpdate": {
+            "Ref": "22TriggerCakeUpdate"
+          },
+          "23TriggerChefUpdate": {
+            "Ref": "23TriggerChefUpdate"
+          },
+          "24TriggerWinUpdate": {
+            "Ref": "24TriggerWinUpdate"
+          },
+          "25TriggerWebConfig": {
+            "Ref": "25TriggerWebConfig"
+          },
+          "26TriggerIcingUpdate": {
+            "Ref": "26TriggerIcingUpdate"
+          },
+          "27TriggerPatchInstall": {
+            "Ref": "27TriggerPatchInstall"
+          },
+          "28PatchBucketName": {
+            "Ref": "28PatchBucketName"
+          },
+          "29PatchFolderName": {
+            "Ref": "29PatchFolderName"
+          },
+          "MaxInstanceLifetime": 5788800
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "WebsiteURL": {
+      "Value": {
+        "Fn::Join": [
+          "",
+          [
+            "http://",
+            {
+              "Fn::GetAtt": [
+                "WebServerELB",
+                "DNSName"
+              ]
+            }
+          ]
+        ]
+      },
+      "Description": "LANSA App Website"
+    }
+  }
 }
