@@ -17,10 +17,12 @@ param (
 )
 
 if ($imageReleaseState -eq "Production") {
-    $SkuName = "$BaseImageName-$(TestVersionPrev-$BaseImageName)"
+    $Version = Get-Variable "TestVersionPrev-$BaseImageName" -ValueOnly
 } else {
-    $SkuName = "$BaseImageName-$(TestVersion-$BaseImageName)"   
+    $Version = Get-Variable "TestVersion-$BaseImageName" -ValueOnly
 }
+
+$SkuName = "$BaseImageName-$Version"
 Write-Host $SkuName
 
 # Autoscaling Instance Id
@@ -31,7 +33,7 @@ if ("$(IsVpcStack)" -eq "yes") {
 }
 Write-Host $childstack
 
-$arguments = @("-SkuName", "$SkuName ")
+$arguments = @("-Gateversion", "$SkuName ")
 $arguments = $arguments + @("-childstack", "$childstack ")
 & "$PSScriptRoot\AlternateImageVersion.ps1 " + $arguments
 

@@ -3,7 +3,7 @@ param (
     [string]
     $Gatestack,
 
-    [Parameter(Mandatory=$false)]
+    [Parameter(Mandatory=$true)]
     [string]
     $Gateversion,
 
@@ -13,17 +13,23 @@ param (
 
     [Parameter(Mandatory=$false)]
     [string]
-    $SkuName,
-
-    [Parameter(Mandatory=$false)]
-    [string]
     $childstack
 )
 
+if ( $Region -ne "" ) {
+    Write-Host ("Warning: Region $Region is ignored")
+}
+
+if (($Gatestack -eq "" -and $Childstack -eq "") -or ($Gatestack -ne "" -and $Childstack -ne "")) {
+    Write-Host ("Either -Gatestack or -Childstack MUST be specified, but not both")
+    throw
+}
+
+$SkuName = "$($Gateversion)"
+
 # Autoscaling Instance Id
-if ( $Gatestack -ne "" )
+if ( $childstack -eq "" )
 {
-    $SkuName = "$($Gateversion)"
     $childstack = (Get-CFNStack | Where-Object {$_.StackName -match "$($Gatestack)-Web" }).StackName
 }
 
