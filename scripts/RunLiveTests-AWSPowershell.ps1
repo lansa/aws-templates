@@ -13,13 +13,17 @@ param (
   
     [Parameter(Mandatory=$true)]
     [string]
-    $IsVpcStack
+    $IsVpcStack,
+
+    [Parameter(Mandatory=$true)]
+    [string]
+    $imageReleaseState
 )
 
 if ($imageReleaseState -eq "Production") {
-    $Version = Get-Variable "TestVersionPrev-$BaseImageName" -ValueOnly
-} else {
     $Version = Get-Variable "TestVersion-$BaseImageName" -ValueOnly
+} else {
+    $Version = Get-Variable "TestVersionPrev-$BaseImageName" -ValueOnly    
 }
 
 $SkuName = "$BaseImageName-$Version"
