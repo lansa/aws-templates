@@ -16,7 +16,7 @@ $SkuName = "$($Gateversion)"
 # Autoscaling Instance Id
 $childstack = (Get-CFNStack | Where-Object {$_.StackName -like "$($Gatestack)*-Web*" }).StackName
 Write-Host "Image Name $SkuName"
-$webServerGroupResource = (Get-CFNStackResource -StackName $childstack -Region $($Region) -logicalResourceId WebServerGroup)
+$webServerGroupResource = (Get-CFNStackResource -StackName $childstack -logicalResourceId WebServerGroup)
 $instanceDetails = Get-ASAutoScalingInstance | ? {$_.AutoScalingGroupName -eq $webServerGroupResource.PhysicalResourceId} | select -ExpandProperty InstanceId | Get-EC2Instance | select -ExpandProperty RunningInstance | ft InstanceId, PrivateIpAddress
 $instanceId = (Get-ASAutoScalingGroup -AutoScalingGroupName $webServerGroupResource.PhysicalResourceId).Instances.InstanceId
 #Send command
