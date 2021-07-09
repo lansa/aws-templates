@@ -13,7 +13,8 @@ if ( $Region -ne "" ) {
     Write-Host ("Warning: Region $Region is ignored")
 }
 
-Write-Host "Gateversion: $Gateversion"
+Write-Host "Gateversion1: $Gateversion Gatestack1: $Gatestack Gateversion2: $($Gateversion) Gatestack2: $($Gatestack)"
+Write-Host "Gateversion3: $env:Gateversion"
 $SkuName = $Gateversion
 
 # Autoscaling Instance Id
