@@ -12,7 +12,10 @@ param (
 if ( $Region -ne "" ) {
     Write-Host ("Warning: Region $Region is ignored")
 }
-$SkuName = "$($Gateversion)"
+
+Write-Host "Gateversion: $Gateversion"
+$SkuName = $Gateversion
+
 # Autoscaling Instance Id
 $childstack = (Get-CFNStack | Where-Object {$_.StackName -like "$($Gatestack)*-Web*" }).StackName
 Write-Host "Image Name $SkuName"
