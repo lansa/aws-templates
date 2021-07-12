@@ -670,8 +670,8 @@
       },
       "us-east-1": {
         "win2012": "ami-01f7a802b1ba30339",
-        "win2016": "ami-099da0d705810c17c",
-        "win2019": "ami-0202dfdfa554de124",
+        "win2016": "ami-0b21ec15234b4ef28",
+        "win2019": "ami-04861b4ec41f383a1",
         "win2016jpn": "",
         "win2019jpn": ""
       },
@@ -815,8 +815,8 @@
       },
       "us-east-1": {
         "win2012": "ami-08315dfc171e5a1a7",
-        "win2016": "ami-0d1f87a1dd9f347b0",
-        "win2019": "ami-0ec8818382ced7ff4",
+        "win2016": "ami-01b57adfd1f69f57e",
+        "win2019": "ami-0e529811bb8a53f20",
         "win2016jpn": "",
         "win2019jpn": ""
       },
