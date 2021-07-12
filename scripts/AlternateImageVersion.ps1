@@ -13,9 +13,7 @@ if ( $Region -ne "" ) {
     Write-Host ("Warning: Region $Region is ignored")
 }
 
-Write-Host "Gateversion1: $Gateversion Gatestack1: $Gatestack Gateversion2: $($Gateversion) Gatestack2: $($Gatestack)"
-Write-Host "Gateversion3: $env:Gateversion"
-$SkuName = $Gateversion
+$SkuName = "$($Gateversion)"
 
 # Autoscaling Instance Id
 $childstack = (Get-CFNStack | Where-Object {$_.StackName -like "$($Gatestack)*-Web*" }).StackName
