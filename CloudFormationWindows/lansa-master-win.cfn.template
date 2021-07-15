@@ -29,6 +29,7 @@
       ]
     },
     "DBSubnetGroupName": {
+      "Default":"",
       "Description": "The name of the DB Subnet Group which needs to be provided if using an existing VPC. DB Subnet Group Name can be checked in the Amazon RDS console in the Subnet section along with the VPC in which it was created.",
       "Type": "String"
     },
