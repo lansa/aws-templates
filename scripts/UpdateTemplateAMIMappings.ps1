@@ -14,8 +14,6 @@ If ( $ImageType -eq "Debug") {
 $TemplateJson = Get-Content -Path $FilePath | ConvertFrom-Json
 
 $BaseImageNameArray = @(
-    'w12r2d-14-2'
-    'w12r2d-15-0'
     'w16d-14-2'
     'w16d-15-0'
     'w19d-14-2'
@@ -77,7 +75,7 @@ if ( $TemplateJson ) {
     $AMIList | Out-Default | Write-Host
 
     $index = 0
-    foreach ($win in @("win2012", "win2016", "win2019", "win2016jpn", "win2019jpn")) {
+    foreach ($win in @(, "win2016", "win2019", "win2016jpn", "win2019jpn")) {
 
         # Update the AMIs in template for Region/Win version
         if  ( $AMIList[$index] -ne "skip" ) {
