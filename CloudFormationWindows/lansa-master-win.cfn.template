@@ -29,7 +29,7 @@
       ]
     },
     "DBSubnetGroupName": {
-      "Default":"",
+      "Default": "",
       "Description": "The name of the DB Subnet Group which needs to be provided if using an existing VPC. DB Subnet Group Name can be checked in the Amazon RDS console in the Subnet section along with the VPC in which it was created.",
       "Type": "String"
     },
@@ -743,8 +743,8 @@
       "ap-southeast-2": {
         "win2016": "ami-0f7c1ec35df616e7a",
         "win2019": "ami-0124d5ee7f12f3d70",
-        "win2016jpn": "",
-        "win2019jpn": "ami-022ebba0083f01d96"
+        "win2016jpn": "ami-03390484be38e1796",
+        "win2019jpn": "ami-0aa89a96a311e6df9"
       },
       "ap-south-1": {
         "win2016": "",
@@ -868,8 +868,8 @@
       "ap-southeast-2": {
         "win2016": "ami-08990a73fde78e232",
         "win2019": "ami-08c685ba34579a08a",
-        "win2016jpn": "",
-        "win2019jpn": ""
+        "win2016jpn": "ami-08ea95ffdb512668b",
+        "win2019jpn": "ami-0eeec7acddbdf37e2"
       },
       "ap-south-1": {
         "win2016": "",
