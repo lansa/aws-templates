@@ -668,8 +668,8 @@
         "Comment1": "This mapping is updated whenever a new AMI is submitted to Marketplace"
       },
       "us-east-1": {
-        "win2016": "ami-071081da99920fb60",
-        "win2019": "ami-08ecf04bab7e48c2f",
+        "win2016": "ami-0b7e3b48feae02637",
+        "win2019": "ami-08f901f3cc4c65dbb",
         "win2016jpn": "",
         "win2019jpn": ""
       },
@@ -793,8 +793,8 @@
         "Comment1": "This mapping is updated whenever a new AMI is submitted to Marketplace"
       },
       "us-east-1": {
-        "win2016": "ami-0cac5dc25b5d1cde8",
-        "win2019": "ami-0728e532f06f6e437",
+        "win2016": "ami-041da16dddfaabad0",
+        "win2019": "ami-07ad5f4bd025cc268",
         "win2016jpn": "",
         "win2019jpn": ""
       },
