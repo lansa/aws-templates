@@ -69,7 +69,6 @@
             "ConstraintDescription": "Must be either 1 (true) or 0 (false)."
         },
         "03DBUsername": {
-            "Default": "admin",
             "Description": "The LANSA database administrator account username. Must begin with a letter and contain only alphanumeric characters. Maximum length 16.",
             "Type": "String",
             "MinLength": "1",
