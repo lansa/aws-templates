@@ -333,13 +333,14 @@
       "AllowedPattern": "[a-zA-Z][a-zA-Z0-9]*"
     },
     "15DBEngine": {
-      "Description": "Database engine type. Must be a valid SQL Server engine type. Note that to support mirroring you need to choose 'sqlserver-ee' or 'sqlserver-se'. Otherwise you may choose 'sqlserver-web'.",
+      "Description": "Database engine type. Must be a valid SQL Server engine type. Note that to support mirroring you need to choose 'sqlserver-ee' or 'sqlserver-se'. Otherwise you may choose 'sqlserver-web' or 'sqlserver-ex'.",
       "Type": "String",
       "Default": "sqlserver-web",
       "AllowedValues": [
         "sqlserver-web",
         "sqlserver-se",
-        "sqlserver-ee"
+        "sqlserver-ee",
+        "sqlserver-ex"
       ]
     },
     "DBCCSID": {
@@ -365,17 +366,17 @@
     },
     "19DBAllocatedStorage": {
       "Default": "100",
-      "Description": "The maximum size of the database. Must be between 100 and 4096 GB. Minimum 200 for 'sqlserver-ee' and 'sqlserver-se'.",
+      "Description": "The maximum size of the database. Must be between 20 and 16384 GB. Minimum 20 for 'sqlserver-ex'. For other database engines the minimum is 100",
       "Type": "Number",
-      "MinValue": "100",
-      "MaxValue": "4096"
+      "MinValue": "20",
+      "MaxValue": "16384"
     },
-    "20DBIops": {
-      "Default": "1000",
-      "Description": "The fixed number of I/O operations per second supported by this DB instance. This number must be 10 times the size of DBAllocatedStorage and in increments of 1000. E.g. If DBAllocatedStorage = 200 then DBIops = 2000",
+    "DBIOPSRatio": {
+      "Default": "10",
+      "Description": "If IOPS Ratio > 1 then StorageType = io1 and IOPS will be set to Allocated Storage x IOPS Ratio, otherwise StorageType = gp2 and IOPS will be set to NULL. IOPS must be less than or equal to 32,000, unless using Nitro-based instances that are on the m5, m5d, r5, r5b, r5d, and z1d instance types",
       "Type": "Number",
-      "MinValue": "1000",
-      "MaxValue": "10000"
+      "MinValue": "0",
+      "MaxValue": "50"
     },
     "21ELBTimeout": {
       "Description": "Time to wait for a response from the application. Must be between 2 and 60. Health check interval and IIS timeouts are based on this time too.",
@@ -490,7 +491,7 @@
             "DBCCSID",
             "DBTimeZone",
             "19DBAllocatedStorage",
-            "20DBIops"
+            "DBIOPSRatio"
           ]
         },
         {
@@ -596,8 +597,8 @@
         "19DBAllocatedStorage": {
           "default": "Maximum Size"
         },
-        "20DBIops": {
-          "default": "I/O OPS"
+        "DBIOPSRatio": {
+          "default": "Database IOPS Ratio"  
         },
         "11WebserverOSVersion": {
           "default": "OS Version"
@@ -660,6 +661,170 @@
           "default": ""
         }
       }
+    }
+  },
+  "Rules": {
+    "SqlServerExpress": {
+      "RuleCondition": {
+        "Fn::Equals": [
+          {
+            "Ref": "15DBEngine"
+          },
+          "sqlserver-ex"
+        ]
+      },
+      "Assertions": [
+        {
+          "Assert": {
+            "Fn::Contains": [
+              [
+                "db.t3.small",
+                "db.t3.medium",
+                "db.t3.large",
+                "db.t3.xlarge"
+              ],
+              {
+                "Ref": "13DBInstanceClass"
+              }
+            ]
+          },
+          "AssertDescription": "For Sql Server Express, the instance type must be one of the following: db.t3.small, db.t3.medium, db.t3.large, db.t3.xlarge"
+        }
+      ]
+    },
+    "SqlServerWeb": {
+      "RuleCondition": {
+        "Fn::Equals": [
+          {
+            "Ref": "15DBEngine"
+          },
+          "sqlserver-web"
+        ]
+      },
+      "Assertions": [
+        {
+          "Assert": {
+            "Fn::Contains": [
+              [
+                "db.t3.small",
+                "db.t3.medium",
+                "db.t3.large",
+                "db.t3.xlarge",
+                "db.t3.2xlarge",
+                "db.m4.large",
+                "db.m4.xlarge",
+                "db.m4.2xlarge",
+                "db.m4.4xlarge",
+                "db.m5.large",
+                "db.m5.xlarge",
+                "db.m5.2xlarge",
+                "db.m5.4xlarge"
+              ],
+              {
+                "Ref": "13DBInstanceClass"
+              }
+            ]
+          },
+          "AssertDescription": "For Sql Server Web, the instance type must be one of the following: db.t3.small, db.t3.medium, db.t3.large, db.t3.xlarge, db.t3.2xlarge, db.m4.large, db.m4.xlarge, db.m4.2xlarge, db.m4.4xlarge, db.m5.large, db.m5.xlarge, db.m5.2xlarge, db.m5.4xlarge"
+        }
+      ]
+    },
+    "SqlServerStandard": {
+      "RuleCondition": {
+        "Fn::Equals": [
+          {
+            "Ref": "15DBEngine"
+          },
+          "sqlserver-se"
+        ]
+      },
+      "Assertions": [
+        {
+          "Assert": {
+            "Fn::Contains": [
+              [
+                "db.t3.large",
+                "db.t3.xlarge",
+                "db.t3.2xlarge",
+                "db.m4.large",
+                "db.m4.xlarge",
+                "db.m4.2xlarge",
+                "db.m4.4xlarge",
+                "db.m4.10xlarge",
+                "db.m4.16xlarge",
+                "db.m5.large",
+                "db.m5.xlarge",
+                "db.m5.2xlarge",
+                "db.m5.4xlarge",
+                "db.m5.8xlarge",
+                "db.m5.12xlarge",
+                "db.m5.16xlarge",
+                "db.m5.24xlarge",
+                "db.r5.large",
+                "db.r5.xlarge",
+                "db.r5.2xlarge",
+                "db.r5.4xlarge",
+                "db.r5.8xlarge",
+                "db.r5.12xlarge",
+                "db.r5.16xlarge",
+                "db.r5.24xlarge"
+              ],
+              {
+                "Ref": "13DBInstanceClass"
+              }
+            ]
+          },
+          "AssertDescription": "For Sql Server Standard Edition, the instance type must be one of the following: db.t3.large, db.t3.xlarge, db.t3.2xlarge, db.m4.*, db.m5.*, db.r5.*"
+        }
+      ]
+    },
+    "SqlServerEnterprise": {
+      "RuleCondition": {
+        "Fn::Equals": [
+          {
+            "Ref": "15DBEngine"
+          },
+          "sqlserver-ee"
+        ]
+      },
+      "Assertions": [
+        {
+          "Assert": {
+            "Fn::Contains": [
+              [
+                "db.t3.xlarge",
+                "db.t3.2xlarge",
+                "db.m4.large",
+                "db.m4.xlarge",
+                "db.m4.2xlarge",
+                "db.m4.4xlarge",
+                "db.m4.10xlarge",
+                "db.m4.16xlarge",
+                "db.m5.large",
+                "db.m5.xlarge",
+                "db.m5.2xlarge",
+                "db.m5.4xlarge",
+                "db.m5.8xlarge",
+                "db.m5.12xlarge",
+                "db.m5.16xlarge",
+                "db.m5.24xlarge",
+                "db.r5.large",
+                "db.r5.xlarge",
+                "db.r5.2xlarge",
+                "db.r5.4xlarge",
+                "db.r5.8xlarge",
+                "db.r5.12xlarge",
+                "db.r5.16xlarge",
+                "db.r5.24xlarge"
+              ],
+              {
+                "Ref": "13DBInstanceClass"
+              }
+            ]
+          },
+          "AssertDescription": "For Sql Server Enterprise Edition, the instance type must be one of the following: db.t3.xlarge, db.t3.2xlarge, db.m4.*, db.m5.*, db.r5.*"
+        }
+      ]
     }
   },
   "Mappings": {
@@ -925,6 +1090,9 @@
       },
       "NestedVPCTemplate": {
         "Value": "nested-vpc.cfn.template"
+      },
+      "NestedIOPSTemplate": {
+        "Value": "calculate-iops.cfn.template"
       }
     }
   },
@@ -935,6 +1103,12 @@
           "Ref": "CreateVPC"
         },
         "Yes"
+      ]
+    },
+    "IsGp2DatabaseStorageType" : {
+      "Fn::Or" : [
+        { "Fn::Equals": [{"Ref": "DBIOPSRatio"},"0"] },
+        { "Fn::Equals": [{"Ref": "DBIOPSRatio"},"1"] }
       ]
     },
     "IsReleaseLevel": {
@@ -1217,6 +1391,142 @@
         ]
       }
     },
+    "IOPSStack": {
+      "Type": "AWS::CloudFormation::Stack",
+      "Properties": {
+        "TemplateURL": {
+          "Fn::If": [
+            "IsReleaseLevel",
+            {
+              "Fn::If": [
+                "IsEmptyNamespace",
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::FindInMap": [
+                          "CustomVariable",
+                          "TemplateRoot",
+                          "Value"
+                        ]
+                      },
+                      {
+                        "Ref": "10LansaGitRepoBranch"
+                      },
+                      "/",
+                      {
+                        "Fn::FindInMap": [
+                          "CustomVariable",
+                          "NestedIOPSTemplate",
+                          "Value"
+                        ]
+                      }
+                    ]
+                  ]
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::FindInMap": [
+                          "CustomVariable",
+                          "TemplateRoot",
+                          "Value"
+                        ]
+                      },
+                      {
+                        "Ref": "10LansaGitRepoBranch"
+                      },
+                      "/",
+                      {
+                        "Ref": "TemplateS3Namespace"
+                      },
+                      "/",
+                      {
+                        "Fn::FindInMap": [
+                          "CustomVariable",
+                          "NestedIOPSTemplate",
+                          "Value"
+                        ]
+                      }
+                    ]
+                  ]
+                }
+              ]
+            },
+            {
+              "Fn::If": [
+                "IsEmptyNamespace",
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::FindInMap": [
+                          "CustomVariable",
+                          "TemplateRoot",
+                          "Value"
+                        ]
+                      },
+                      {
+                        "Ref": "10LansaGitRepoBranch"
+                      },
+                      "/beta/",
+                      {
+                        "Fn::FindInMap": [
+                          "CustomVariable",
+                          "NestedIOPSTemplate",
+                          "Value"
+                        ]
+                      }
+                    ]
+                  ]
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::FindInMap": [
+                          "CustomVariable",
+                          "TemplateRoot",
+                          "Value"
+                        ]
+                      },
+                      {
+                        "Ref": "10LansaGitRepoBranch"
+                      },
+                      "/beta/",
+                      {
+                        "Ref": "TemplateS3Namespace"
+                      },
+                      "/",
+                      {
+                        "Fn::FindInMap": [
+                          "CustomVariable",
+                          "NestedIOPSTemplate",
+                          "Value"
+                        ]
+                      }
+                    ]
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "Parameters": {
+          "IOPSRatio": {
+            "Ref": "DBIOPSRatio"
+          },
+          "AllocatedStorage": {
+            "Ref": "19DBAllocatedStorage"
+          }
+        }
+      }
+    },
     "WebServerELB": {
       "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
       "Metadata": {
@@ -1334,10 +1644,24 @@
           "Ref": "19DBAllocatedStorage"
         },
         "Iops": {
-          "Ref": "20DBIops"
+          "Fn::If": [
+            "IsGp2DatabaseStorageType",
+            {
+              "Ref": "AWS::NoValue"
+            },
+            {
+              "Fn::GetAtt": [
+              "IOPSStack",
+              "Outputs.Result"
+              ]
+            }
+          ]
         },
         "MasterUserPassword": {
           "Ref": "04DBPassword"
+        },
+        "StorageType": {
+          "Fn::If": ["IsGp2DatabaseStorageType","gp2","io1"]
         },
         "AllowMajorVersionUpgrade": "false",
         "AutoMinorVersionUpgrade": "true",
