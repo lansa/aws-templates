@@ -742,8 +742,8 @@
       "ap-southeast-2": {
         "win2016": "ami-0f7c1ec35df616e7a",
         "win2019": "ami-0124d5ee7f12f3d70",
-        "win2016jpn": "ami-03390484be38e1796",
-        "win2019jpn": "ami-0aa89a96a311e6df9"
+        "win2016jpn": "ami-0773ea63f9e8bf72a",
+        "win2019jpn": "ami-059b65a25b338fbe2"
       },
       "ap-south-1": {
         "win2016": "",
@@ -867,8 +867,8 @@
       "ap-southeast-2": {
         "win2016": "ami-08990a73fde78e232",
         "win2019": "ami-08c685ba34579a08a",
-        "win2016jpn": "ami-08ea95ffdb512668b",
-        "win2019jpn": "ami-0eeec7acddbdf37e2"
+        "win2016jpn": "ami-05969e7ef9d5eae3a",
+        "win2019jpn": "ami-0e3fd8986b6a522e3"
       },
       "ap-south-1": {
         "win2016": "",
