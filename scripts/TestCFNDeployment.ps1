@@ -2,7 +2,11 @@
 param (
     [Parameter(Mandatory=$true)]
     [string]
-    $Gatestack
+    $Gatestack,
+
+    [Parameter(Mandatory=$false)]
+    [string]
+    $Language='ENG'
 )
 
 $stackoutput=(Get-CFNStack -StackName $($Gatestack)).Outputs[0].OutputValue
@@ -12,8 +16,13 @@ $IpAddress =$stackoutput
 
 $url1 = "$IpAddress/cgi-bin/probe"
 $url2 = "$IpAddress/cgi-bin/lansaweb?about"
-$url3 = "$IpAddress/cgi-bin/lansaweb?wam=DEPTABWA&webrtn=BuildFirst&ml=LANSA:XHTML&part=DEX&lang=ENG"
-$url4 = "$IpAddress/cgi-bin/lansaweb?wam=JSMLICE&webrtn=weblic&ml=LANSA:XHTML&part=DEX&lang=ENG"
+if($Language -eq 'JPN') {
+  $url3 = "$IpAddress/JPNTESTs/TEST"
+  $url4 = "$IpAddress/JPNTESTs/DUMMY"
+} else {
+  $url3 = "$IpAddress/cgi-bin/lansaweb?wam=DEPTABWA&webrtn=BuildFirst&ml=LANSA:XHTML&part=DEX&lang=ENG"
+  $url4 = "$IpAddress/cgi-bin/lansaweb?wam=JSMLICE&webrtn=weblic&ml=LANSA:XHTML&part=DEX&lang=ENG"
+}
 $urls = @($url1, $url2, $url3, $url4)
 add-type @"
     using System.Net;
@@ -52,4 +61,3 @@ if($failureCount) {
 } else {
     Write-Host "Successfully tested all URL(s)"
 }
-
