@@ -54,7 +54,6 @@
             "Description": "URL of the LANSA MSI to install. The MSI must have been previously uploaded to the specified location in Amazon S3 BLOB storage. Here is an example application you may use https://s3-ap-southeast-2.amazonaws.com/lansa/app/Test/AWAMAPP_v14.2.21217_en-us.msi"
         },
         "03DBUsername": {
-            "Default": "admin",
             "Description": "The LANSA database administrator account username. Must begin with a letter and contain only alphanumeric characters. Maximum length 16.",
             "Type": "String",
             "MinLength": "1",
