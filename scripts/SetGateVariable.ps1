@@ -22,7 +22,7 @@ if (Test-Path $path) {
         $imageName -match "$BaseImageName[-]?[0-9]+"
         $version = $Matches[0]
         Write-Host "Version : $version"
-        $stackname = "$version-$stackname"
+        $stackname = "$stackname-$BaseImageName"
         Write-Host "Stack name : $stackname"
         #Set Variables
         Write-Host "##vso[task.setvariable variable=stack;isOutput=true]$stackname"
