@@ -98,8 +98,8 @@
             "Type": "String"
         },
         "UpdateManagementScripts": {
-            "Default": "No",
-            "Description": "Setting this parameter to Yes is not recommended. It is intended for internal developer usage. Doing so will pull changes from a LANSA-managed github repo named robe070/cookbooks",
+            "Default": "Yes",
+            "Description": "Setting this parameter to Yes pulls the latest changes from a LANSA-managed github repo named robe070/cookbooks",
             "Type": "String",
             "AllowedValues": [
                 "No",
