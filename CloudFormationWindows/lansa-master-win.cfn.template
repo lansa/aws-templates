@@ -598,7 +598,7 @@
           "default": "Maximum Size"
         },
         "DBIOPSRatio": {
-          "default": "Database IOPS Ratio"  
+          "default": "Database IOPS Ratio"
         },
         "11WebserverOSVersion": {
           "default": "OS Version"
@@ -1279,129 +1279,7 @@
     "IOPSStack": {
       "Type": "AWS::CloudFormation::Stack",
       "Properties": {
-        "TemplateURL": {
-          "Fn::If": [
-            "IsReleaseLevel",
-            {
-              "Fn::If": [
-                "IsEmptyNamespace",
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "TemplateRoot",
-                          "Value"
-                        ]
-                      },
-                      {
-                        "Ref": "10LansaGitRepoBranch"
-                      },
-                      "/",
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "NestedIOPSTemplate",
-                          "Value"
-                        ]
-                      }
-                    ]
-                  ]
-                },
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "TemplateRoot",
-                          "Value"
-                        ]
-                      },
-                      {
-                        "Ref": "10LansaGitRepoBranch"
-                      },
-                      "/",
-                      {
-                        "Ref": "TemplateS3Namespace"
-                      },
-                      "/",
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "NestedIOPSTemplate",
-                          "Value"
-                        ]
-                      }
-                    ]
-                  ]
-                }
-              ]
-            },
-            {
-              "Fn::If": [
-                "IsEmptyNamespace",
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "TemplateRoot",
-                          "Value"
-                        ]
-                      },
-                      {
-                        "Ref": "10LansaGitRepoBranch"
-                      },
-                      "/beta/",
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "NestedIOPSTemplate",
-                          "Value"
-                        ]
-                      }
-                    ]
-                  ]
-                },
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "TemplateRoot",
-                          "Value"
-                        ]
-                      },
-                      {
-                        "Ref": "10LansaGitRepoBranch"
-                      },
-                      "/beta/",
-                      {
-                        "Ref": "TemplateS3Namespace"
-                      },
-                      "/",
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "NestedIOPSTemplate",
-                          "Value"
-                        ]
-                      }
-                    ]
-                  ]
-                }
-              ]
-            }
-          ]
-        },
+        "TemplateURL": "https://lansa.s3-ap-southeast-2.amazonaws.com/templates/support/scalable/calculate-iops.cfn.template",
         "Parameters": {
           "IOPSRatio": {
             "Ref": "DBIOPSRatio"
