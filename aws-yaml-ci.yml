@@ -1,0 +1,238 @@
+# Variable 'AWS_ACCESS_KEY_ID' was defined in the Variables tab
+# Variable 'AWS_SECRET_ACCESS_KEY' was defined in the Variables tab
+# Variable 'CookbooksSource' was defined in the Variables tab
+# Variable 'CookbooksSource1' was defined in the Variables tab
+# Variable Group 'Default Branch' was defined in the Variables tab
+# Variable Group 'Template Parameters' was defined in the Variables tab
+# Variable Group 'VPC ap-southeast-2' was defined in the Variables tab
+# Variable Group 'ImageVersion' was defined in the Variables tab
+variables:
+-AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
+-AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
+-CookbooksSource: $(CookbooksSource)
+-CookbooksSource1: $(CookbooksSource1)
+-system.collectionId: $(system.collectionId)
+-system.debug: $(system.collectionId)
+-system.definitionId: $(system.collectionId)
+-system.teamProject: $(system.collectionId)
+- name: BuildParameters.captureStackOutputs
+  value: asJSON
+- name: BuildParameters.bucketName
+  value: lansa
+resources:
+  repositories:
+  - repository: self
+    type: git
+    ref: support/scalable
+jobs:
+- job: Job_2
+  displayName: 'Agent job: CFN Tests Win'
+  timeoutInMinutes: 360
+  pool:
+    vmImage: windows-2022
+  steps:
+  - checkout: self
+  - task: AmazonWebServices.aws-vsts-tools.S3Upload.S3Upload@1
+    displayName: 'S3 Upload: lansa'
+    inputs:
+      awsCredentials: 1e9f2577-9f34-4c81-b87d-93f6acff001d
+      regionName: ap-southeast-2
+      bucketName: $(BuildParameters.bucketName)
+      sourceFolder: CloudFormationWindows
+      globExpressions: >
+        *.template
+      targetFolder: templates/$(CookbooksBranch)
+      filesAcl: public-read-write
+  - task: AmazonWebServices.aws-vsts-tools.AWSPowerShellModuleScript.AWSPowerShellModuleScript@1
+    displayName: 'Cleanup CFN Template : BakingDP'
+    inputs:
+      awsCredentials: 1e9f2577-9f34-4c81-b87d-93f6acff001d
+      regionName: ap-southeast-2
+      scriptType: inline
+      inlineScript: >-
+        try{
+
+        Get-CFNStack -StackName $(stackname)
+
+        Remove-CFNStack -StackName $(stackname) -Force
+
+        $count =0
+
+        while($count -lt 20){
+           try{
+                 Get-CFNStack -StackName $(stackname)
+                 Start-Sleep -Seconds 200
+                 Write-Host "Deleting stack"
+                 $count = $count +1
+               }
+            catch{
+                 Write-Host "Stack Deleted"
+                 break
+                  }
+             }
+
+        Write-Host "Stack deleted"
+
+        }
+
+        catch{
+
+        Write-Host "There is no stack or it was deleted"
+
+        }
+  - task: AmazonWebServices.aws-vsts-tools.CloudFormationCreateOrUpdateStack.CloudFormationCreateOrUpdateStack@1
+    name: ''
+    displayName: 'Deploy CFN Template : BakingDP-TemplateTest'
+    inputs:
+      awsCredentials: 1e9f2577-9f34-4c81-b87d-93f6acff001d
+      regionName: ap-southeast-2
+      stackName: $(stackname)
+      templateSource: s3
+      templateFile: CloudFormationWindows/lansa-master-win.cfn.template
+      s3BucketName: lansa
+      s3ObjectKey: templates/$(CookbooksBranch)/lansa-master-win.cfn.template
+      templateParametersSource: inline
+      templateParameters: "[{\n    \"ParameterKey\": \"$(DBPasswordKey)\",\n    \"ParameterValue\": \"$(DBPasswordValue)\"\n}, {\n    \"ParameterKey\": \"$(WebPasswordKey)\",\n    \"ParameterValue\": \"$(WebPasswordValue)\"\n}, {\n    \"ParameterKey\": \"$(KeyNameKey)\",    \n    \"ParameterValue\": \"$(KeyNameValue)\"\n}, {\n    \"ParameterKey\": \"$(RemoteAccessLocationKey)\",   \n    \"ParameterValue\": \"$(RemoteAccessLocationValue)\"\n},{\n    \"ParameterKey\": \"10LansaGitRepoBranch\",\n    \"ParameterValue\": \"$(CookbooksBranch)\"\n},{\n    \"ParameterKey\": \"UpdateManagementScripts\",\n    \"ParameterValue\": \"Yes\"\n},{\n    \"ParameterKey\": \"LansaVersion\",\n    \"ParameterValue\": \"V15 GA\",\n},{\n    \"ParameterKey\": \"$(WebserverOSVersionKey)\",\n    \"ParameterValue\": \"win2019\",\n}, {\n    \"ParameterKey\": \"$(LansaMSIKey)\",   \n    \"ParameterValue\": \"$(msiURLLatest)\"\n}, {\n    \"ParameterKey\": \"CurrentVPC\",   \n    \"ParameterValue\": \"$(CurrentVPC)\"\n}, {\n    \"ParameterKey\": \"AvailabilityZones\",   \n    \"ParameterValue\": \"$(AvailabilityZones)\"\n}, {\n    \"ParameterKey\": \"NumberOfAZs\",   \n    \"ParameterValue\": \"$(NumberOfAZs)\"\n}, {\n    \"ParameterKey\": \"DBSubnetGroupName\",   \n    \"ParameterValue\": \"$(DBSubnetGroupName)\"\n}, {\n    \"ParameterKey\": \"ELBSubnetIds\",   \n    \"ParameterValue\": \"$(ELBSubnetIds)\"\n}, {\n    \"ParameterKey\": \"03DBUsername\",   \n    \"ParameterValue\": \"$(03DBUsername)\"\n}\n]"
+      tags: usage=temp-test
+      onFailure: DO_NOTHING
+      outputVariable: deploymentOutput
+      captureStackOutputs: $(BuildParameters.captureStackOutputs)
+      captureAsSecuredVars: false
+      timeoutInMins: 100
+  - task: AmazonWebServices.aws-vsts-tools.AWSPowerShellModuleScript.AWSPowerShellModuleScript@1
+    displayName: 'Test CFN Deployment : URL Tests'
+    inputs:
+      awsCredentials: 1e9f2577-9f34-4c81-b87d-93f6acff001d
+      regionName: ap-southeast-2
+      arguments: -Gatestack $(stackname)
+      filePath: scripts\TestCFNDeployment.ps1
+      inlineScript: >-
+        # Use the deployment output to extract the IpAddress
+
+
+        $stackoutput=(Get-CFNStack -StackName $(stackname)).Outputs[0].OutputValue
+
+        Write-Host $stackoutput
+
+
+        $IpAddress =$stackoutput
+
+
+        $url1 = "$IpAddress/cgi-bin/probe"
+
+        $url2 = "$IpAddress/cgi-bin/lansaweb?about"
+
+        $url3 = "$IpAddress/cgi-bin/lansaweb?wam=DEPTABWA&webrtn=BuildFirst&ml=LANSA:XHTML&part=DEX&lang=ENG"
+
+        $url4 = "$IpAddress/cgi-bin/lansaweb?wam=JSMLICE&webrtn=weblic&ml=LANSA:XHTML&part=DEX&lang=ENG"
+
+        $urls = @($url1, $url2, $url3, $url4)
+
+        add-type @"
+            using System.Net;
+            using System.Security.Cryptography.X509Certificates;
+            public class TrustAllCertsPolicy : ICertificatePolicy {
+                public bool CheckValidationResult(
+                    ServicePoint srvPoint, X509Certificate certificate,
+                    WebRequest request, int certificateProblem) {
+                    return true;
+                }
+            }
+        "@
+
+        [System.Net.ServicePointManager]::CertificatePolicy = New-Object TrustAllCertsPolicy
+
+        $failureCount = 0
+
+        forEach($url in $urls) {
+            try{
+                $response = Invoke-WebRequest -Uri $url -TimeoutSec 14
+                $ResponseCode = $response.StatusCode
+                if($ResponseCode -ne 200) {
+                    Write-Host "Response code not equal to 200: $ResponseCode" | Out-Default | Write-Verbose
+                    $failureCount = $failureCount + 1
+                } else {
+                    Write-Host $url | Out-Default | Write-Verbose
+                    Write-Host $ResponseCode | Out-Default | Write-Verbose
+                }
+            } catch {
+                Write-Host $_.Exception | Out-Default | Write-Verbose
+                $ResponseCode = $_.Exception.Response.StatusCode.Value__
+                $failureCount = $failureCount + 1
+                Write-Host $ResponseCode | Out-Default | Write-Verbose
+            }
+        }
+
+        if($failureCount) {
+            Write-Host "Request failed for $($failureCount) URL(s)"
+            throw "The deployment failed the URL tests"
+        } else {
+            Write-Host "Successfully tested all URL(s)"
+        }
+  - task: AmazonWebServices.aws-vsts-tools.AWSPowerShellModuleScript.AWSPowerShellModuleScript@1
+    displayName: 'Aws PowerShell : Test Image Version w19d-15-0 Prod'
+    condition: or(succeeded(), eq(variables['ForceDeploy'], 'True'))
+    inputs:
+      awsCredentials: 1e9f2577-9f34-4c81-b87d-93f6acff001d
+      regionName: ap-southeast-2
+      arguments: -Gatestack $(stackname) -Gateversion "w19d-15-0-$(VersionText-TemplateCI)" -Region 'ap-southeast-2'
+      filePath: scripts/AlternateImageVersion.ps1
+      inlineScript: "$SkuName = \"w16d-14-2-$(TestVersion-w16d-14-2)\"\nWrite-Host $SkuName\n# Get the URL from the stack\n$output = (Get-CFNStack -StackName $(stackname) -region ap-southeast-2).Outputs\n$websiteUrl = $output | Where-Object {$_.OutputKey -eq \"WebsiteURL\"}\n$url = $websiteUrl.OutputValue\n\n# Autoscaling Instance Id\n\n$childstack = (Get-CFNStack | Where-Object {$_.StackName -match \"$(stackname)-Web\" }).StackName\n$webServerGroupResource = (Get-CFNStackResource -StackName $childstack -region ap-southeast-2 -logicalResourceId WebServerGroup)\n$instanceDetails = Get-ASAutoScalingInstance | ? {$_.AutoScalingGroupName -eq $webServerGroupResource.PhysicalResourceId} | select -ExpandProperty InstanceId | Get-EC2Instance | select -ExpandProperty RunningInstance | ft InstanceId, PrivateIpAddress\n$instanceId = (Get-ASAutoScalingGroup -AutoScalingGroupName $webServerGroupResource.PhysicalResourceId).Instances.InstanceId\n\n# Run the TestImageVersion script - \n$result = Send-SSMCommand -DocumentName \"AWS-RunPowerShellScript\" -InstanceId \"$instanceId\" -Parameter @{commands = ' New-Item -Path \"$(CookbooksSource1)\\Tests\" -ItemType Directory -force -verbose; New-Item -Path \"$(CookbooksSource1)\\scripts\" -ItemType Directory -force -verbose; Invoke-WebRequest -Uri \"https://raw.githubusercontent.com/robe070/cookbooks/$(CookbooksBranch)/Tests/TestImageVersion.ps1\" -OutFile \"$(CookbooksSource1)\\Tests\\TestImageVersion.ps1\" -verbose; Invoke-WebRequest -Uri \"https://raw.githubusercontent.com/robe070/cookbooks/$(CookbooksBranch)/scripts/dot-CommonTools.ps1\" -OutFile \"$(CookbooksSource1)\\scripts\\dot-CommonTools.ps1\" -verbose; \"$(CookbooksSource1)\\scripts\\dot-CommonTools.ps1\"; $(CookbooksSource1)\\Tests\\TestImageVersion.ps1 -ImgName '+$SkuName}\n\nwhile ($result.Status -eq \"Pending\" -or $result.Status -eq \"InProgress\"){\n    $result = Get-SSMCommand -InstanceId $result.InstanceId -CommandId $result.CommandId}\n$result | Out-Default | Write-Host\nif ($result.Status -eq \"Success\") {\n Write-Host \"Tested the image version in the VMSS successfully.\"\n} else {\n throw ($result.Status)\n}"
+  - task: AmazonWebServices.aws-vsts-tools.AWSPowerShellModuleScript.AWSPowerShellModuleScript@1
+    displayName: 'Cleanup CFN Template : BakingDP '
+    inputs:
+      awsCredentials: 1e9f2577-9f34-4c81-b87d-93f6acff001d
+      regionName: ap-southeast-2
+      scriptType: inline
+      inlineScript: >-
+        try{
+
+        Get-CFNStack -StackName $(stackname)
+
+        Remove-CFNStack -StackName $(stackname) -Force
+
+        $count =0
+
+        while($count -lt 20){
+           try{
+                 Get-CFNStack -StackName $(stackname)
+                 Start-Sleep -Seconds 200
+                 Write-Host "Deleting stack"
+                 $count = $count +1
+               }
+            catch{
+                 Write-Host "Stack Deleted"
+                 break
+                  }
+             }
+
+        Write-Host "Stack deleted"
+
+        }
+
+        catch{
+
+        Write-Host "There is no stack or it was deleted"
+
+        }
+  - task: CopyFiles@2
+    displayName: 'Copy Files to: Artifact Staging Directory'
+    inputs:
+      SourceFolder: CloudFormationWindows
+      Contents: '*.template'
+      TargetFolder: $(build.artifactstagingdirectory)
+      CleanTargetFolder: true
+      OverWrite: true
+  - task: ArchiveFiles@2
+    displayName: Archive Files in Staging Directory
+    inputs:
+      rootFolderOrFile: $(build.artifactstagingdirectory)
+      sevenZipCompression: 5
+      archiveFile: $(Build.ArtifactStagingDirectory)/AwsTemplates.zip
+      verbose: true
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifact: Solution Template'
+    inputs:
+      ArtifactName: Solution Template
+      FileCopyOptions: ''
+...
