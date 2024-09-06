@@ -15,10 +15,10 @@ variables:
 #-system.debug: $(system.collectionId)
 #-system.definitionId: $(system.collectionId)
 #-system.teamProject: $(system.collectionId)
-#- name: BuildParameters.captureStackOutputs
-#  value: asJSON
-#- name: BuildParameters.bucketName
-#  value: lansa
+- name: BuildParameters.captureStackOutputs
+  value: asJSON
+- name: BuildParameters.bucketName
+  value: lansa
 - group: "Default Branch"
 - group: "Template Parameters"
 - group: "VPC ap-southeast-2"
