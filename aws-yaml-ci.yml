@@ -21,7 +21,7 @@ variables:
 #  value: lansa
 - group: "Default Branch"
 - group: "Template Parameters"
-- group: "VPC ap-southeast2"
+- group: "VPC ap-southeast-2"
 - group: "ImageVersion"
 - group: "ImageVersion - New"
 resources:
