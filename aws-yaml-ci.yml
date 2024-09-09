@@ -7,14 +7,14 @@
 # Variable Group 'VPC ap-southeast-2' was defined in the Variables tab
 # Variable Group 'ImageVersion' was defined in the Variables tab
 variables:
-#-AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID) 
-#-AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
-#-CookbooksSource: $(CookbooksSource)
-#-CookbooksSource1: $(CookbooksSource1)
-#-system.collectionId: $(system.collectionId)
-#-system.debug: $(system.collectionId)
-#-system.definitionId: $(system.collectionId)
-#-system.teamProject: $(system.collectionId)
+AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID) 
+AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
+CookbooksSource: $(CookbooksSource)
+CookbooksSource1: $(CookbooksSource1)
+system.collectionId: $(system.collectionId)
+system.debug: $(system.collectionId)
+system.definitionId: $(system.collectionId)
+system.teamProject: $(system.collectionId)
 - name: BuildParameters.captureStackOutputs
   value: asJSON
 - name: BuildParameters.bucketName
