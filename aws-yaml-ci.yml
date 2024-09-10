@@ -18,11 +18,7 @@ variables:
 - name: BuildParameters.captureStackOutputs
   value: asJSON
 - name: BuildParameters.bucketName
-  value: lansa
-- name: awsCredentials
-  value: "AzureDevOps"
-- name: regionName
-  value: "ap-southeast-2"  
+  value: lansa 
 - group: "Default Branch"
 - group: "Template Parameters"
 - group: "VPC ap-southeast-2"
@@ -38,14 +34,14 @@ jobs:
   displayName: 'Agent job: CFN Tests Win'
   timeoutInMinutes: 360
   pool:
-    vmImage: windows-2019
+    vmImage: windows-2022
   steps:
   - checkout: self
   - task: AmazonWebServices.aws-vsts-tools.S3Upload.S3Upload@1
     displayName: 'S3 Upload: lansa'
     inputs:
-      awsCredentials: 1e9f2577-9f34-4c81-b87d-93f6acff001d
-      regionName: ap-southeast-2
+      awsCredentials: $(awsCredentials)
+      regionName: $(regionName)
       bucketName: $(BuildParameters.bucketName)
       sourceFolder: CloudFormationWindows
       globExpressions: >
@@ -55,8 +51,8 @@ jobs:
   - task: AmazonWebServices.aws-vsts-tools.AWSPowerShellModuleScript.AWSPowerShellModuleScript@1
     displayName: 'Cleanup CFN Template : BakingDP'
     inputs:
-      awsCredentials: 1e9f2577-9f34-4c81-b87d-93f6acff001d
-      regionName: ap-southeast-2
+      awsCredentials: $(awsCredentials)
+      regionName: $(regionName)
       scriptType: inline
       inlineScript: >-
         try{
@@ -93,6 +89,8 @@ jobs:
     name: ''
     displayName: 'Deploy CFN Template : BakingDP-TemplateTest'
     inputs:
+      awsCredentials: $(awsCredentials)
+      regionName: $(regionName)
       stackName: $(stackname)
       templateSource: s3
       templateFile: CloudFormationWindows/lansa-master-win.cfn.template
@@ -109,6 +107,8 @@ jobs:
   - task: AmazonWebServices.aws-vsts-tools.AWSPowerShellModuleScript.AWSPowerShellModuleScript@1
     displayName: 'Test CFN Deployment : URL Tests'
     inputs:
+      awsCredentials: $(awsCredentials)
+      regionName: $(regionName)
       arguments: -Gatestack $(stackname)
       filePath: scripts\TestCFNDeployment.ps1
       inlineScript: >-
@@ -178,14 +178,16 @@ jobs:
     displayName: 'Aws PowerShell : Test Image Version w19d-15-0 Prod'
     condition: or(succeeded(), eq(variables['ForceDeploy'], 'True'))
     inputs:
+      awsCredentials: $(awsCredentials)
+      regionName: $(regionName)
       arguments: -Gatestack $(stackname) -Gateversion "w19d-15-0-$(VersionText-TemplateCI)" -Region 'ap-southeast-2'
       filePath: scripts/AlternateImageVersion.ps1
       inlineScript: "$SkuName = \"w16d-14-2-$(TestVersion-w16d-14-2)\"\nWrite-Host $SkuName\n# Get the URL from the stack\n$output = (Get-CFNStack -StackName $(stackname) -region ap-southeast-2).Outputs\n$websiteUrl = $output | Where-Object {$_.OutputKey -eq \"WebsiteURL\"}\n$url = $websiteUrl.OutputValue\n\n# Autoscaling Instance Id\n\n$childstack = (Get-CFNStack | Where-Object {$_.StackName -match \"$(stackname)-Web\" }).StackName\n$webServerGroupResource = (Get-CFNStackResource -StackName $childstack -region ap-southeast-2 -logicalResourceId WebServerGroup)\n$instanceDetails = Get-ASAutoScalingInstance | ? {$_.AutoScalingGroupName -eq $webServerGroupResource.PhysicalResourceId} | select -ExpandProperty InstanceId | Get-EC2Instance | select -ExpandProperty RunningInstance | ft InstanceId, PrivateIpAddress\n$instanceId = (Get-ASAutoScalingGroup -AutoScalingGroupName $webServerGroupResource.PhysicalResourceId).Instances.InstanceId\n\n# Run the TestImageVersion script - \n$result = Send-SSMCommand -DocumentName \"AWS-RunPowerShellScript\" -InstanceId \"$instanceId\" -Parameter @{commands = ' New-Item -Path \"$(CookbooksSource1)\\Tests\" -ItemType Directory -force -verbose; New-Item -Path \"$(CookbooksSource1)\\scripts\" -ItemType Directory -force -verbose; Invoke-WebRequest -Uri \"https://raw.githubusercontent.com/robe070/cookbooks/$(CookbooksBranch)/Tests/TestImageVersion.ps1\" -OutFile \"$(CookbooksSource1)\\Tests\\TestImageVersion.ps1\" -verbose; Invoke-WebRequest -Uri \"https://raw.githubusercontent.com/robe070/cookbooks/$(CookbooksBranch)/scripts/dot-CommonTools.ps1\" -OutFile \"$(CookbooksSource1)\\scripts\\dot-CommonTools.ps1\" -verbose; \"$(CookbooksSource1)\\scripts\\dot-CommonTools.ps1\"; $(CookbooksSource1)\\Tests\\TestImageVersion.ps1 -ImgName '+$SkuName}\n\nwhile ($result.Status -eq \"Pending\" -or $result.Status -eq \"InProgress\"){\n    $result = Get-SSMCommand -InstanceId $result.InstanceId -CommandId $result.CommandId}\n$result | Out-Default | Write-Host\nif ($result.Status -eq \"Success\") {\n Write-Host \"Tested the image version in the VMSS successfully.\"\n} else {\n throw ($result.Status)\n}"
   - task: AmazonWebServices.aws-vsts-tools.AWSPowerShellModuleScript.AWSPowerShellModuleScript@1
     displayName: 'Cleanup CFN Template : BakingDP '
     inputs:
-      awsCredentials: 1e9f2577-9f34-4c81-b87d-93f6acff001d
-      regionName: ap-southeast-2
+      awsCredentials: $(awsCredentials)
+      regionName: $(regionName)
       scriptType: inline
       inlineScript: >-
         try{
@@ -239,3 +241,4 @@ jobs:
       ArtifactName: Solution Template
       FileCopyOptions: ''
 ...
+
