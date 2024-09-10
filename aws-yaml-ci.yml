@@ -15,10 +15,10 @@ variables:
 #system.debug: $(system.collectionId)
 #system.definitionId: $(system.collectionId)
 #system.teamProject: $(system.collectionId)
-- name: BuildParameters.captureStackOutputs
+- name: captureStackOutputs
   value: asJSON
-- name: BuildParameters.bucketName
-  value: lansa 
+#- name: bucketName
+  #value: lansa 
 - group: "Default Branch"
 - group: "Template Parameters"
 - group: "VPC ap-southeast-2"
@@ -42,7 +42,7 @@ jobs:
     inputs:
       awsCredentials: $(awsCredentials)
       regionName: $(regionName)
-      bucketName: $(BuildParameters.bucketName)
+      bucketName: $(BucketNamePreview)
       sourceFolder: CloudFormationWindows
       globExpressions: >
         *.template
@@ -94,14 +94,14 @@ jobs:
       stackName: $(stackname)
       templateSource: s3
       templateFile: CloudFormationWindows/lansa-master-win.cfn.template
-      s3BucketName: lansa
+      s3BucketName: $(BucketNamePreview)
       s3ObjectKey: templates/$(CookbooksBranch)/lansa-master-win.cfn.template
       templateParametersSource: inline
       templateParameters: "[{\n    \"ParameterKey\": \"$(DBPasswordKey)\",\n    \"ParameterValue\": \"$(DBPasswordValue)\"\n}, {\n    \"ParameterKey\": \"$(WebPasswordKey)\",\n    \"ParameterValue\": \"$(WebPasswordValue)\"\n}, {\n    \"ParameterKey\": \"$(KeyNameKey)\",    \n    \"ParameterValue\": \"$(KeyNameValue)\"\n}, {\n    \"ParameterKey\": \"$(RemoteAccessLocationKey)\",   \n    \"ParameterValue\": \"$(RemoteAccessLocationValue)\"\n},{\n    \"ParameterKey\": \"10LansaGitRepoBranch\",\n    \"ParameterValue\": \"$(CookbooksBranch)\"\n},{\n    \"ParameterKey\": \"UpdateManagementScripts\",\n    \"ParameterValue\": \"Yes\"\n},{\n    \"ParameterKey\": \"LansaVersion\",\n    \"ParameterValue\": \"V15 GA\",\n},{\n    \"ParameterKey\": \"$(WebserverOSVersionKey)\",\n    \"ParameterValue\": \"win2019\",\n}, {\n    \"ParameterKey\": \"$(LansaMSIKey)\",   \n    \"ParameterValue\": \"$(msiURLLatest)\"\n}, {\n    \"ParameterKey\": \"CurrentVPC\",   \n    \"ParameterValue\": \"$(CurrentVPC)\"\n}, {\n    \"ParameterKey\": \"AvailabilityZones\",   \n    \"ParameterValue\": \"$(AvailabilityZones)\"\n}, {\n    \"ParameterKey\": \"NumberOfAZs\",   \n    \"ParameterValue\": \"$(NumberOfAZs)\"\n}, {\n    \"ParameterKey\": \"DBSubnetGroupName\",   \n    \"ParameterValue\": \"$(DBSubnetGroupName)\"\n}, {\n    \"ParameterKey\": \"ELBSubnetIds\",   \n    \"ParameterValue\": \"$(ELBSubnetIds)\"\n}, {\n    \"ParameterKey\": \"03DBUsername\",   \n    \"ParameterValue\": \"$(03DBUsername)\"\n}\n]"
       tags: usage=temp-test
       onFailure: DO_NOTHING
       outputVariable: deploymentOutput
-      captureStackOutputs: $(BuildParameters.captureStackOutputs)
+      captureStackOutputs: $(captureStackOutputs)
       captureAsSecuredVars: false
       timeoutInMins: 100
   - task: AmazonWebServices.aws-vsts-tools.AWSPowerShellModuleScript.AWSPowerShellModuleScript@1
