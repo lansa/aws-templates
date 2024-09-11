@@ -17,8 +17,14 @@ variables:
 #system.teamProject: $(system.collectionId)
 - name: captureStackOutputs
   value: asJSON
+- name: CookbooksSource
+  value: $(Build.Repository.LocalPath)\cookbooks
+- name: CookbooksSource1
+  value: c:\lansa
+- name: regionName
+  value: ap-southeast-2
 #- name: bucketName
-  #value: lansa 
+  #value: lansa
 - group: "Default Branch"
 - group: "Template Parameters"
 - group: "VPC ap-southeast-2"
