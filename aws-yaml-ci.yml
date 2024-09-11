@@ -1,12 +1,8 @@
-# Variable 'AWS_ACCESS_KEY_ID' was defined in the Variables tab
-# Variable 'AWS_SECRET_ACCESS_KEY' was defined in the Variables tab
-# Variable 'CookbooksSource' was defined in the Variables tab
-# Variable 'CookbooksSource1' was defined in the Variables tab
 # Variable Group 'Default Branch' was defined in the Variables tab
 # Variable Group 'Template Parameters' was defined in the Variables tab
 # Variable Group 'VPC ap-southeast-2' was defined in the Variables tab
 # Variable Group 'ImageVersion' was defined in the Variables tab
-variables:
+# Variable Group 'ImageVersion - New' was defined in the Variables tab for windows 2022
 #AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID) 
 #AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
 #CookbooksSource: $(CookbooksSource)
@@ -15,6 +11,7 @@ variables:
 #system.debug: $(system.collectionId)
 #system.definitionId: $(system.collectionId)
 #system.teamProject: $(system.collectionId)
+variables:
 - name: captureStackOutputs
   value: asJSON
 - name: CookbooksSource
@@ -23,8 +20,6 @@ variables:
   value: c:\lansa
 - name: regionName
   value: ap-southeast-2
-#- name: bucketName
-  #value: lansa
 - group: "Default Branch"
 - group: "Template Parameters"
 - group: "VPC ap-southeast-2"
@@ -63,13 +58,9 @@ jobs:
       scriptType: inline
       inlineScript: >-
         try{
-
         Get-CFNStack -StackName $(stackname)
-
         Remove-CFNStack -StackName $(stackname) -Force
-
         $count =0
-
         while($count -lt 20){
            try{
                  Get-CFNStack -StackName $(stackname)
@@ -82,15 +73,10 @@ jobs:
                  break
                   }
              }
-
         Write-Host "Stack deleted"
-
         }
-
         catch{
-
         Write-Host "There is no stack or it was deleted"
-
         }
   - task: AmazonWebServices.aws-vsts-tools.CloudFormationCreateOrUpdateStack.CloudFormationCreateOrUpdateStack@1
     name: ''
@@ -120,26 +106,14 @@ jobs:
       filePath: scripts\TestCFNDeployment.ps1
       inlineScript: >-
         # Use the deployment output to extract the IpAddress
-
-
         $stackoutput=(Get-CFNStack -StackName $(stackname)).Outputs[0].OutputValue
-
         Write-Host $stackoutput
-
-
         $IpAddress =$stackoutput
-
-
         $url1 = "$IpAddress/cgi-bin/probe"
-
         $url2 = "$IpAddress/cgi-bin/lansaweb?about"
-
         $url3 = "$IpAddress/cgi-bin/lansaweb?wam=DEPTABWA&webrtn=BuildFirst&ml=LANSA:XHTML&part=DEX&lang=ENG"
-
         $url4 = "$IpAddress/cgi-bin/lansaweb?wam=JSMLICE&webrtn=weblic&ml=LANSA:XHTML&part=DEX&lang=ENG"
-
         $urls = @($url1, $url2, $url3, $url4)
-
         add-type @"
             using System.Net;
             using System.Security.Cryptography.X509Certificates;
@@ -151,11 +125,8 @@ jobs:
                 }
             }
         "@
-
         [System.Net.ServicePointManager]::CertificatePolicy = New-Object TrustAllCertsPolicy
-
         $failureCount = 0
-
         forEach($url in $urls) {
             try{
                 $response = Invoke-WebRequest -Uri $url -TimeoutSec 14
@@ -174,7 +145,6 @@ jobs:
                 Write-Host $ResponseCode | Out-Default | Write-Verbose
             }
         }
-
         if($failureCount) {
             Write-Host "Request failed for $($failureCount) URL(s)"
             throw "The deployment failed the URL tests"
@@ -198,13 +168,9 @@ jobs:
       scriptType: inline
       inlineScript: >-
         try{
-
         Get-CFNStack -StackName $(stackname)
-
         Remove-CFNStack -StackName $(stackname) -Force
-
         $count =0
-
         while($count -lt 20){
            try{
                  Get-CFNStack -StackName $(stackname)
@@ -217,15 +183,10 @@ jobs:
                  break
                   }
              }
-
         Write-Host "Stack deleted"
-
         }
-
         catch{
-
         Write-Host "There is no stack or it was deleted"
-
         }
   - task: CopyFiles@2
     displayName: 'Copy Files to: Artifact Staging Directory'
