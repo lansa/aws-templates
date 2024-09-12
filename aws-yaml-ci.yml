@@ -1,12 +1,3 @@
-# Variable 'AWS_ACCESS_KEY_ID' defined in the Variable Group tab
-# Variable 'AWS_SECRET_ACCESS_KEY' defined in the Variable Group tab
-# Variable 'awsCredentials' defined in the Variable Group tab
-# Variable 'CookbooksSource' defined in the Variables tab
-# Variable 'CookbooksSource1' defined in the Variables tab
-# Variable Group 'Default Branch' defined in the Variables tab
-# Variable Group 'Template Parameters' defined in the Variables tab
-# Variable Group 'VPC ap-southeast-2' defined in the Variables tab
-# Variable Group 'ImageVersion' defined in the Variables tab
 variables:
 - name: captureStackOutputs
   value: asJSON
