@@ -20,7 +20,6 @@ variables:
 - group: "Template Parameters"
 - group: "VPC ap-southeast-2"
 - group: "ImageVersion"
-- group: "ImageVersion - New"
 - group: "Logins"
 resources:
   repositories:
