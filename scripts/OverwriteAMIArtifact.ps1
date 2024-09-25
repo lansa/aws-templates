@@ -3,7 +3,7 @@
 $sourcepath = "$($env:System_DefaultWorkingDirectory)/templates/support/scalable/ami-list/*.txt"
 Write-Host "sourcepath = $sourcepath"
 
-$targetpath = "$($env:System_DefaultWorkingDirectory)/_Build Image Release Artefacts/aws"
+$targetpath = "$($env:System_DefaultWorkingDirectory)/_Build Image Release Artefacts  3.0/aws"
 Write-Host "targetpath = $targetpath"
 
 Remove-Item $targetpath/* -ErrorAction SilentlyContinue

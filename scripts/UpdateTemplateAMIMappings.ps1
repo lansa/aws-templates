@@ -8,7 +8,7 @@ param (
 If ( $ImageType -eq "Debug") {
     $FilePath = "C:\DevOps\Lansa-AWS\lansa-master-win.cfn.template"
 } else {
-    $FilePath = "$($env:System_DefaultWorkingDirectory)\_lansa_aws-templates\CloudFormationWindows\lansa-master-win.cfn.template"
+    $FilePath = "$($env:System_DefaultWorkingDirectory)\_LansaAWSTemplates\CloudFormationWindows\lansa-master-win.cfn.template"
 }
 
 $TemplateJson = Get-Content -Path $FilePath | ConvertFrom-Json
@@ -43,7 +43,7 @@ if ( $TemplateJson ) {
     foreach ( $ImageName in $BaseImageNameArray ) {
 
         #Developement and Production uses same file path location
-        $path = "$($env:System_DefaultWorkingDirectory)/_Build Image Release Artefacts/aws/$ImageName.txt"
+        $path = "$($env:System_DefaultWorkingDirectory)/_Build Image Release Artefacts  3.0/aws/$ImageName.txt"
 
         switch ($ImageType)
         {
@@ -116,7 +116,7 @@ if ( $TemplateJson ) {
 }
 
 #goto current source folder
-$path = "$($env:System_DefaultWorkingDirectory)/_lansa_aws-templates"
+$path = "$($env:System_DefaultWorkingDirectory)/_LansaAWSTemplates"
 cd $path
 
 # git add files
