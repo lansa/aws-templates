@@ -11,7 +11,8 @@ param (
 #SetGateVariable.ps1 -BaseImageName w12r2d-14-2 -stackname BakingDP-ImageRelease
 # Set the Gate variable if the file exists
 Write-Host "##vso[task.setvariable variable=IsEnabled;isOutput=true]False"
-$path = "$($env:System_DefaultWorkingDirectory)/_Build Image Release Artefacts/aws/$BaseImageName.txt"
+#$path = "$($env:System_DefaultWorkingDirectory)/_Build Image Release Artefacts/aws/$BaseImageName.txt"
+$path = "$($env:Pipeline_Workspace)/_Build Cloud Account Id Artefacts/aws/$BaseImageName.txt"
 Write-Host "Using $path"
 if (Test-Path $path) {
     try{
