@@ -8,7 +8,7 @@ param (
 If ( $ImageType -eq "Debug") {
     $FilePath = "C:\DevOps\Lansa-AWS\lansa-master-win.cfn.template"
 } else {
-    $FilePath = "$($env:System_DefaultWorkingDirectory)\_LansaAWSTemplates\CloudFormationWindows\lansa-master-win.cfn.template"
+    $FilePath = "$($env:System_DefaultWorkingDirectory)\_lansa_aws-templates\CloudFormationWindows\lansa-master-win.cfn.template"
 }
 
 $TemplateJson = Get-Content -Path $FilePath | ConvertFrom-Json
@@ -22,6 +22,11 @@ $BaseImageNameArray = @(
     'w16d-15-0j'
     'w19d-14-2j'
     'w19d-15-0j'
+    'w22d-14-2'
+    'w22d-15-0'
+    'w22d-14-2j'
+    'w22d-15-0j'
+
 )
 
 if ( $TemplateJson ) {
@@ -75,7 +80,7 @@ if ( $TemplateJson ) {
     $AMIList | Out-Default | Write-Host
 
     $index = 0
-    foreach ($win in @(, "win2016", "win2019", "win2016jpn", "win2019jpn")) {
+    foreach ($win in @(, "win2016", "win2019", "win2016jpn", "win2019jpn", "win2022", "win2022jpn")) {
 
         # Update the AMIs in template for Region/Win version
         if  ( $AMIList[$index] -ne "skip" ) {
@@ -116,7 +121,7 @@ if ( $TemplateJson ) {
 }
 
 #goto current source folder
-$path = "$($env:System_DefaultWorkingDirectory)/_LansaAWSTemplates"
+$path = "$($env:System_DefaultWorkingDirectory)/_lansa_aws-templates"
 cd $path
 
 # git add files
