@@ -48,7 +48,7 @@ if ( $TemplateJson ) {
     foreach ( $ImageName in $BaseImageNameArray ) {
 
         #Developement and Production uses same file path location
-        $path = "$($env:System_DefaultWorkingDirectory)/_Build Image Release Artefacts/aws/$ImageName.txt"
+        $path = "$($env:System_DefaultWorkingDirectory)/_Build Image Release Artefacts/aws-$ImageName/$ImageName.txt"
 
         switch ($ImageType)
         {
