@@ -16,10 +16,11 @@ Write-Host "Using $path"
 if (Test-Path $path) {
     try{
         $amiID = Get-Content -Path $path
-        Write-Output $Path
         $amiID = $amiID.Split(" ")[0]
         Write-Host "AMI ID $($amiID)"
         $imageName = (Get-EC2Image -ImageId $amiID).Name
+        Write-Output $BaseImageName
+        Write-Output $imageName
         $imageName -match "$BaseImageName[-]?[0-9]+"
         $version = $Matches[0]
         Write-Host "Version : $version"
