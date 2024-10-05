@@ -1105,10 +1105,24 @@
         "Yes"
       ]
     },
-    "IsGp2DatabaseStorageType" : {
-      "Fn::Or" : [
-        { "Fn::Equals": [{"Ref": "DBIOPSRatio"},"0"] },
-        { "Fn::Equals": [{"Ref": "DBIOPSRatio"},"1"] }
+    "IsGp2DatabaseStorageType": {
+      "Fn::Or": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "DBIOPSRatio"
+            },
+            "0"
+          ]
+        },
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "DBIOPSRatio"
+            },
+            "1"
+          ]
+        }
       ]
     },
     "IsReleaseLevel": {
@@ -1414,8 +1428,8 @@
             },
             {
               "Fn::GetAtt": [
-              "IOPSStack",
-              "Outputs.Result"
+                "IOPSStack",
+                "Outputs.Result"
               ]
             }
           ]
@@ -1424,7 +1438,11 @@
           "Ref": "04DBPassword"
         },
         "StorageType": {
-          "Fn::If": ["IsGp2DatabaseStorageType","gp2","io1"]
+          "Fn::If": [
+            "IsGp2DatabaseStorageType",
+            "gp2",
+            "io1"
+          ]
         },
         "AllowMajorVersionUpgrade": "false",
         "AutoMinorVersionUpgrade": "true",
