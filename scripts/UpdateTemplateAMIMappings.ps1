@@ -66,10 +66,12 @@ if ( $TemplateJson ) {
                 $Region = 'us-east-1'
             }
         }
+        Write-Host("Path to be tested: $path")
         if ( Test-Path $path ) {
             $amiID = [string](Get-Content -Path $path)
             $AMIList += $amiID
         } else {
+            Write-Host("Path does not exist.")
             $AMIList += "skip"
         }
         Clear-Variable -name path
