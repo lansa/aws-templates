@@ -124,8 +124,8 @@ if ( $TemplateJson ) {
 }
 
 #goto current source folder
-#$path = "$($env:System_DefaultWorkingDirectory)/_lansa_aws-templates"
-$path = "$($env:Pipeline_Workspace)/s/_Build Image Release Artefacts"
+$path = "$($env:System_DefaultWorkingDirectory)/_lansa_aws-templates"
+
 cd $path
 
 # git add files
