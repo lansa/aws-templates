@@ -1,9 +1,9 @@
 # OverwriteAMIArtifact.ps1 -BaseImageName w12r2d-14-2
 # Source file name is of the form copy-w12r2d-14-2.txt
-$sourcepath = "cd "$($env:Pipeline_Workspace)/$($GitRepoName)"/templates/support/scalable/ami-list/*.txt"
+$sourcepath = "$($env:Pipeline_Workspace)/$($GitRepoName)"/templates/support/scalable/ami-list/*.txt"
 Write-Host "sourcepath = $sourcepath"
 
-$targetpath = "cd "$($env:Pipeline_Workspace)/$($GitRepoName)"/_Build Image Release Artefacts/aws"
+$targetpath = "$($env:Pipeline_Workspace)/$($GitRepoName)"/_Build Image Release Artefacts/aws"
 Write-Host "targetpath = $targetpath"
 
 Remove-Item $targetpath/* -ErrorAction SilentlyContinue
