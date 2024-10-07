@@ -449,6 +449,16 @@
       "Type": "String",
       "Default": "",
       "Description": "The AMI Id of the custom image. Not required when Image Source is set to Marketplace"
+    },
+    "TagName": {
+        "Default": "Environment",
+        "Type": "String",
+        "Description": "Name of the tag with which to tag every resource"
+    },
+    "TagValue": {
+        "Default": "Production",
+        "Type": "String",
+        "Description": "Value of the tag with which to tag every resource"
     }
   },
   "Metadata": {
@@ -1477,6 +1487,7 @@
     "IAMRoleInstanceProfile": {
       "Type": "AWS::IAM::InstanceProfile",
       "Properties": {
+        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "Path": "/",
         "Roles": [
           {
