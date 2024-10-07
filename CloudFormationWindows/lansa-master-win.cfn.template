@@ -532,6 +532,8 @@
           "Parameters": [
             "21ELBTimeout",
             "17UserScriptHook",
+            "TagName",
+            "TagValue",
             "UpdateManagementScripts",
             "10LansaGitRepoBranch",
             "TemplateS3Namespace"
@@ -661,7 +663,10 @@
         },
         "AMIId": {
           "default": ""
-        }
+        },
+
+        "TagName": { "default": "Tag Name" },
+        "TagValue": { "default": "Tag Value" }
       }
     }
   },
@@ -1278,6 +1283,7 @@
       "Type": "AWS::CloudFormation::Stack",
       "Condition": "CreateNewVPCResources",
       "Properties": {
+        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "TemplateURL": {
           "Fn::If": [
             "IsReleaseLevel",
@@ -1419,6 +1425,7 @@
     "CloudWatchLogGroup": {
       "Type": "AWS::Logs::LogGroup",
       "Properties": {
+        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "LogGroupName": {
           "Ref": "AWS::StackName"
         },
@@ -1428,6 +1435,7 @@
     "IAMRole": {
       "Type": "AWS::IAM::Role",
       "Properties": {
+        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "AssumeRolePolicyDocument": {
           "Version": "2012-10-17",
           "Statement": [
@@ -1480,6 +1488,7 @@
     "IOPSStack": {
       "Type": "AWS::CloudFormation::Stack",
       "Properties": {
+        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "TemplateURL": {
           "Fn::If": [
             "IsReleaseLevel",
@@ -1620,6 +1629,7 @@
         "Comment2": "Use install path for healthcheck to avoid redirects. Refer to LANSA report to place the right tag here for health check - ELB healthcheck does not handle 302 return codes"
       },
       "Properties": {
+        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "Subnets": {
           "Fn::If": [
             "CreateNewVPCResources",
@@ -1782,6 +1792,10 @@
           {
             "Key": "Network",
             "Value": "Private"
+          },
+          {
+            "Key" : { "Ref":"TagName" },
+            "Value" : { "Ref":"TagValue" }
           }
         ]
       },
@@ -1790,6 +1804,7 @@
     "DBSecurityGroup": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
+        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "GroupDescription": "Enable SQL Server Access",
         "SecurityGroupIngress": [
           {
@@ -1820,6 +1835,7 @@
     "SGDBIngress": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
+        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "GroupId": {
           "Fn::GetAtt": [
             "DBSecurityGroup",
@@ -1840,6 +1856,7 @@
     "WBELBSecurityGroup": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
+        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "GroupDescription": "Security Group for ELB belonging to non-default VPC",
         "SecurityGroupIngress": [
           {
@@ -1868,6 +1885,7 @@
     "WBELBIngress": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
+        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "GroupId": {
           "Fn::GetAtt": [
             "LansaSecurityGroup",
@@ -1888,6 +1906,7 @@
     "LansaSecurityGroup": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
+        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "GroupDescription": "Enable HTTP access via port 80 locked down to the load balancers + SSH access + RDP access",
         "VpcId": {
           "Fn::If": [
@@ -1930,6 +1949,7 @@
         "Comment2": "Using prime numbers ensures that the DB instances and Web instances will not be refreshed on the same day"
       },
       "Properties": {
+        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "TemplateURL": {
           "Fn::If": [
             "IsReleaseLevel",
@@ -2247,6 +2267,7 @@
         "Comment2": "Using prime numbers ensures that the DB instances and Web instances will not be refreshed on the same day"
       },
       "Properties": {
+        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "TemplateURL": {
           "Fn::If": [
             "IsReleaseLevel",
