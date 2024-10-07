@@ -83,7 +83,7 @@ if ( $TemplateJson ) {
     $AMIList | Out-Default | Write-Host
 
     $index = 0
-    foreach ($win in @(, "win2016", "win2019", "win2016jpn", "win2019jpn", "win2022", "win2022jpn")) {
+    foreach ($win in @(, "win2016", "win2019", "win2016jpn", "win2019jpn")) {
 
         # Update the AMIs in template for Region/Win version
         if  ( $AMIList[$index] -ne "skip" ) {
