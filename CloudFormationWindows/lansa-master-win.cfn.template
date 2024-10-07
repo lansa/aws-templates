@@ -117,7 +117,9 @@
         "win2016",
         "win2019",
         "win2016jpn",
-        "win2019jpn"
+        "win2019jpn",
+        "win2022",
+        "win2022jpn"
       ]
     },
     "11WebServerInstanceTyp": {
@@ -842,67 +844,89 @@
         "win2016": "",
         "win2019": "",
         "win2016jpn": "",
-        "win2019jpn": ""
+        "win2019jpn": "",
+        "win2022": "",
+        "win2022jpn": ""
       },
       "us-west-1": {
         "win2016": "",
         "win2019": "",
         "win2016jpn": "",
-        "win2019jpn": ""
+        "win2019jpn": "",
+        "win2022": "",
+        "win2022jpn": ""
       },
       "us-west-2": {
         "win2016": "",
         "win2019": "",
         "win2016jpn": "",
-        "win2019jpn": ""
+        "win2019jpn": "",
+        "win2022": "",
+        "win2022jpn": ""
       },
       "ca-central-1": {
         "win2016": "",
         "win2019": "",
         "win2016jpn": "",
-        "win2019jpn": ""
+        "win2019jpn": "",
+        "win2022": "",
+        "win2022jpn": ""
       },
       "eu-central-1": {
         "win2016": "",
         "win2019": "",
         "win2016jpn": "",
-        "win2019jpn": ""
+        "win2019jpn": "",
+        "win2022": "",
+        "win2022jpn": ""
       },
       "eu-west-1": {
         "win2016": "",
         "win2019": "",
         "win2016jpn": "",
-        "win2019jpn": ""
+        "win2019jpn": "",
+        "win2022": "",
+        "win2022jpn": ""
       },
       "eu-west-2": {
         "win2016": "",
         "win2019": "",
         "win2016jpn": "",
-        "win2019jpn": ""
+        "win2019jpn": "",
+        "win2022": "",
+        "win2022jpn": ""
       },
       "eu-west-3": {
         "win2016": "",
         "win2019": "",
         "win2016jpn": "",
-        "win2019jpn": ""
+        "win2019jpn": "",
+        "win2022": "",
+        "win2022jpn": ""
       },
       "eu-north-1": {
         "win2016": "",
         "win2019": "",
         "win2016jpn": "",
-        "win2019jpn": ""
+        "win2019jpn": "",
+        "win2022": "",
+        "win2022jpn": ""
       },
       "eu-south-1": {
         "win2016": "",
         "win2019": "",
         "win2016jpn": "",
-        "win2019jpn": ""
+        "win2019jpn": "",
+        "win2022": "",
+        "win2022jpn": ""
       },
       "ap-southeast-1": {
         "win2016": "",
         "win2019": "",
         "win2016jpn": "",
-        "win2019jpn": ""
+        "win2019jpn": "",
+        "win2022": "",
+        "win2022jpn": ""
       },
       "ap-southeast-2": {
         "win2016": "ami-0054e00f9a244f026",
@@ -914,43 +938,57 @@
         "win2016": "",
         "win2019": "",
         "win2016jpn": "",
-        "win2019jpn": ""
+        "win2019jpn": "",
+        "win2022": "",
+        "win2022jpn": ""
       },
       "ap-northeast-1": {
         "win2016": "",
         "win2019": "",
         "win2016jpn": "",
-        "win2019jpn": ""
+        "win2019jpn": "",
+        "win2022": "",
+        "win2022jpn": ""
       },
       "ap-northeast-2": {
         "win2016": "",
         "win2019": "",
         "win2016jpn": "",
-        "win2019jpn": ""
+        "win2019jpn": "",
+        "win2022": "",
+        "win2022jpn": ""
       },
       "ap-east-1": {
         "win2016": "",
         "win2019": "",
         "win2016jpn": "",
-        "win2019jpn": ""
+        "win2019jpn": "",
+        "win2022": "",
+        "win2022jpn": ""
       },
       "af-south-1": {
         "win2016": "",
         "win2019": "",
         "win2016jpn": "",
-        "win2019jpn": ""
+        "win2019jpn": "",
+        "win2022": "",
+        "win2022jpn": ""
       },
       "me-south-1": {
         "win2016": "",
         "win2019": "",
         "win2016jpn": "",
-        "win2019jpn": ""
+        "win2019jpn": "",
+        "win2022": "",
+        "win2022jpn": ""
       },
       "sa-east-1": {
         "win2016": "",
         "win2019": "",
         "win2016jpn": "",
-        "win2019jpn": ""
+        "win2019jpn": "",
+        "win2022": "",
+        "win2022jpn": ""
       }
     },
     "AWSRegionArch2AMI15": {
@@ -967,61 +1005,81 @@
         "win2016": "",
         "win2019": "",
         "win2016jpn": "",
-        "win2019jpn": ""
+        "win2019jpn": "",
+        "win2022": "",
+        "win2022jpn": ""
       },
       "us-west-1": {
         "win2016": "",
         "win2019": "",
         "win2016jpn": "",
-        "win2019jpn": ""
+        "win2019jpn": "",
+        "win2022": "",
+        "win2022jpn": ""
       },
       "us-west-2": {
         "win2016": "",
         "win2019": "",
         "win2016jpn": "",
-        "win2019jpn": ""
+        "win2019jpn": "",
+        "win2022": "",
+        "win2022jpn": ""
       },
       "ca-central-1": {
         "win2016": "",
         "win2019": "",
         "win2016jpn": "",
-        "win2019jpn": ""
+        "win2019jpn": "",
+        "win2022": "",
+        "win2022jpn": ""
       },
       "eu-central-1": {
         "win2016": "",
         "win2019": "",
         "win2016jpn": "",
-        "win2019jpn": ""
+        "win2019jpn": "",
+        "win2022": "",
+        "win2022jpn": ""
       },
       "eu-west-1": {
         "win2016": "",
         "win2019": "",
         "win2016jpn": "",
-        "win2019jpn": ""
+        "win2019jpn": "",
+        "win2022": "",
+        "win2022jpn": ""
       },
       "eu-west-2": {
         "win2016": "",
         "win2019": "",
         "win2016jpn": "",
-        "win2019jpn": ""
+        "win2019jpn": "",
+        "win2022": "",
+        "win2022jpn": ""
       },
       "eu-west-3": {
         "win2016": "",
         "win2019": "",
         "win2016jpn": "",
-        "win2019jpn": ""
+        "win2019jpn": "",
+        "win2022": "",
+        "win2022jpn": ""
       },
       "eu-north-1": {
         "win2016": "",
         "win2019": "",
         "win2016jpn": "",
-        "win2019jpn": ""
+        "win2019jpn": "",
+        "win2022": "",
+        "win2022jpn": ""
       },
       "eu-south-1": {
         "win2016": "",
         "win2019": "",
         "win2016jpn": "",
-        "win2019jpn": ""
+        "win2019jpn": "",
+        "win2022": "",
+        "win2022jpn": ""
       },
       "ap-southeast-1": {
         "win2016": "",
@@ -1039,43 +1097,57 @@
         "win2016": "",
         "win2019": "",
         "win2016jpn": "",
-        "win2019jpn": ""
+        "win2019jpn": "",
+        "win2022": "",
+        "win2022jpn": ""
       },
       "ap-northeast-1": {
         "win2016": "",
         "win2019": "",
         "win2016jpn": "",
-        "win2019jpn": ""
+        "win2019jpn": "",
+        "win2022": "",
+        "win2022jpn": ""
       },
       "ap-northeast-2": {
         "win2016": "",
         "win2019": "",
         "win2016jpn": "",
-        "win2019jpn": ""
+        "win2019jpn": "",
+        "win2022": "",
+        "win2022jpn": ""
       },
       "ap-east-1": {
         "win2016": "",
         "win2019": "",
         "win2016jpn": "",
-        "win2019jpn": ""
+        "win2019jpn": "",
+        "win2022": "",
+        "win2022jpn": ""
       },
       "af-south-1": {
         "win2016": "",
         "win2019": "",
         "win2016jpn": "",
-        "win2019jpn": ""
+        "win2019jpn": "",
+        "win2022": "",
+        "win2022jpn": ""
       },
       "me-south-1": {
         "win2016": "",
         "win2019": "",
         "win2016jpn": "",
-        "win2019jpn": ""
+        "win2019jpn": "",
+        "win2022": "",
+        "win2022jpn": ""
       },
       "sa-east-1": {
         "win2016": "",
         "win2019": "",
         "win2016jpn": "",
-        "win2019jpn": ""
+        "win2019jpn": "",
+        "win2022": "",
+        "win2022jpn": ""
       }
     },
     "CustomVariable": {
