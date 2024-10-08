@@ -114,7 +114,9 @@
                 "win2016",
                 "win2019",
                 "win2016jpn",
-                "win2019jpn"
+                "win2019jpn",
+                "win2022",
+                "win2022jpn"
             ]
         },
         "LansaVersion": {
