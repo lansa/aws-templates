@@ -366,6 +366,16 @@
             "Type": "String",
             "Default": "/change me",
             "Description": "Update Stack: S3 folder which will contain the patches. (case sensitive). Note that ALL sub-directories are searched so ensure the directory used to store the patches has no sub directories. For the demo use app/test-patches. See TriggerPatchInstall parameter for more details."
+        },
+        "TagName": {
+            "Default": "Environment",
+            "Type": "String",
+            "Description": "Name of the tag with which to tag every resource"
+        },
+        "TagValue": {
+            "Default": "Production",
+            "Type": "String",
+            "Description": "Value of the tag with which to tag every resource"
         }
     },
     "Conditions" : {
@@ -377,6 +387,7 @@
         "WebServerGroup" : {
             "Type": "AWS::AutoScaling::AutoScalingGroup",
             "Properties": {
+                "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
                 "VPCZoneIdentifier" : { "Ref": "WebServerSubnet"},
                 "LaunchConfigurationName": {
                     "Ref": "LaunchWebServer"
@@ -400,6 +411,9 @@
         },
         "LaunchWebServer": {
             "Type": "AWS::AutoScaling::LaunchConfiguration",
+            "Properties": {
+                "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ]
+            },
             "Metadata": {
                 "TriggerCakeUpdate": { "Ref": "22TriggerCakeUpdate" },
                 "TriggerChefUpdate": { "Ref": "23TriggerChefUpdate" },
@@ -981,6 +995,7 @@
                 }
             },
             "Properties": {
+                "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
                 "ImageId":  { "Ref" : "AMI" },
                 "InstanceType": { "Ref": "11WebServerInstanceTyp" },
                 "IamInstanceProfile": { "Ref": "IAMRoleInstanceProfile" },
@@ -1029,12 +1044,16 @@
             }
         },
         "WaitHandle": {
-            "Type": "AWS::CloudFormation::WaitConditionHandle"
+            "Type": "AWS::CloudFormation::WaitConditionHandle",
+            "Properties": {
+                "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ]
+            }
         },
         "WaitCondition": {
             "Type": "AWS::CloudFormation::WaitCondition",
             "DependsOn": "WebServerGroup",
             "Properties": {
+                "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
                 "Handle": { "Ref": "WaitHandle" },
                 "Timeout": "3000",
                 "Count": { "Ref" : "18WebServerCapacity" }
@@ -1043,6 +1062,7 @@
         "ScaleOutPolicy": {
             "Type": "AWS::AutoScaling::ScalingPolicy",
             "Properties": {
+                "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
                 "AdjustmentType": "PercentChangeInCapacity",
                 "AutoScalingGroupName": { "Ref": "WebServerGroup" },
                 "Cooldown": "300",
@@ -1052,6 +1072,7 @@
         "ScaleInPolicy": {
             "Type": "AWS::AutoScaling::ScalingPolicy",
             "Properties": {
+                "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
                 "AdjustmentType": "PercentChangeInCapacity",
                 "AutoScalingGroupName": { "Ref": "WebServerGroup" },
                 "Cooldown": "300",
@@ -1061,6 +1082,7 @@
         "CPUAlarmHigh": {
             "Type": "AWS::CloudWatch::Alarm",
             "Properties": {
+                "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
                 "AlarmDescription": "Alarm if CPU too high or metric disappears indicating instance is down",
                 "AlarmActions": [ { "Ref": "ScaleOutPolicy" } ],
                 "Namespace": "AWS/EC2",
@@ -1082,6 +1104,7 @@
         "CPUAlarmLow": {
             "Type": "AWS::CloudWatch::Alarm",
             "Properties": {
+                "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
                 "AlarmDescription": "Alarm if CPU too low",
                 "AlarmActions": [ { "Ref": "ScaleInPolicy" } ],
                 "Namespace": "AWS/EC2",

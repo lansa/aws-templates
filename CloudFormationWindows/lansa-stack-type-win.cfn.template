@@ -114,9 +114,7 @@
                 "win2016",
                 "win2019",
                 "win2016jpn",
-                "win2019jpn",
-                "win2022",
-                "win2022jpn"
+                "win2019jpn"
             ]
         },
         "LansaVersion": {
@@ -176,6 +174,16 @@
             "Default": "/change me",
             "Type": "String",
             "Description": "Update Stack: S3 folder which will contain the patches. (case sensitive). Note that ALL sub-directories are searched so ensure the directory used to store the patches has no sub directories. For the demo use app/test-patches. See TriggerPatchInstall parameter for more details."
+        },
+        "TagName": {
+            "Default": "Environment",
+            "Type": "String",
+            "Description": "Name of the tag with which to tag every resource"
+        },
+        "TagValue": {
+            "Default": "Production",
+            "Type": "String",
+            "Description": "Value of the tag with which to tag every resource"
         }
     },
     "Metadata": {
@@ -234,6 +242,8 @@
                 {
                   "Label" : { "default":"Advanced Configuration" },
                   "Parameters" : [
+                      "TagName",
+                      "TagValue",
                       "UpdateManagementScripts",
                       "10LansaGitRepoBranch"
                    ]
@@ -269,6 +279,9 @@
                 "28PatchBucketName": { "default": "Patch Bucket Name" },
                 "29PatchFolderName": { "default": "Patch Folder Name" },
 
+                "TagName": { "default": "Tag Name" },
+                "TagValue": { "default": "Tag Value" },
+
                 "10LansaGitRepoBranch": { "default": "Git Repository Branch" },
                 "UpdateManagementScripts" : { "default" : "Update Management Scripts"}
             }
@@ -297,6 +310,7 @@
         "MasterStackApp": {
             "Type": "AWS::CloudFormation::Stack",
             "Properties": {
+                "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
                 "TemplateURL": { "Fn::If": [ "IsReleaseLevel",
                     { "Fn::Join": ["", [
                         { "Fn::FindInMap": [ "CustomVariable", "TemplateRoot", "Value" ] },
