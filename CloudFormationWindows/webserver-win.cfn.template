@@ -1040,11 +1040,8 @@
             }
         },
         "WaitHandle": {
-            "Type": "AWS::CloudFormation::WaitConditionHandle",
-            "Properties": {
-                "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ]
-            }
-        },
+            "Type": "AWS::CloudFormation::WaitConditionHandle"
+            },
         "WaitCondition": {
             "Type": "AWS::CloudFormation::WaitCondition",
             "DependsOn": "WebServerGroup",
