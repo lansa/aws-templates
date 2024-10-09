@@ -1444,16 +1444,6 @@
     "CloudWatchLogGroup": {
       "Type": "AWS::Logs::LogGroup",
       "Properties": {
-        "Tags" : [ 
-          { 
-            "Key" : {
-              "Ref":"TagName"
-            }, 
-            "Value" : {
-              "Ref":"TagValue"
-            } 
-          } 
-        ],
         "LogGroupName": {
           "Ref": "AWS::StackName"
         },
@@ -1899,16 +1889,6 @@
     "SGDBIngress": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
-        "Tags" : [ 
-          { 
-            "Key" : {
-              "Ref":"TagName"
-            }, 
-            "Value" : {
-              "Ref":"TagValue"
-            } 
-          } 
-        ],
         "GroupId": {
           "Fn::GetAtt": [
             "DBSecurityGroup",
@@ -1967,16 +1947,6 @@
     "WBELBIngress": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
-        "Tags" : [ 
-          { 
-            "Key" : {
-              "Ref":"TagName"
-            }, 
-            "Value" : {
-              "Ref":"TagValue"
-            } 
-          } 
-        ],
         "GroupId": {
           "Fn::GetAtt": [
             "LansaSecurityGroup",

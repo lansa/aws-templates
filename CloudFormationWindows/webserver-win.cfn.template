@@ -387,7 +387,6 @@
         "WebServerGroup" : {
             "Type": "AWS::AutoScaling::AutoScalingGroup",
             "Properties": {
-                "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
                 "VPCZoneIdentifier" : { "Ref": "WebServerSubnet"},
                 "LaunchConfigurationName": {
                     "Ref": "LaunchWebServer"
@@ -400,6 +399,7 @@
                 "MaxInstanceLifetime" : {"Ref": "MaxInstanceLifetime"},
                 "LoadBalancerNames": [ { "Ref": "WebServerELB" } ],
                 "Tags": [
+                    { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} },
                     {
                         "Key": "Name",
                         "Value": { "Ref" : "WebServerName" },
@@ -411,9 +411,6 @@
         },
         "LaunchWebServer": {
             "Type": "AWS::AutoScaling::LaunchConfiguration",
-            "Properties": {
-                "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ]
-            },
             "Metadata": {
                 "TriggerCakeUpdate": { "Ref": "22TriggerCakeUpdate" },
                 "TriggerChefUpdate": { "Ref": "23TriggerChefUpdate" },
@@ -1053,7 +1050,6 @@
             "Type": "AWS::CloudFormation::WaitCondition",
             "DependsOn": "WebServerGroup",
             "Properties": {
-                "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
                 "Handle": { "Ref": "WaitHandle" },
                 "Timeout": "3000",
                 "Count": { "Ref" : "18WebServerCapacity" }
@@ -1072,7 +1068,6 @@
         "ScaleInPolicy": {
             "Type": "AWS::AutoScaling::ScalingPolicy",
             "Properties": {
-                "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
                 "AdjustmentType": "PercentChangeInCapacity",
                 "AutoScalingGroupName": { "Ref": "WebServerGroup" },
                 "Cooldown": "300",
