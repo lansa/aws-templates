@@ -992,7 +992,6 @@
                 }
             },
             "Properties": {
-                "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
                 "ImageId":  { "Ref" : "AMI" },
                 "InstanceType": { "Ref": "11WebServerInstanceTyp" },
                 "IamInstanceProfile": { "Ref": "IAMRoleInstanceProfile" },
@@ -1058,7 +1057,6 @@
         "ScaleOutPolicy": {
             "Type": "AWS::AutoScaling::ScalingPolicy",
             "Properties": {
-                "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
                 "AdjustmentType": "PercentChangeInCapacity",
                 "AutoScalingGroupName": { "Ref": "WebServerGroup" },
                 "Cooldown": "300",
