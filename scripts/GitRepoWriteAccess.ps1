@@ -25,7 +25,9 @@ param (
   )
 
 # goto git repo
-cd "$($env:System_DefaultWorkingDirectory)/$($GitRepoName)"
+# cd "$($env:System_DefaultWorkingDirectory)/$($GitRepoName)"
+
+cd "$($env:Pipeline_Workspace)/$($GitRepoName)"
 
 # git checkout to branch
 git checkout $GitBranch
