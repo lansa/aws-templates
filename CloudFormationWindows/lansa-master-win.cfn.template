@@ -1514,16 +1514,6 @@
     "IAMRoleInstanceProfile": {
       "Type": "AWS::IAM::InstanceProfile",
       "Properties": {
-        "Tags" : [ 
-          { 
-            "Key" : {
-              "Ref":"TagName"
-            }, 
-            "Value" : {
-              "Ref":"TagValue"
-            } 
-          } 
-        ],
         "Path": "/",
         "Roles": [
           {

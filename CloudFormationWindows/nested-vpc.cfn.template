@@ -53,6 +53,15 @@
             "KeyPairName",
             "NATInstanceType"
           ]
+        },
+        {
+         "Label": {
+           "default": "Tagging"
+         },
+         "Parameters": [
+           "TagName",
+           "TagValue"
+         ]
         }
       ],
       "ParameterLabels": {
@@ -142,7 +151,9 @@
         },
         "VPCTenancy": {
           "default": "VPC Tenancy"
-        }
+        },
+        "TagName": { "default": "Tag Name" },
+        "TagValue": { "default": "Tag Value" }
       }
     }
   },
@@ -343,6 +354,16 @@
       "Default": "default",
       "Description": "The allowed tenancy of instances launched into the VPC",
       "Type": "String"
+    },
+    "TagName": {
+        "Default": "Environment",
+        "Type": "String",
+        "Description": "Name of the tag with which to tag every resource"
+    },
+    "TagValue": {
+        "Default": "Production",
+        "Type": "String",
+        "Description": "Value of the tag with which to tag every resource"
     }
   },
   "Conditions": {
