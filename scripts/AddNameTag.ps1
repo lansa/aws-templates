@@ -19,6 +19,6 @@ Write-Host "Saving the Copied ami ID $imageId "
 #$line = "$imageId - $($Copyname)"
 $line = "$imageId"
 Write-Host "$line"
-$path = "$($env:System_DefaultWorkingDirectory)/$BaseImageName.txt"
+$path = "$($env:Pipeline_Workspace)/$BaseImageName.txt"
 Add-Content -Path $path $line | Out-Default | Write-Host
 Get-Content -Path $path | Out-Default | Write-Host
