@@ -7,7 +7,7 @@ param (
 
 Write-Host "##vso[task.setvariable variable=Exists;isOutput=true]False"
 #$path = "$($env:System_DefaultWorkingDirectory)/_Build Cloud Account Id Artefacts/aws/$BaseImageName.txt"
-$path = "$($env:Pipeline_Workspace)/_Build Cloud Account Id Artefacts/aws/$BaseImageName.txt"
+$path = "$($env:Pipeline_Workspace)/_Build Image Release Artefacts/aws/$BaseImageName.txt"
 Write-Host "Using $path"
 if (Test-Path $path) {
     try{
