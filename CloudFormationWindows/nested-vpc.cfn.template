@@ -53,6 +53,15 @@
             "KeyPairName",
             "NATInstanceType"
           ]
+        },
+        {
+         "Label": {
+           "default": "Tagging"
+         },
+         "Parameters": [
+           "TagName",
+           "TagValue"
+         ]
         }
       ],
       "ParameterLabels": {
@@ -142,7 +151,9 @@
         },
         "VPCTenancy": {
           "default": "VPC Tenancy"
-        }
+        },
+        "TagName": { "default": "Tag Name" },
+        "TagValue": { "default": "Tag Value" }
       }
     }
   },
@@ -343,6 +354,16 @@
       "Default": "default",
       "Description": "The allowed tenancy of instances launched into the VPC",
       "Type": "String"
+    },
+    "TagName": {
+        "Default": "Environment",
+        "Type": "String",
+        "Description": "Name of the tag with which to tag every resource"
+    },
+    "TagValue": {
+        "Default": "Production",
+        "Type": "String",
+        "Description": "Value of the tag with which to tag every resource"
     }
   },
   "Conditions": {
@@ -566,6 +587,7 @@
     "DHCPOptions": {
       "Type": "AWS::EC2::DHCPOptions",
       "Properties": {
+        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "DomainName": {
           "Fn::If": [
             "NVirginiaRegionCondition",
@@ -597,7 +619,11 @@
             "Value": {
               "Ref": "AWS::StackName"
             }
-          }
+          },
+          {
+            "Key" : {"Ref":"TagName"},
+            "Value" : {"Ref":"TagValue"}
+         }
         ]
       }
     },
@@ -621,7 +647,8 @@
             "Value": {
               "Ref": "AWS::StackName"
             }
-          }
+          },
+          { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} }
         ]
       }
     },
@@ -655,6 +682,7 @@
           ]
         },
         "Tags": [
+          { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} },
           {
             "Key": "Name",
             "Value": "Private subnet 1A"
@@ -789,6 +817,7 @@
           ]
         },
         "Tags": [
+          { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} },
           {
             "Key": "Name",
             "Value": "Private subnet 1B"
@@ -923,6 +952,7 @@
           ]
         },
         "Tags": [
+          { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} },
           {
             "Key": "Name",
             "Value": "Private subnet 2A"
@@ -1057,6 +1087,7 @@
           ]
         },
         "Tags": [
+          { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} },
           {
             "Key": "Name",
             "Value": "Private subnet 2B"
@@ -1191,6 +1222,7 @@
           ]
         },
         "Tags": [
+          { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} },
           {
             "Key": "Name",
             "Value": "Private subnet 3A"
@@ -1325,6 +1357,7 @@
           ]
         },
         "Tags": [
+          { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} },
           {
             "Key": "Name",
             "Value": "Private subnet 3B"
@@ -1459,6 +1492,7 @@
           ]
         },
         "Tags": [
+          { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} },
           {
             "Key": "Name",
             "Value": "Private subnet 4A"
@@ -1593,6 +1627,7 @@
           ]
         },
         "Tags": [
+          { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} },
           {
             "Key": "Name",
             "Value": "Private subnet 4B"
@@ -1726,6 +1761,7 @@
           ]
         },
         "Tags": [
+          { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} },
           {
             "Key": "Name",
             "Value": "Public subnet 1"
@@ -1860,6 +1896,7 @@
           ]
         },
         "Tags": [
+          { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} },
           {
             "Key": "Name",
             "Value": "Public subnet 2"
@@ -1995,6 +2032,7 @@
           ]
         },
         "Tags": [
+          { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} },
           {
             "Key": "Name",
             "Value": "Public subnet 3"
@@ -2130,6 +2168,7 @@
           ]
         },
         "Tags": [
+          { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} },
           {
             "Key": "Name",
             "Value": "Public subnet 4"
@@ -2249,6 +2288,7 @@
     "DBSubnetGroup" : {
       "Type" : "AWS::RDS::DBSubnetGroup",
       "Properties" : {
+        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "DBSubnetGroupDescription": "Subnet group for DBInstance",
          "SubnetIds" : [
              { "Ref" : "PublicSubnet1" },
@@ -2279,6 +2319,7 @@
       "Condition": "PrivateSubnetsCondition",
       "Type": "AWS::EC2::Route",
       "Properties": {
+        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "RouteTableId": {
           "Ref": "PrivateSubnet1ARouteTable"
         },
@@ -2308,6 +2349,7 @@
           "Ref": "VPC"
         },
         "Tags": [
+          { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} },
           {
             "Key": "Name",
             "Value": "Private subnet 2A"
@@ -2323,6 +2365,7 @@
       "Condition": "PrivateSubnetsCondition",
       "Type": "AWS::EC2::Route",
       "Properties": {
+        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "RouteTableId": {
           "Ref": "PrivateSubnet2ARouteTable"
         },
@@ -2336,6 +2379,7 @@
       "Condition": "PrivateSubnetsCondition",
       "Type": "AWS::EC2::SubnetRouteTableAssociation",
       "Properties": {
+        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "SubnetId": {
           "Ref": "PrivateSubnet2A"
         },
@@ -2352,6 +2396,7 @@
           "Ref": "VPC"
         },
         "Tags": [
+          { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} },
           {
             "Key": "Name",
             "Value": "Private subnet 3A"
@@ -2367,6 +2412,7 @@
       "Condition": "PrivateSubnets&3AZCondition",
       "Type": "AWS::EC2::Route",
       "Properties": {
+        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "RouteTableId": {
           "Ref": "PrivateSubnet3ARouteTable"
         },
@@ -2380,6 +2426,7 @@
       "Condition": "PrivateSubnets&3AZCondition",
       "Type": "AWS::EC2::SubnetRouteTableAssociation",
       "Properties": {
+        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "SubnetId": {
           "Ref": "PrivateSubnet3A"
         },
@@ -2396,6 +2443,7 @@
           "Ref": "VPC"
         },
         "Tags": [
+          { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} },
           {
             "Key": "Name",
             "Value": "Private subnet 4A"
@@ -2411,6 +2459,7 @@
       "Condition": "PrivateSubnets&4AZCondition",
       "Type": "AWS::EC2::Route",
       "Properties": {
+        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "RouteTableId": {
           "Ref": "PrivateSubnet4ARouteTable"
         },
@@ -2424,6 +2473,7 @@
       "Condition": "PrivateSubnets&4AZCondition",
       "Type": "AWS::EC2::SubnetRouteTableAssociation",
       "Properties": {
+        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "SubnetId": {
           "Ref": "PrivateSubnet4A"
         },
@@ -2440,6 +2490,7 @@
           "Ref": "VPC"
         },
         "Tags": [
+          { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} },
           {
             "Key": "Name",
             "Value": "Private subnet 1B"
@@ -2455,6 +2506,7 @@
       "Condition": "AdditionalPrivateSubnetsCondition",
       "Type": "AWS::EC2::Route",
       "Properties": {
+        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "RouteTableId": {
           "Ref": "PrivateSubnet1BRouteTable"
         },
@@ -2468,6 +2520,7 @@
       "Condition": "AdditionalPrivateSubnetsCondition",
       "Type": "AWS::EC2::SubnetRouteTableAssociation",
       "Properties": {
+        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "SubnetId": {
           "Ref": "PrivateSubnet1B"
         },
@@ -2484,6 +2537,7 @@
           "Ref": "VPC"
         },
         "Tags": [
+          { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} },
           {
             "Key": "Name",
             "Value": "NACL Protected subnet 1"
@@ -2499,6 +2553,7 @@
       "Condition": "AdditionalPrivateSubnetsCondition",
       "Type": "AWS::EC2::NetworkAclEntry",
       "Properties": {
+        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "CidrBlock": "0.0.0.0/0",
         "Egress": false,
         "NetworkAclId": {
@@ -2513,6 +2568,7 @@
       "Condition": "AdditionalPrivateSubnetsCondition",
       "Type": "AWS::EC2::NetworkAclEntry",
       "Properties": {
+        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "CidrBlock": "0.0.0.0/0",
         "Egress": true,
         "NetworkAclId": {
@@ -2543,6 +2599,7 @@
           "Ref": "VPC"
         },
         "Tags": [
+          { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} },
           {
             "Key": "Name",
             "Value": "Private subnet 2B"
@@ -2558,6 +2615,7 @@
       "Condition": "AdditionalPrivateSubnetsCondition",
       "Type": "AWS::EC2::Route",
       "Properties": {
+        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "RouteTableId": {
           "Ref": "PrivateSubnet2BRouteTable"
         },
@@ -2571,6 +2629,7 @@
       "Condition": "AdditionalPrivateSubnetsCondition",
       "Type": "AWS::EC2::SubnetRouteTableAssociation",
       "Properties": {
+        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "SubnetId": {
           "Ref": "PrivateSubnet2B"
         },
@@ -2587,6 +2646,7 @@
           "Ref": "VPC"
         },
         "Tags": [
+          { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} },
           {
             "Key": "Name",
             "Value": "NACL Protected subnet 2"
@@ -2602,6 +2662,7 @@
       "Condition": "AdditionalPrivateSubnetsCondition",
       "Type": "AWS::EC2::NetworkAclEntry",
       "Properties": {
+        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "CidrBlock": "0.0.0.0/0",
         "Egress": false,
         "NetworkAclId": {
@@ -2616,6 +2677,7 @@
       "Condition": "AdditionalPrivateSubnetsCondition",
       "Type": "AWS::EC2::NetworkAclEntry",
       "Properties": {
+        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "CidrBlock": "0.0.0.0/0",
         "Egress": true,
         "NetworkAclId": {
@@ -2630,6 +2692,7 @@
       "Condition": "AdditionalPrivateSubnetsCondition",
       "Type": "AWS::EC2::SubnetNetworkAclAssociation",
       "Properties": {
+        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "SubnetId": {
           "Ref": "PrivateSubnet2B"
         },
@@ -2646,6 +2709,7 @@
           "Ref": "VPC"
         },
         "Tags": [
+          { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} },
           {
             "Key": "Name",
             "Value": "Private subnet 3B"
@@ -2661,6 +2725,7 @@
       "Condition": "AdditionalPrivateSubnets&3AZCondition",
       "Type": "AWS::EC2::Route",
       "Properties": {
+        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "RouteTableId": {
           "Ref": "PrivateSubnet3BRouteTable"
         },
@@ -2674,6 +2739,7 @@
       "Condition": "AdditionalPrivateSubnets&3AZCondition",
       "Type": "AWS::EC2::SubnetRouteTableAssociation",
       "Properties": {
+        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "SubnetId": {
           "Ref": "PrivateSubnet3B"
         },
@@ -2690,6 +2756,7 @@
           "Ref": "VPC"
         },
         "Tags": [
+          { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} },
           {
             "Key": "Name",
             "Value": "NACL Protected subnet 3"
@@ -2705,6 +2772,7 @@
       "Condition": "AdditionalPrivateSubnets&3AZCondition",
       "Type": "AWS::EC2::NetworkAclEntry",
       "Properties": {
+        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "CidrBlock": "0.0.0.0/0",
         "Egress": false,
         "NetworkAclId": {
@@ -2719,6 +2787,7 @@
       "Condition": "AdditionalPrivateSubnets&3AZCondition",
       "Type": "AWS::EC2::NetworkAclEntry",
       "Properties": {
+        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "CidrBlock": "0.0.0.0/0",
         "Egress": true,
         "NetworkAclId": {
@@ -2733,6 +2802,7 @@
       "Condition": "AdditionalPrivateSubnets&3AZCondition",
       "Type": "AWS::EC2::SubnetNetworkAclAssociation",
       "Properties": {
+        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "SubnetId": {
           "Ref": "PrivateSubnet3B"
         },
@@ -2749,6 +2819,7 @@
           "Ref": "VPC"
         },
         "Tags": [
+          { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} },
           {
             "Key": "Name",
             "Value": "Private subnet 4B"
@@ -2764,6 +2835,7 @@
       "Condition": "AdditionalPrivateSubnets&4AZCondition",
       "Type": "AWS::EC2::Route",
       "Properties": {
+        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "RouteTableId": {
           "Ref": "PrivateSubnet4BRouteTable"
         },
@@ -2777,6 +2849,7 @@
       "Condition": "AdditionalPrivateSubnets&4AZCondition",
       "Type": "AWS::EC2::SubnetRouteTableAssociation",
       "Properties": {
+        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "SubnetId": {
           "Ref": "PrivateSubnet4B"
         },
@@ -2793,6 +2866,7 @@
           "Ref": "VPC"
         },
         "Tags": [
+          { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} },
           {
             "Key": "Name",
             "Value": "NACL Protected subnet 4"
@@ -2808,6 +2882,7 @@
       "Condition": "AdditionalPrivateSubnets&4AZCondition",
       "Type": "AWS::EC2::NetworkAclEntry",
       "Properties": {
+        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "CidrBlock": "0.0.0.0/0",
         "Egress": false,
         "NetworkAclId": {
@@ -2822,6 +2897,7 @@
       "Condition": "AdditionalPrivateSubnets&4AZCondition",
       "Type": "AWS::EC2::NetworkAclEntry",
       "Properties": {
+        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "CidrBlock": "0.0.0.0/0",
         "Egress": true,
         "NetworkAclId": {
@@ -2836,6 +2912,7 @@
       "Condition": "AdditionalPrivateSubnets&4AZCondition",
       "Type": "AWS::EC2::SubnetNetworkAclAssociation",
       "Properties": {
+        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "SubnetId": {
           "Ref": "PrivateSubnet4B"
         },
@@ -2851,6 +2928,7 @@
           "Ref": "VPC"
         },
         "Tags": [
+          { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} },
           {
             "Key": "Name",
             "Value": "Public Subnets"
@@ -2866,6 +2944,7 @@
       "DependsOn": "VPCGatewayAttachment",
       "Type": "AWS::EC2::Route",
       "Properties": {
+        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "RouteTableId": {
           "Ref": "PublicSubnetRouteTable"
         },
@@ -2878,6 +2957,7 @@
     "PublicSubnet1RouteTableAssociation": {
       "Type": "AWS::EC2::SubnetRouteTableAssociation",
       "Properties": {
+        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "SubnetId": {
           "Ref": "PublicSubnet1"
         },
@@ -2889,6 +2969,7 @@
     "PublicSubnet2RouteTableAssociation": {
       "Type": "AWS::EC2::SubnetRouteTableAssociation",
       "Properties": {
+        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "SubnetId": {
           "Ref": "PublicSubnet2"
         },
@@ -2901,6 +2982,7 @@
       "Condition": "3AZCondition",
       "Type": "AWS::EC2::SubnetRouteTableAssociation",
       "Properties": {
+        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "SubnetId": {
           "Ref": "PublicSubnet3"
         },
@@ -2913,6 +2995,7 @@
       "Condition": "4AZCondition",
       "Type": "AWS::EC2::SubnetRouteTableAssociation",
       "Properties": {
+        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "SubnetId": {
           "Ref": "PublicSubnet4"
         },
@@ -2926,6 +3009,7 @@
       "DependsOn": "VPCGatewayAttachment",
       "Type": "AWS::EC2::EIP",
       "Properties": {
+        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "Domain": "vpc"
       }
     },
@@ -2934,6 +3018,7 @@
       "DependsOn": "VPCGatewayAttachment",
       "Type": "AWS::EC2::EIP",
       "Properties": {
+        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "Domain": "vpc"
       }
     },
@@ -2942,6 +3027,7 @@
       "DependsOn": "VPCGatewayAttachment",
       "Type": "AWS::EC2::EIP",
       "Properties": {
+        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "Domain": "vpc"
       }
     },
@@ -2950,6 +3036,7 @@
       "DependsOn": "VPCGatewayAttachment",
       "Type": "AWS::EC2::EIP",
       "Properties": {
+        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "Domain": "vpc"
       }
     },
@@ -2958,6 +3045,7 @@
       "DependsOn": "VPCGatewayAttachment",
       "Type": "AWS::EC2::NatGateway",
       "Properties": {
+        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "AllocationId": {
           "Fn::GetAtt": [
             "NAT1EIP",
@@ -2974,6 +3062,7 @@
       "DependsOn": "VPCGatewayAttachment",
       "Type": "AWS::EC2::NatGateway",
       "Properties": {
+        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "AllocationId": {
           "Fn::GetAtt": [
             "NAT2EIP",
@@ -2990,6 +3079,7 @@
       "DependsOn": "VPCGatewayAttachment",
       "Type": "AWS::EC2::NatGateway",
       "Properties": {
+        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "AllocationId": {
           "Fn::GetAtt": [
             "NAT3EIP",
@@ -3006,6 +3096,7 @@
       "DependsOn": "VPCGatewayAttachment",
       "Type": "AWS::EC2::NatGateway",
       "Properties": {
+        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "AllocationId": {
           "Fn::GetAtt": [
             "NAT4EIP",
@@ -3021,6 +3112,7 @@
       "Condition": "PrivateSubnetsCondition",
       "Type": "AWS::EC2::VPCEndpoint",
       "Properties": {
+        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ], 
         "PolicyDocument": {
           "Version": "2012-10-17",
           "Statement": [
