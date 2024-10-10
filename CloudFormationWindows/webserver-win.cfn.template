@@ -366,6 +366,16 @@
             "Type": "String",
             "Default": "/change me",
             "Description": "Update Stack: S3 folder which will contain the patches. (case sensitive). Note that ALL sub-directories are searched so ensure the directory used to store the patches has no sub directories. For the demo use app/test-patches. See TriggerPatchInstall parameter for more details."
+        },
+        "TagName": {
+            "Default": "Environment",
+            "Type": "String",
+            "Description": "Name of the tag with which to tag every resource"
+        },
+        "TagValue": {
+            "Default": "Production",
+            "Type": "String",
+            "Description": "Value of the tag with which to tag every resource"
         }
     },
     "Conditions" : {
@@ -389,6 +399,7 @@
                 "MaxInstanceLifetime" : {"Ref": "MaxInstanceLifetime"},
                 "LoadBalancerNames": [ { "Ref": "WebServerELB" } ],
                 "Tags": [
+                    { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} , "PropagateAtLaunch": "true"},
                     {
                         "Key": "Name",
                         "Value": { "Ref" : "WebServerName" },
@@ -1030,7 +1041,7 @@
         },
         "WaitHandle": {
             "Type": "AWS::CloudFormation::WaitConditionHandle"
-        },
+            },
         "WaitCondition": {
             "Type": "AWS::CloudFormation::WaitCondition",
             "DependsOn": "WebServerGroup",
@@ -1061,6 +1072,7 @@
         "CPUAlarmHigh": {
             "Type": "AWS::CloudWatch::Alarm",
             "Properties": {
+                "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
                 "AlarmDescription": "Alarm if CPU too high or metric disappears indicating instance is down",
                 "AlarmActions": [ { "Ref": "ScaleOutPolicy" } ],
                 "Namespace": "AWS/EC2",
@@ -1082,6 +1094,7 @@
         "CPUAlarmLow": {
             "Type": "AWS::CloudWatch::Alarm",
             "Properties": {
+                "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
                 "AlarmDescription": "Alarm if CPU too low",
                 "AlarmActions": [ { "Ref": "ScaleInPolicy" } ],
                 "Namespace": "AWS/EC2",

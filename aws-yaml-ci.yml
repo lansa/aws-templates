@@ -1,0 +1,167 @@
+variables:
+- name: captureStackOutputs
+  value: asJSON
+- name: CookbooksSource
+  value: $(Build.Repository.LocalPath)\cookbooks
+- name: CookbooksSource1
+  value: c:\lansa
+- name: regionName
+  value: ap-southeast-2
+- group: "Default Branch"
+- group: "Template Parameters"
+- group: "VPC ap-southeast-2"
+- group: "ImageVersion"
+- group: "Logins"
+resources:
+  repositories:
+  - repository: self
+    type: git
+    ref: support/scalable
+jobs:
+- job: Job_2
+  displayName: 'Agent job: CFN Tests Win'
+  timeoutInMinutes: 360
+  pool:
+    vmImage: windows-2022
+  steps:
+  - checkout: self
+  - task: AmazonWebServices.aws-vsts-tools.S3Upload.S3Upload@1
+    displayName: 'S3 Upload: lansa'
+    inputs:
+      awsCredentials: $(awsCredentials)
+      regionName: $(regionName)
+      bucketName: $(BucketNamePreview)
+      sourceFolder: CloudFormationWindows
+      globExpressions: >
+        *.template
+      targetFolder: templates/$(CookbooksBranch)
+      filesAcl: public-read-write
+  - task: AmazonWebServices.aws-vsts-tools.AWSPowerShellModuleScript.AWSPowerShellModuleScript@1
+    displayName: 'Cleanup CFN Template : BakingDP'
+    inputs:
+      awsCredentials: $(awsCredentials)
+      regionName: $(regionName)
+      scriptType: inline
+      inlineScript: >-
+        try{
+
+        Get-CFNStack -StackName $(stackname)
+
+        Remove-CFNStack -StackName $(stackname) -Force
+
+        $count =0
+
+        while($count -lt 20){
+           try{
+                 Get-CFNStack -StackName $(stackname)
+                 Start-Sleep -Seconds 200
+                 Write-Host "Deleting stack"
+                 $count = $count +1
+               }
+            catch{
+                 Write-Host "Stack Deleted"
+                 break
+                  }
+             }
+
+        Write-Host "Stack deleted"
+
+        }
+
+        catch{
+
+        Write-Host "There is no stack or it was deleted"
+
+        }
+  - task: AmazonWebServices.aws-vsts-tools.CloudFormationCreateOrUpdateStack.CloudFormationCreateOrUpdateStack@1
+    name: ''
+    displayName: 'Deploy CFN Template : BakingDP-TemplateTest'
+    inputs:
+      awsCredentials: $(awsCredentials)
+      regionName: $(regionName)
+      stackName: $(stackname)
+      templateSource: s3
+      templateFile: CloudFormationWindows/lansa-master-win.cfn.template
+      s3BucketName: $(BucketNamePreview)
+      s3ObjectKey: templates/$(CookbooksBranch)/lansa-master-win.cfn.template
+      templateParametersSource: inline
+      templateParameters: "[{\n    \"ParameterKey\": \"$(DBPasswordKey)\",\n    \"ParameterValue\": \"$(DBPasswordValue)\"\n}, {\n    \"ParameterKey\": \"$(WebPasswordKey)\",\n    \"ParameterValue\": \"$(WebPasswordValue)\"\n}, {\n    \"ParameterKey\": \"$(KeyNameKey)\",    \n    \"ParameterValue\": \"$(KeyNameValue)\"\n}, {\n    \"ParameterKey\": \"$(RemoteAccessLocationKey)\",   \n    \"ParameterValue\": \"$(RemoteAccessLocationValue)\"\n},{\n    \"ParameterKey\": \"10LansaGitRepoBranch\",\n    \"ParameterValue\": \"$(CookbooksBranch)\"\n},{\n    \"ParameterKey\": \"UpdateManagementScripts\",\n    \"ParameterValue\": \"Yes\"\n},{\n    \"ParameterKey\": \"LansaVersion\",\n    \"ParameterValue\": \"V15 GA\",\n},{\n    \"ParameterKey\": \"$(WebserverOSVersionKey)\",\n    \"ParameterValue\": \"win2019\",\n}, {\n    \"ParameterKey\": \"$(LansaMSIKey)\",   \n    \"ParameterValue\": \"$(msiURLLatest)\"\n}, {\n    \"ParameterKey\": \"CurrentVPC\",   \n    \"ParameterValue\": \"$(CurrentVPC)\"\n}, {\n    \"ParameterKey\": \"AvailabilityZones\",   \n    \"ParameterValue\": \"$(AvailabilityZones)\"\n}, {\n    \"ParameterKey\": \"NumberOfAZs\",   \n    \"ParameterValue\": \"$(NumberOfAZs)\"\n}, {\n    \"ParameterKey\": \"DBSubnetGroupName\",   \n    \"ParameterValue\": \"$(DBSubnetGroupName)\"\n}, {\n    \"ParameterKey\": \"ELBSubnetIds\",   \n    \"ParameterValue\": \"$(ELBSubnetIds)\"\n}, {\n    \"ParameterKey\": \"03DBUsername\",   \n    \"ParameterValue\": \"$(03DBUsername)\"\n}\n]"
+      tags: usage=temp-test
+      onFailure: DO_NOTHING
+      outputVariable: deploymentOutput
+      captureStackOutputs: $(captureStackOutputs)
+      captureAsSecuredVars: false
+      timeoutInMins: 100
+  - task: AmazonWebServices.aws-vsts-tools.AWSPowerShellModuleScript.AWSPowerShellModuleScript@1
+    displayName: 'Test CFN Deployment : URL Tests'
+    inputs:
+      awsCredentials: $(awsCredentials)
+      regionName: $(regionName)
+      arguments: -Gatestack $(stackname)
+      filePath: scripts\TestCFNDeployment.ps1
+  - task: AmazonWebServices.aws-vsts-tools.AWSPowerShellModuleScript.AWSPowerShellModuleScript@1
+    displayName: 'Aws PowerShell : Test Image Version w19d-15-0 Prod'
+    condition: or(succeeded(), eq(variables['ForceDeploy'], 'True'))
+    inputs:
+      awsCredentials: $(awsCredentials)
+      regionName: $(regionName)
+      arguments: -Gatestack $(stackname) -Gateversion "w19d-15-0-$(VersionText-TemplateCI)" -Region 'ap-southeast-2'
+      filePath: scripts/AlternateImageVersion.ps1
+  # - task: AmazonWebServices.aws-vsts-tools.AWSPowerShellModuleScript.AWSPowerShellModuleScript@1
+  #   displayName: 'Cleanup CFN Template : BakingDP '
+  #   inputs:
+  #     awsCredentials: $(awsCredentials)
+  #     regionName: $(regionName)
+  #     scriptType: inline
+  #     inlineScript: >-
+  #       try{
+
+  #       Get-CFNStack -StackName $(stackname)
+
+  #       Remove-CFNStack -StackName $(stackname) -Force
+
+  #       $count =0
+
+  #       while($count -lt 20){
+  #          try{
+  #                Get-CFNStack -StackName $(stackname)
+  #                Start-Sleep -Seconds 200
+  #                Write-Host "Deleting stack"
+  #                $count = $count +1
+  #              }
+  #           catch{
+  #                Write-Host "Stack Deleted"
+  #                break
+  #                 }
+  #            }
+
+  #       Write-Host "Stack deleted"
+
+  #       }
+
+  #       catch{
+
+  #       Write-Host "There is no stack or it was deleted"
+
+  #       }
+  - task: CopyFiles@2
+    displayName: 'Copy Files to: Artifact Staging Directory'
+    inputs:
+      SourceFolder: CloudFormationWindows
+      Contents: '*.template'
+      TargetFolder: $(build.artifactstagingdirectory)
+      CleanTargetFolder: true
+      OverWrite: true
+  - task: ArchiveFiles@2
+    displayName: Archive Files in Staging Directory
+    inputs:
+      rootFolderOrFile: $(build.artifactstagingdirectory)
+      sevenZipCompression: 5
+      archiveFile: $(Build.ArtifactStagingDirectory)/AwsTemplates.zip
+      verbose: true
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifact: Solution Template'
+    inputs:
+      ArtifactName: Solution Template
+      FileCopyOptions: ''
+...
