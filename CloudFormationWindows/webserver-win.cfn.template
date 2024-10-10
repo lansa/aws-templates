@@ -399,7 +399,7 @@
                 "MaxInstanceLifetime" : {"Ref": "MaxInstanceLifetime"},
                 "LoadBalancerNames": [ { "Ref": "WebServerELB" } ],
                 "Tags": [
-                    { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} },
+                    { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} , "PropagateAtLaunch": "true"},
                     {
                         "Key": "Name",
                         "Value": { "Ref" : "WebServerName" },
