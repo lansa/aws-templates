@@ -9,7 +9,7 @@ param (
 
     [Parameter(Mandatory=$true)]
     [string]
-    $VersionTextTemplateCI
+    $Version
 
    )
 
@@ -25,15 +25,15 @@ if (Test-Path $path) {
         Write-Host "AMI ID $($amiID)"
         $imageName = (Get-EC2Image -ImageId $amiID).Name
         $imageName -match "$BaseImageName[-]?[0-9]+"
-        $version = $Matches[0]
-        $version = $version -replace ".{2}$"  # Removes the last two elements from the string (which is "-8"). This will be replaced with 7 in the next step.
-        $version = "$version-$VersionTextTemplateCI"
-        Write-Host "Version: $version"
+        $VersionLocal = $Matches[0]
+        $VersionLocal = $VersionLocal -replace "-\d+$"  # Removes the last elements from the string . This will be replaced with 7 in the next step.
+        $VersionLocal = "$VersionLocal-$Version"
+        Write-Host "Version: $VersionLocal"
         $stackname = "$stackname-$BaseImageName"
         Write-Host "Stack name : $stackname"
         #Set Variables
         Write-Host "##vso[task.setvariable variable=stack;isOutput=true]$stackname"
-        Write-Host "##vso[task.setvariable variable=version;isOutput=true]$version"
+        Write-Host "##vso[task.setvariable variable=version;isOutput=true]$VersionLocal"
         Write-Host "##vso[task.setvariable variable=ImageID;isOutput=true]$amiID"
         Write-Host "##vso[task.setvariable variable=IsEnabled;isOutput=true]True"
         Write-host "The value of Variable IsEnabled is updated to True and output variable ImageID to $amiID"
