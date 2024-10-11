@@ -14,7 +14,7 @@ param (
 )
 
 $imageID = "$($Copyid)"
-New-EC2Tag -Resources $imageID -Tags @{ Key = "Name" ; Value = "$($Copyname)"} | Out-Default | Write-Host
+New-EC2Tag -Resource $imageID -Tag @{ Key = "Name" ; Value = "$($Copyname)"} | Out-Default | Write-Host
 Write-Host "Saving the Copied ami ID $imageID "
 #$line = "$imageID - $($Copyname)"
 $line = "$imageID"
