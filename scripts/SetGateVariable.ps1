@@ -35,6 +35,5 @@ if (Test-Path $path) {
         Throw "Failed to set Task Variable"
     }
 } else {
-    # Write-Host "Artifact path does NOT exist for $BaseImageName"
-    throw "Artifact path does NOT exist for $BaseImageName" # Throwing error if there's no baseimage, instead of just writing it to the host.
+    Write-Host "Artifact path does NOT exist for $BaseImageName"
 }
