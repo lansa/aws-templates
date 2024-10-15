@@ -107,43 +107,43 @@ jobs:
       regionName: $(regionName)
       arguments: -Gatestack $(stackname) -Gateversion "w19d-15-0-$(VersionText-TemplateCI)" -Region 'ap-southeast-2'
       filePath: scripts/AlternateImageVersion.ps1
-  - task: AmazonWebServices.aws-vsts-tools.AWSPowerShellModuleScript.AWSPowerShellModuleScript@1
-    displayName: 'Cleanup CFN Template : BakingDP '
-    inputs:
-      awsCredentials: $(awsCredentials)
-      regionName: $(regionName)
-      scriptType: inline
-      inlineScript: >-
-        try{
+  # - task: AmazonWebServices.aws-vsts-tools.AWSPowerShellModuleScript.AWSPowerShellModuleScript@1
+  #   displayName: 'Cleanup CFN Template : BakingDP '
+  #   inputs:
+  #     awsCredentials: $(awsCredentials)
+  #     regionName: $(regionName)
+  #     scriptType: inline
+  #     inlineScript: >-
+  #       try{
 
-        Get-CFNStack -StackName $(stackname)
+  #       Get-CFNStack -StackName $(stackname)
 
-        Remove-CFNStack -StackName $(stackname) -Force
+  #       Remove-CFNStack -StackName $(stackname) -Force
 
-        $count =0
+  #       $count =0
 
-        while($count -lt 20){
-           try{
-                 Get-CFNStack -StackName $(stackname)
-                 Start-Sleep -Seconds 200
-                 Write-Host "Deleting stack"
-                 $count = $count +1
-               }
-            catch{
-                 Write-Host "Stack Deleted"
-                 break
-                  }
-             }
+  #       while($count -lt 20){
+  #          try{
+  #                Get-CFNStack -StackName $(stackname)
+  #                Start-Sleep -Seconds 200
+  #                Write-Host "Deleting stack"
+  #                $count = $count +1
+  #              }
+  #           catch{
+  #                Write-Host "Stack Deleted"
+  #                break
+  #                 }
+  #            }
 
-        Write-Host "Stack deleted"
+  #       Write-Host "Stack deleted"
 
-        }
+  #       }
 
-        catch{
+  #       catch{
 
-        Write-Host "There is no stack or it was deleted"
+  #       Write-Host "There is no stack or it was deleted"
 
-        }
+  #       }
   - task: CopyFiles@2
     displayName: 'Copy Files to: Artifact Staging Directory'
     inputs:
