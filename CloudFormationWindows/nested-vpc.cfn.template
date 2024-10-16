@@ -2319,7 +2319,6 @@
       "Condition": "PrivateSubnetsCondition",
       "Type": "AWS::EC2::Route",
       "Properties": {
-        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "RouteTableId": {
           "Ref": "PrivateSubnet1ARouteTable"
         },
@@ -2365,7 +2364,6 @@
       "Condition": "PrivateSubnetsCondition",
       "Type": "AWS::EC2::Route",
       "Properties": {
-        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "RouteTableId": {
           "Ref": "PrivateSubnet2ARouteTable"
         },
@@ -2377,7 +2375,6 @@
     },
     "PrivateSubnet2ARouteTableAssociation": {
       "Condition": "PrivateSubnetsCondition",
-      "Type": "AWS::EC2::SubnetRouteTableAssociation",
       "Properties": {
         "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "SubnetId": {
@@ -2944,7 +2941,6 @@
       "DependsOn": "VPCGatewayAttachment",
       "Type": "AWS::EC2::Route",
       "Properties": {
-        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "RouteTableId": {
           "Ref": "PublicSubnetRouteTable"
         },
@@ -2957,7 +2953,6 @@
     "PublicSubnet1RouteTableAssociation": {
       "Type": "AWS::EC2::SubnetRouteTableAssociation",
       "Properties": {
-        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "SubnetId": {
           "Ref": "PublicSubnet1"
         },
@@ -2969,7 +2964,6 @@
     "PublicSubnet2RouteTableAssociation": {
       "Type": "AWS::EC2::SubnetRouteTableAssociation",
       "Properties": {
-        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "SubnetId": {
           "Ref": "PublicSubnet2"
         },
