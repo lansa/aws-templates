@@ -3112,7 +3112,6 @@
       "Condition": "PrivateSubnetsCondition",
       "Type": "AWS::EC2::VPCEndpoint",
       "Properties": {
-        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ], 
         "PolicyDocument": {
           "Version": "2012-10-17",
           "Statement": [
