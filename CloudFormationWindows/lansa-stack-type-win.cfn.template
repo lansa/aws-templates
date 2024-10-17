@@ -300,7 +300,7 @@
             "12WebServerMaxConnec": { "Development": "10", "Test" : "20",  "Small" : "20",  "Medium" : "60",  "Large" : "120" }
         },
         "CustomVariable": {
-            "TemplateRoot": { "Value": "https://s3-ap-southeast-2.amazonaws.com/lansa/templates/support/scalable" },
+            "TemplateRoot": { "Value": "https://s3-ap-southeast-2.amazonaws.com/lansa/templates/" },
             "MasterTemplate": { "Value": "lansa-master-win.cfn.template" },
             "TemplateLevel": { "Value": "R" }
         }
