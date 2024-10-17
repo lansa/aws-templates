@@ -8,7 +8,7 @@ param (
 If ( $ImageType -eq "Debug") {
     $FilePath = "C:\DevOps\Lansa-AWS\lansa-master-win.cfn.template"
 } else {
-    $FilePath = "$($env:System_DefaultWorkingDirectory)\_lansa_aws-templates\CloudFormationWindows\lansa-master-win.cfn.template"
+    $FilePath = "$($env:Pipeline_Workspace)\_lansa_aws-templates\CloudFormationWindows\lansa-master-win.cfn.template"
 }
 
 $TemplateJson = Get-Content -Path $FilePath | ConvertFrom-Json
@@ -22,6 +22,11 @@ $BaseImageNameArray = @(
     'w16d-15-0j'
     'w19d-14-2j'
     'w19d-15-0j'
+    'w22d-14-2'
+    'w22d-15-0'
+    'w22d-14-2j'
+    'w22d-15-0j'
+
 )
 
 if ( $TemplateJson ) {
@@ -43,7 +48,8 @@ if ( $TemplateJson ) {
     foreach ( $ImageName in $BaseImageNameArray ) {
 
         #Developement and Production uses same file path location
-        $path = "$($env:System_DefaultWorkingDirectory)/_Build Image Release Artefacts/aws/$ImageName.txt"
+        #$path = "$($env:System_DefaultWorkingDirectory)/_Build Image Release Artefacts/aws/$ImageName.txt"
+        $path = "$($env:Pipeline_Workspace)/_Build Image Release Artefacts/aws/$ImageName.txt"
 
         switch ($ImageType)
         {
@@ -61,10 +67,12 @@ if ( $TemplateJson ) {
                 $Region = 'us-east-1'
             }
         }
+        Write-Host("Path to be tested: $path")
         if ( Test-Path $path ) {
             $amiID = [string](Get-Content -Path $path)
             $AMIList += $amiID
         } else {
+            Write-Host("Path does not exist.")
             $AMIList += "skip"
         }
         Clear-Variable -name path
@@ -116,7 +124,8 @@ if ( $TemplateJson ) {
 }
 
 #goto current source folder
-$path = "$($env:System_DefaultWorkingDirectory)/_lansa_aws-templates"
+$path = "$($env:Pipeline_Workspace)/_lansa_aws-templates"
+
 cd $path
 
 # git add files
