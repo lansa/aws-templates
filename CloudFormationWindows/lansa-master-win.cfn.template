@@ -451,14 +451,14 @@
       "Description": "The AMI Id of the custom image. Not required when Image Source is set to Marketplace"
     },
     "TagName": {
-        "Default": "Environment",
-        "Type": "String",
-        "Description": "Name of the tag with which to tag every resource"
+      "Default": "Environment",
+      "Type": "String",
+      "Description": "Name of the tag with which to tag every resource"
     },
     "TagValue": {
-        "Default": "Production",
-        "Type": "String",
-        "Description": "Value of the tag with which to tag every resource"
+      "Default": "Production",
+      "Type": "String",
+      "Description": "Value of the tag with which to tag every resource"
     }
   },
   "Metadata": {
@@ -674,9 +674,12 @@
         "AMIId": {
           "default": ""
         },
-
-        "TagName": { "default": "Tag Name" },
-        "TagValue": { "default": "Tag Value" }
+        "TagName": {
+          "default": "Tag Name"
+        },
+        "TagValue": {
+          "default": "Tag Value"
+        }
       }
     }
   },
@@ -944,10 +947,10 @@
         "win2022jpn": ""
       },
       "ap-southeast-2": {
-        "win2016": "ami-0054e00f9a244f026",
-        "win2019": "ami-02bae1fa32f493edb",
-        "win2016jpn": "ami-041e24b7443b7b0c1",
-        "win2019jpn": "ami-0dc040b9626b63bb8"
+        "win2016": "ami-0623d94a65a178dc0",
+        "win2019": "ami-09e69aa14ccb0b44d",
+        "win2016jpn": "ami-0b27c7e6beadae647",
+        "win2019jpn": "ami-05428e9790e031fd6"
       },
       "ap-south-1": {
         "win2016": "",
@@ -1103,10 +1106,10 @@
         "win2019jpn": "ami-0bedeb84bee729631"
       },
       "ap-southeast-2": {
-        "win2016": "ami-0e233b21bed2ef38d",
-        "win2019": "ami-0f8d20ccb3e4a592d",
-        "win2016jpn": "ami-00e71a91695956d78",
-        "win2019jpn": "ami-00c4750c5c39b42cb"
+        "win2016": "ami-0a0dd7533404092d2",
+        "win2019": "ami-09644f249a699f1f8",
+        "win2016jpn": "ami-05812fd54d96402f1",
+        "win2019jpn": "ami-0574abcf010e2d0d3"
       },
       "ap-south-1": {
         "win2016": "",
@@ -1293,15 +1296,15 @@
       "Type": "AWS::CloudFormation::Stack",
       "Condition": "CreateNewVPCResources",
       "Properties": {
-        "Tags" : [ 
-          { 
-            "Key" : {
-              "Ref":"TagName"
-            }, 
-            "Value" : {
-              "Ref":"TagValue"
-            } 
-          } 
+        "Tags": [
+          {
+            "Key": {
+              "Ref": "TagName"
+            },
+            "Value": {
+              "Ref": "TagValue"
+            }
+          }
         ],
         "TemplateURL": {
           "Fn::If": [
@@ -1453,15 +1456,15 @@
     "IAMRole": {
       "Type": "AWS::IAM::Role",
       "Properties": {
-        "Tags" : [ 
-          { 
-            "Key" : {
-              "Ref":"TagName"
-            }, 
-            "Value" : {
-              "Ref":"TagValue"
-            } 
-          } 
+        "Tags": [
+          {
+            "Key": {
+              "Ref": "TagName"
+            },
+            "Value": {
+              "Ref": "TagValue"
+            }
+          }
         ],
         "AssumeRolePolicyDocument": {
           "Version": "2012-10-17",
@@ -1515,15 +1518,15 @@
     "IOPSStack": {
       "Type": "AWS::CloudFormation::Stack",
       "Properties": {
-        "Tags" : [ 
-          { 
-            "Key" : {
-              "Ref":"TagName"
-            }, 
-            "Value" : {
-              "Ref":"TagValue"
-            } 
-          } 
+        "Tags": [
+          {
+            "Key": {
+              "Ref": "TagName"
+            },
+            "Value": {
+              "Ref": "TagValue"
+            }
+          }
         ],
         "TemplateURL": {
           "Fn::If": [
@@ -1665,15 +1668,15 @@
         "Comment2": "Use install path for healthcheck to avoid redirects. Refer to LANSA report to place the right tag here for health check - ELB healthcheck does not handle 302 return codes"
       },
       "Properties": {
-        "Tags" : [ 
-          { 
-            "Key" : {
-              "Ref":"TagName"
-            }, 
-            "Value" : {
-              "Ref":"TagValue"
-            } 
-          } 
+        "Tags": [
+          {
+            "Key": {
+              "Ref": "TagName"
+            },
+            "Value": {
+              "Ref": "TagValue"
+            }
+          }
         ],
         "Subnets": {
           "Fn::If": [
@@ -1839,8 +1842,12 @@
             "Value": "Private"
           },
           {
-            "Key" : { "Ref":"TagName" },
-            "Value" : { "Ref":"TagValue" }
+            "Key": {
+              "Ref": "TagName"
+            },
+            "Value": {
+              "Ref": "TagValue"
+            }
           }
         ]
       },
@@ -1849,15 +1856,15 @@
     "DBSecurityGroup": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
-        "Tags" : [ 
-          { 
-            "Key" : {
-              "Ref":"TagName"
-            }, 
-            "Value" : {
-              "Ref":"TagValue"
-            } 
-          } 
+        "Tags": [
+          {
+            "Key": {
+              "Ref": "TagName"
+            },
+            "Value": {
+              "Ref": "TagValue"
+            }
+          }
         ],
         "GroupDescription": "Enable SQL Server Access",
         "SecurityGroupIngress": [
@@ -1909,15 +1916,15 @@
     "WBELBSecurityGroup": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
-        "Tags" : [ 
-          { 
-            "Key" : {
-              "Ref":"TagName"
-            }, 
-            "Value" : {
-              "Ref":"TagValue"
-            } 
-          } 
+        "Tags": [
+          {
+            "Key": {
+              "Ref": "TagName"
+            },
+            "Value": {
+              "Ref": "TagValue"
+            }
+          }
         ],
         "GroupDescription": "Security Group for ELB belonging to non-default VPC",
         "SecurityGroupIngress": [
@@ -1967,15 +1974,15 @@
     "LansaSecurityGroup": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
-        "Tags" : [ 
-          { 
-            "Key" : {
-              "Ref":"TagName"
-            }, 
-            "Value" : {
-              "Ref":"TagValue"
-            } 
-          } 
+        "Tags": [
+          {
+            "Key": {
+              "Ref": "TagName"
+            },
+            "Value": {
+              "Ref": "TagValue"
+            }
+          }
         ],
         "GroupDescription": "Enable HTTP access via port 80 locked down to the load balancers + SSH access + RDP access",
         "VpcId": {
@@ -2019,15 +2026,15 @@
         "Comment2": "Using prime numbers ensures that the DB instances and Web instances will not be refreshed on the same day"
       },
       "Properties": {
-        "Tags" : [ 
-          { 
-            "Key" : {
-              "Ref":"TagName"
-            }, 
-            "Value" : {
-              "Ref":"TagValue"
-            } 
-          } 
+        "Tags": [
+          {
+            "Key": {
+              "Ref": "TagName"
+            },
+            "Value": {
+              "Ref": "TagValue"
+            }
+          }
         ],
         "TemplateURL": {
           "Fn::If": [
@@ -2346,15 +2353,15 @@
         "Comment2": "Using prime numbers ensures that the DB instances and Web instances will not be refreshed on the same day"
       },
       "Properties": {
-        "Tags" : [ 
-          { 
-            "Key" : {
-              "Ref":"TagName"
-            }, 
-            "Value" : {
-              "Ref":"TagValue"
-            } 
-          } 
+        "Tags": [
+          {
+            "Key": {
+              "Ref": "TagName"
+            },
+            "Value": {
+              "Ref": "TagValue"
+            }
+          }
         ],
         "TemplateURL": {
           "Fn::If": [
