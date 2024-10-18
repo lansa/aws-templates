@@ -1015,7 +1015,7 @@
       },
       "us-east-1": {
         "win2016": "ami-05f3ea7f9b1e3e411",
-        "win2019": "ami-0c6109b160a767d91",
+        "win2019": "ami-0968381fcbb86445f",
         "win2016jpn": "ami-027a91d8d4c805ea6",
         "win2019jpn": "ami-0f61225db086b3036"
       },
