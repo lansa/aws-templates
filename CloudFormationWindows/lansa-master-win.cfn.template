@@ -856,7 +856,9 @@
         "win2016": "ami-08d2088f1c92338da",
         "win2019": "ami-01cadca0d94aaa4b1",
         "win2016jpn": "ami-0bfc502417e2f3fa1",
-        "win2019jpn": "ami-0208deac3af1d202b"
+        "win2019jpn": "ami-0208deac3af1d202b",
+        "win2022": "",
+        "win2022jpn": ""
       },
       "us-east-2": {
         "win2016": "",
@@ -950,7 +952,9 @@
         "win2016": "ami-0623d94a65a178dc0",
         "win2019": "ami-09e69aa14ccb0b44d",
         "win2016jpn": "ami-0b27c7e6beadae647",
-        "win2019jpn": "ami-05428e9790e031fd6"
+        "win2019jpn": "ami-05428e9790e031fd6",
+        "win2022": "",
+        "win2022jpn": ""
       },
       "ap-south-1": {
         "win2016": "",
@@ -1017,7 +1021,9 @@
         "win2016": "ami-05f3ea7f9b1e3e411",
         "win2019": "ami-0968381fcbb86445f",
         "win2016jpn": "ami-027a91d8d4c805ea6",
-        "win2019jpn": "ami-0f61225db086b3036"
+        "win2019jpn": "ami-0f61225db086b3036",
+        "win2022": "",
+        "win2022jpn": ""
       },
       "us-east-2": {
         "win2016": "",
@@ -1103,13 +1109,17 @@
         "win2016": "",
         "win2019": "",
         "win2016jpn": "",
-        "win2019jpn": "ami-0bedeb84bee729631"
+        "win2019jpn": "ami-0bedeb84bee729631",
+        "win2022": "",
+        "win2022jpn": ""
       },
       "ap-southeast-2": {
         "win2016": "ami-0a0dd7533404092d2",
         "win2019": "ami-09644f249a699f1f8",
         "win2016jpn": "ami-05812fd54d96402f1",
-        "win2019jpn": "ami-0574abcf010e2d0d3"
+        "win2019jpn": "ami-0574abcf010e2d0d3",
+        "win2022": "",
+        "win2022jpn": ""
       },
       "ap-south-1": {
         "win2016": "",
@@ -2342,7 +2352,11 @@
           "29PatchFolderName": {
             "Ref": "29PatchFolderName"
           },
-          "MaxInstanceLifetime": 5270400
+          "MaxInstanceLifetime": 5270400,
+          "TagName": {
+              "Ref": "TagName" },
+          "TagValue": {
+              "Ref": "TagValue" }
         }
       }
     },
@@ -2674,7 +2688,11 @@
           "29PatchFolderName": {
             "Ref": "29PatchFolderName"
           },
-          "MaxInstanceLifetime": 5788800
+          "MaxInstanceLifetime": 5788800,
+          "TagName": {
+              "Ref": "TagName" },
+          "TagValue": {
+              "Ref": "TagValue" }
         }
       }
     }
