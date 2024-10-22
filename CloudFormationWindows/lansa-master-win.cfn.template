@@ -853,7 +853,7 @@
         "Comment1": "This mapping is updated whenever a new AMI is submitted to Marketplace"
       },
       "us-east-1": {
-        "win2016": "ami-08d2088f1c92338da",
+        "win2016": "ami-075292569a231d202",
         "win2019": "ami-01cadca0d94aaa4b1",
         "win2016jpn": "ami-0bfc502417e2f3fa1",
         "win2019jpn": "ami-0208deac3af1d202b",
