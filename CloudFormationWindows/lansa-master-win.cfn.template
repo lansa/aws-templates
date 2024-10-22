@@ -949,7 +949,7 @@
         "win2022jpn": ""
       },
       "ap-southeast-2": {
-        "win2016": "ami-0623d94a65a178dc0",
+        "win2016": "ami-027a0a245badb1f1d",
         "win2019": "ami-09e69aa14ccb0b44d",
         "win2016jpn": "ami-0b27c7e6beadae647",
         "win2019jpn": "ami-05428e9790e031fd6",
@@ -2354,9 +2354,11 @@
           },
           "MaxInstanceLifetime": 5270400,
           "TagName": {
-              "Ref": "TagName" },
+            "Ref": "TagName"
+          },
           "TagValue": {
-              "Ref": "TagValue" }
+            "Ref": "TagValue"
+          }
         }
       }
     },
@@ -2690,9 +2692,11 @@
           },
           "MaxInstanceLifetime": 5788800,
           "TagName": {
-              "Ref": "TagName" },
+            "Ref": "TagName"
+          },
           "TagValue": {
-              "Ref": "TagValue" }
+            "Ref": "TagValue"
+          }
         }
       }
     }
