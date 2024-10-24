@@ -853,12 +853,12 @@
         "Comment1": "This mapping is updated whenever a new AMI is submitted to Marketplace"
       },
       "us-east-1": {
-        "win2016": "ami-0a4f78b0688915b44",
-        "win2019": "ami-031fd4bd0fe84cca0",
-        "win2016jpn": "ami-0c74416156970c880",
-        "win2019jpn": "ami-0256fac2b0d05055e",
-        "win2022": "ami-077367842fa072fa6",
-        "win2022jpn": "ami-09e9ef9407cf01ecf"
+        "win2016": "ami-03cdd920d4ec67d27",
+        "win2019": "ami-0dc4932c09ee84b85",
+        "win2016jpn": "ami-0a8da75617543b3a0",
+        "win2019jpn": "ami-07a7cead928c3e4d0",
+        "win2022": "ami-0fb7319324abc5af8",
+        "win2022jpn": "ami-0c30a12ede613e954"
       },
       "us-east-2": {
         "win2016": "",
@@ -1018,12 +1018,12 @@
         "Comment1": "This mapping is updated whenever a new AMI is submitted to Marketplace"
       },
       "us-east-1": {
-        "win2016": "ami-0ea699547c2efca65",
-        "win2019": "ami-08058dbe17010b4e4",
-        "win2016jpn": "ami-0d04d5d5752756caf",
-        "win2019jpn": "ami-066b1cedb2979a7bd",
-        "win2022": "ami-007fece1f0d0ba555",
-        "win2022jpn": "ami-0a4cffef539521612"
+        "win2016": "ami-08840412302ed4d07",
+        "win2019": "ami-098c4cc1856e08ee4",
+        "win2016jpn": "ami-0d15b49d1adfab2eb",
+        "win2019jpn": "ami-07b3023d8c25cb9ce",
+        "win2022": "ami-0d3dae866e7cd11c2",
+        "win2022jpn": "ami-0fd6e4260838c3a74"
       },
       "us-east-2": {
         "win2016": "",
