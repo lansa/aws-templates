@@ -1180,7 +1180,7 @@
     },
     "CustomVariable": {
       "TemplateRoot": {
-        "Value": "https://s3-ap-southeast-2.amazonaws.com/lansa/templates/"
+        "Value": "https://lansa.s3.ap-southeast-2.amazonaws.com/templates/"
       },
       "WebServerTemplate": {
         "Value": "webserver-win.cfn.template"
