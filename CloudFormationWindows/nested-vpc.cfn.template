@@ -2319,7 +2319,6 @@
       "Condition": "PrivateSubnetsCondition",
       "Type": "AWS::EC2::Route",
       "Properties": {
-        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "RouteTableId": {
           "Ref": "PrivateSubnet1ARouteTable"
         },
@@ -2365,7 +2364,6 @@
       "Condition": "PrivateSubnetsCondition",
       "Type": "AWS::EC2::Route",
       "Properties": {
-        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "RouteTableId": {
           "Ref": "PrivateSubnet2ARouteTable"
         },
@@ -2379,7 +2377,6 @@
       "Condition": "PrivateSubnetsCondition",
       "Type": "AWS::EC2::SubnetRouteTableAssociation",
       "Properties": {
-        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "SubnetId": {
           "Ref": "PrivateSubnet2A"
         },
@@ -2412,7 +2409,6 @@
       "Condition": "PrivateSubnets&3AZCondition",
       "Type": "AWS::EC2::Route",
       "Properties": {
-        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "RouteTableId": {
           "Ref": "PrivateSubnet3ARouteTable"
         },
@@ -2426,7 +2422,6 @@
       "Condition": "PrivateSubnets&3AZCondition",
       "Type": "AWS::EC2::SubnetRouteTableAssociation",
       "Properties": {
-        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "SubnetId": {
           "Ref": "PrivateSubnet3A"
         },
@@ -2944,7 +2939,6 @@
       "DependsOn": "VPCGatewayAttachment",
       "Type": "AWS::EC2::Route",
       "Properties": {
-        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "RouteTableId": {
           "Ref": "PublicSubnetRouteTable"
         },
@@ -2957,7 +2951,6 @@
     "PublicSubnet1RouteTableAssociation": {
       "Type": "AWS::EC2::SubnetRouteTableAssociation",
       "Properties": {
-        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "SubnetId": {
           "Ref": "PublicSubnet1"
         },
@@ -2969,7 +2962,6 @@
     "PublicSubnet2RouteTableAssociation": {
       "Type": "AWS::EC2::SubnetRouteTableAssociation",
       "Properties": {
-        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "SubnetId": {
           "Ref": "PublicSubnet2"
         },
@@ -2982,7 +2974,6 @@
       "Condition": "3AZCondition",
       "Type": "AWS::EC2::SubnetRouteTableAssociation",
       "Properties": {
-        "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
         "SubnetId": {
           "Ref": "PublicSubnet3"
         },
