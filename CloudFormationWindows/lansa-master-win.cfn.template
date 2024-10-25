@@ -1019,7 +1019,7 @@
       },
       "us-east-1": {
         "win2016": "ami-08840412302ed4d07",
-        "win2019": "ami-098c4cc1856e08ee4",
+        "win2019": "ami-018f8e056c9d6a6b8",
         "win2016jpn": "ami-0d15b49d1adfab2eb",
         "win2019jpn": "ami-07b3023d8c25cb9ce",
         "win2022": "ami-0d3dae866e7cd11c2",
@@ -1180,7 +1180,7 @@
     },
     "CustomVariable": {
       "TemplateRoot": {
-        "Value": "https://s3-ap-southeast-2.amazonaws.com/lansa/templates"
+        "Value": "https://lansa.s3.ap-southeast-2.amazonaws.com/templates/"
       },
       "WebServerTemplate": {
         "Value": "webserver-win.cfn.template"
