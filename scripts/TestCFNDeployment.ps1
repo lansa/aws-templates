@@ -6,7 +6,11 @@ param (
 
     [Parameter(Mandatory=$false)]
     [string]
-    $Language='ENG'
+    $Language='ENG',
+
+    [Parameter(Mandatory=$false)]
+    [switch]
+    $DisableIntegratorTest
 )
 
 $stackoutput=(Get-CFNStack -StackName $($Gatestack)).Outputs[0].OutputValue
@@ -21,7 +25,9 @@ if($Language -eq 'JPN') {
   $url4 = "$IpAddress/JPNTESTs/DUMMY"
 } else {
   $url3 = "$IpAddress/cgi-bin/lansaweb?wam=DEPTABWA&webrtn=BuildFirst&ml=LANSA:XHTML&part=DEX&lang=ENG"
-  $url4 = "$IpAddress/cgi-bin/lansaweb?wam=JSMLICE&webrtn=weblic&ml=LANSA:XHTML&part=DEX&lang=ENG"
+  if ( -not $DisableIntegratorTest ) {
+     $url4 = "$IpAddress/cgi-bin/lansaweb?wam=JSMLICE&webrtn=weblic&ml=LANSA:XHTML&part=DEX&lang=ENG"
+  }
 }
 $urls = @($url1, $url2, $url3, $url4)
 add-type @"
