@@ -18,18 +18,18 @@ Write-Host "Stack Output: $stackoutput"
 
 $IpAddress =$stackoutput
 
-$url1 = "$IpAddress/cgi-bin/probe"
-$url2 = "$IpAddress/cgi-bin/lansaweb?about"
+$urls = @()
+$urls += "$IpAddress/cgi-bin/probe"
+$urls += "$IpAddress/cgi-bin/lansaweb?about"
 if($Language -eq 'JPN') {
-  $url3 = "$IpAddress/JPNTESTs/TEST"
-  $url4 = "$IpAddress/JPNTESTs/DUMMY"
+  $urls += "$IpAddress/JPNTESTs/TEST"
+  $urls += "$IpAddress/JPNTESTs/DUMMY"
 } else {
-  $url3 = "$IpAddress/cgi-bin/lansaweb?wam=DEPTABWA&webrtn=BuildFirst&ml=LANSA:XHTML&part=DEX&lang=ENG"
+  $urls += "$IpAddress/cgi-bin/lansaweb?wam=DEPTABWA&webrtn=BuildFirst&ml=LANSA:XHTML&part=DEX&lang=ENG"
   if ( -not $DisableIntegratorTest ) {
-     $url4 = "$IpAddress/cgi-bin/lansaweb?wam=JSMLICE&webrtn=weblic&ml=LANSA:XHTML&part=DEX&lang=ENG"
+     $urls += "$IpAddress/cgi-bin/lansaweb?wam=JSMLICE&webrtn=weblic&ml=LANSA:XHTML&part=DEX&lang=ENG"
   }
 }
-$urls = @($url1, $url2, $url3, $url4)
 add-type @"
     using System.Net;
     using System.Security.Cryptography.X509Certificates;
