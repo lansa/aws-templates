@@ -459,6 +459,26 @@
       "Default": "Production",
       "Type": "String",
       "Description": "Value of the tag with which to tag every resource"
+    },
+    "ImageId": {
+      "Type": "AWS::EC2::Image::Id",
+      "Default": "ami-example1234567890",
+      "Description": "The AMI that will be used to launch EC2 resources."
+    },
+    "MPS3BucketName": {
+        "Type": "String",
+        "Default": "lansa",
+        "Description": "Name of the S3 bucket for your copy of the nested templates."
+    },
+    "MPS3BucketRegion": {
+        "Type": "String",
+        "Default": "ap-southeast-2",
+        "Description": "AWS Region where the S3 bucket for your copy of the nested templates is hosted."
+    },
+    "MPS3KeyPrefix": {
+        "Type": "String",
+        "Default": "templates/",
+        "Description": "S3 key prefix that is used to simulate a folder for your copy of the nested templates."
     }
   },
   "Metadata": {
@@ -548,7 +568,18 @@
             "10LansaGitRepoBranch",
             "TemplateS3Namespace"
           ]
-        }
+        },
+        {
+          "Label": {
+            "default": "AWS Marketplace Parameters"
+          },
+          "Parameters": [
+            "ImageId",
+            "MPS3BucketName",
+            "MPS3BucketRegion",
+            "MPS3KeyPrefix"
+          ]
+      }
       ],
       "ParameterLabels": {
         "CreateVPC": {
@@ -848,172 +879,31 @@
     }
   },
   "Mappings": {
-    "AWSRegionArch2AMI142": {
+    "RegionMap": {
       "Metadata": {
-        "Comment1": "This mapping is updated whenever a new AMI is submitted to Marketplace"
+        "Comment1": "This mapping is updated whenever a new AMI is submitted to Marketplace. us-east-1 and ap-south-east-2 are valid AMIs for the region before submission. Then they are updated by AWS."
       },
-      "us-east-1": {
-        "win2016": "ami-03cdd920d4ec67d27",
-        "win2019": "ami-0dc4932c09ee84b85",
-        "win2016jpn": "ami-0a8da75617543b3a0",
-        "win2019jpn": "ami-07a7cead928c3e4d0",
-        "win2022": "ami-0fb7319324abc5af8",
-        "win2022jpn": "ami-0c30a12ede613e954"
-      },
-      "us-east-2": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "us-west-1": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "us-west-2": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "ca-central-1": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "eu-central-1": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "eu-west-1": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "eu-west-2": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "eu-west-3": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "eu-north-1": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "eu-south-1": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "ap-southeast-1": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "ap-southeast-2": {
-        "win2016": "ami-0ff7d5f5ff0a18cca",
-        "win2019": "ami-0607f12c40bf4d381",
-        "win2016jpn": "ami-0db9618e4517c783c",
-        "win2019jpn": "ami-0d15b00c52981fcac",
-        "win2022": "ami-0ad1735aa8c03dc57",
-        "win2022jpn": "ami-02fd556c0aba1c43d"
-      },
-      "ap-south-1": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "ap-northeast-1": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "ap-northeast-2": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "ap-east-1": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "af-south-1": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "me-south-1": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "sa-east-1": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      }
+      "us-east-1": { "ImageId": "ami-018f8e056c9d6a6b8" },
+      "us-west-1": { "ImageId": "ami-018f8e056c9d6a6b8" },
+      "us-west-2": { "ImageId": "ami-018f8e056c9d6a6b8" },
+      "ca-central-1": { "ImageId": "ami-018f8e056c9d6a6b8" },
+      "eu-central-1": { "ImageId": "ami-018f8e056c9d6a6b8" },
+      "eu-west-1": { "ImageId": "ami-018f8e056c9d6a6b8" },
+      "eu-west-2": { "ImageId": "ami-018f8e056c9d6a6b8" },
+      "eu-west-3": { "ImageId": "ami-018f8e056c9d6a6b8" },
+      "eu-north-1": { "ImageId": "ami-018f8e056c9d6a6b8" },
+      "eu-south-1": { "ImageId": "ami-018f8e056c9d6a6b8" },
+      "ap-southeast-1": { "ImageId": "ami-0bedeb84bee729631" },
+      "ap-southeast-2": { "ImageId": "ami-04bd205706b37ecd9" },
+      "ap-south-1": { "ImageId": "ami-04bd205706b37ecd9" },
+      "ap-northeast-1": { "ImageId": "ami-04bd205706b37ecd9" },
+      "ap-northeast-2": { "ImageId": "ami-04bd205706b37ecd9" },
+      "ap-east-1": { "ImageId": "ami-04bd205706b37ecd9" },
+      "af-south-1": { "ImageId": "ami-04bd205706b37ecd9" },
+      "me-south-1": { "ImageId": "ami-04bd205706b37ecd9" },
+      "sa-east-1": { "ImageId": "ami-04bd205706b37ecd9" },
     },
-    "AWSRegionArch2AMI15": {
+    "AWSRegionArch2AMI15OldMapping": {
       "Metadata": {
         "Comment1": "This mapping is updated whenever a new AMI is submitted to Marketplace"
       },
@@ -1024,86 +914,6 @@
         "win2019jpn": "ami-07b3023d8c25cb9ce",
         "win2022": "ami-0d3dae866e7cd11c2",
         "win2022jpn": "ami-0fd6e4260838c3a74"
-      },
-      "us-east-2": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "us-west-1": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "us-west-2": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "ca-central-1": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "eu-central-1": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "eu-west-1": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "eu-west-2": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "eu-west-3": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "eu-north-1": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "eu-south-1": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
       },
       "ap-southeast-1": {
         "win2016": "",
@@ -1120,62 +930,6 @@
         "win2019jpn": "ami-096e2e1117a7559c4",
         "win2022": "ami-0f4abcd92e65d0322",
         "win2022jpn": "ami-05098e2665cddf91d"
-      },
-      "ap-south-1": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "ap-northeast-1": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "ap-northeast-2": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "ap-east-1": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "af-south-1": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "me-south-1": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "sa-east-1": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
       }
     },
     "CustomVariable": {
@@ -1320,63 +1074,7 @@
           "Fn::If": [
             "IsReleaseLevel",
             {
-              "Fn::If": [
-                "IsEmptyNamespace",
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "TemplateRoot",
-                          "Value"
-                        ]
-                      },
-                      {
-                        "Ref": "10LansaGitRepoBranch"
-                      },
-                      "/",
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "NestedVPCTemplate",
-                          "Value"
-                        ]
-                      }
-                    ]
-                  ]
-                },
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "TemplateRoot",
-                          "Value"
-                        ]
-                      },
-                      {
-                        "Ref": "10LansaGitRepoBranch"
-                      },
-                      "/",
-                      {
-                        "Ref": "TemplateS3Namespace"
-                      },
-                      "/",
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "NestedVPCTemplate",
-                          "Value"
-                        ]
-                      }
-                    ]
-                  ]
-                }
-              ]
+              "Fn::Sub": "https://${MPS3BucketName}.s3.${MPS3BucketRegion}.${AWS::URLSuffix}/${MPS3KeyPrefix}nested-template.yaml"
             },
             {
               "Fn::If": [
@@ -2510,31 +2208,7 @@
                 "Ref": "AMIId"
               },
               {
-                "Fn::If": [
-                  "IsLansaVersion142",
-                  {
-                    "Fn::FindInMap": [
-                      "AWSRegionArch2AMI142",
-                      {
-                        "Ref": "AWS::Region"
-                      },
-                      {
-                        "Ref": "11WebserverOSVersion"
-                      }
-                    ]
-                  },
-                  {
-                    "Fn::FindInMap": [
-                      "AWSRegionArch2AMI15",
-                      {
-                        "Ref": "AWS::Region"
-                      },
-                      {
-                        "Ref": "11WebserverOSVersion"
-                      }
-                    ]
-                  }
-                ]
+                "Fn::FindInMap": [ "RegionMap", { "Ref": "AWS::Region" }, "ImageId" ]
               }
             ]
           },
