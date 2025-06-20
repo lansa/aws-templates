@@ -662,6 +662,7 @@
         "MPS3KeyPrefix": {
           "Default": "S3 Template Bucket Prefix"
         }
+      }
     }
   },
   "Rules": {
