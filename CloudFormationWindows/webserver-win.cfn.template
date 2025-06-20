@@ -35,11 +35,6 @@
             "Default" : "1",
             "Description": "Set to 1 for DbWebServer and 0 for WebServer as a parameter for install-lansa-msi."
         },
-        "TemplateRoot" : {
-            "Type"    : "String",
-            "Default" : "https://s3-ap-southeast-2.amazonaws.com/lansa/templates/",
-            "Description" : "Root location in S3 of the templates"
-        },
         "WebServerELB": {
             "Type": "String",
             "Description": "The Load Balancer used for the WebServer.",
@@ -106,15 +101,6 @@
             "MinLength"   : "9",
             "MaxLength"   : "18",
             "AllowedPattern" : "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
-        },
-        "90LansaTemplateLevel" : {
-            "Default" : "R",
-            "Description" : "Set to 'R' to use the Release version of the Web Server template.",
-            "Type"        : "String",
-            "AllowedValues" : [
-                "R"
-            ],
-            "ConstraintDescription" : "Must be R (Release)."
         },
         "UpdateManagementScripts": {
             "Default": "No",
@@ -379,7 +365,6 @@
         }
     },
     "Conditions" : {
-        "IsReleaseLevel" : {"Fn::Equals" : [{"Ref" : "90LansaTemplateLevel"}, "R"]},
         "DoesNotHaveUserScript" : {"Fn::Equals" : [{"Ref" : "17UserScriptHook"}, ""]},
         "HasUserScript" : {"Fn::Not" : [{"Condition" : "DoesNotHaveUserScript"}]}
     },
@@ -399,12 +384,8 @@
                 "MaxInstanceLifetime" : {"Ref": "MaxInstanceLifetime"},
                 "LoadBalancerNames": [ { "Ref": "WebServerELB" } ],
                 "Tags": [
-                    { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} , "PropagateAtLaunch": "true"},
-                    {
-                        "Key": "Name",
-                        "Value": { "Ref" : "WebServerName" },
-                        "PropagateAtLaunch": "true"
-                    }
+                    { "Key": {"Ref":"TagName"}, "Value": {"Ref":"TagValue"},          "PropagateAtLaunch": "true"},
+                    { "Key": "Name",            "Value": { "Ref" : "WebServerName" }, "PropagateAtLaunch": "true"}
                 ]
 
             }

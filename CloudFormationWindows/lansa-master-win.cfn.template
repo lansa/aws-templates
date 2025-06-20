@@ -104,24 +104,6 @@
       "Description": "Git branch to checkout from Lansa Git repository and the S3 folder from which the nested templates are loaded. This pulls in the script files which are used to assemble the Icing. This is performed during the initial launch and also everytime a Trigger is fired.",
       "Type": "String"
     },
-    "TemplateS3Namespace": {
-      "Default": "",
-      "Description": "Usually left empty. Adds another sub folder level to the template location in S3 so that developers and CI/CD pipelines may segregate their template versions. ",
-      "Type": "String"
-    },
-    "11WebserverOSVersion": {
-      "Default": "win2019",
-      "Description": "WebServer Windows operating system version.",
-      "Type": "String",
-      "AllowedValues": [
-        "win2016",
-        "win2019",
-        "win2016jpn",
-        "win2019jpn",
-        "win2022",
-        "win2022jpn"
-      ]
-    },
     "11WebServerInstanceTyp": {
       "Description": "WebServer EC2 instance type. See http://aws.amazon.com/ec2/instance-types/ for more information.",
       "Type": "String",
@@ -427,29 +409,6 @@
       "Default": "/change me",
       "Description": "Update Stack: S3 folder which will contain the patches. (case sensitive). Note that ALL sub-directories are searched so ensure the directory used to store the patches has no sub directories. For the demo use app/test-patches. See TriggerPatchInstall parameter for more details."
     },
-    "LansaVersion": {
-      "Type": "String",
-      "AllowedValues": [
-        "V15 GA",
-        "V14 SP2"
-      ],
-      "Default": "V15 GA",
-      "Description": "Visual LANSA Version"
-    },
-    "ImageSource": {
-      "Type": "String",
-      "AllowedValues": [
-        "Marketplace",
-        "Custom"
-      ],
-      "Default": "Marketplace",
-      "Description": "Location from where the image must be picked"
-    },
-    "AMIId": {
-      "Type": "String",
-      "Default": "",
-      "Description": "The AMI Id of the custom image. Not required when Image Source is set to Marketplace"
-    },
     "TagName": {
       "Default": "Environment",
       "Type": "String",
@@ -460,25 +419,25 @@
       "Type": "String",
       "Description": "Value of the tag with which to tag every resource"
     },
-    "ImageId": {
+    "AMIId": {
       "Type": "AWS::EC2::Image::Id",
-      "Default": "ami-example1234567890",
-      "Description": "The AMI that will be used to launch EC2 resources."
+      "Default": "ami-04bd205706b37ecd9",
+      "Description": "The AMI that will be used to launch the Web Servers."
     },
     "MPS3BucketName": {
-        "Type": "String",
-        "Default": "lansa",
-        "Description": "Name of the S3 bucket for your copy of the nested templates."
+      "Type": "String",
+      "Default": "lansa",
+      "Description": "Name of the S3 bucket for your copy of the nested templates."
     },
     "MPS3BucketRegion": {
-        "Type": "String",
-        "Default": "ap-southeast-2",
-        "Description": "AWS Region where the S3 bucket for your copy of the nested templates is hosted."
+      "Type": "String",
+      "Default": "ap-southeast-2",
+      "Description": "AWS Region where the S3 bucket for your copy of the nested templates is hosted."
     },
     "MPS3KeyPrefix": {
-        "Type": "String",
-        "Default": "templates/",
-        "Description": "S3 key prefix that is used to simulate a folder for your copy of the nested templates."
+      "Type": "String",
+      "Default": "templates/support/scalable/",
+      "Description": "S3 key prefix that is used to simulate a folder for your copy of the nested templates. There MUST be a '/' on the end"
     }
   },
   "Metadata": {
@@ -531,10 +490,6 @@
             "default": "Web Server Configuration"
           },
           "Parameters": [
-            "LansaVersion",
-            "11WebserverOSVersion",
-            "ImageSource",
-            "AMIId",
             "11WebServerInstanceTyp",
             "12WebServerMaxConnec",
             "18WebServerCapacity"
@@ -565,8 +520,7 @@
             "TagName",
             "TagValue",
             "UpdateManagementScripts",
-            "10LansaGitRepoBranch",
-            "TemplateS3Namespace"
+            "10LansaGitRepoBranch"
           ]
         },
         {
@@ -574,12 +528,12 @@
             "default": "AWS Marketplace Parameters"
           },
           "Parameters": [
-            "ImageId",
+            "AMIId",
             "MPS3BucketName",
             "MPS3BucketRegion",
             "MPS3KeyPrefix"
           ]
-      }
+        }
       ],
       "ParameterLabels": {
         "CreateVPC": {
@@ -645,9 +599,6 @@
         "DBIOPSRatio": {
           "default": "Database IOPS Ratio"
         },
-        "11WebserverOSVersion": {
-          "default": "OS Version"
-        },
         "11WebServerInstanceTyp": {
           "default": "Instance Type"
         },
@@ -693,25 +644,24 @@
         "10LansaGitRepoBranch": {
           "default": "Git Repository Branch"
         },
-        "TemplateS3Namespace": {
-          "default": "Template S3 Namespace"
-        },
-        "LansaVersion": {
-          "default": "Visual LANSA Version"
-        },
-        "ImageSource": {
-          "default": "Image Source"
-        },
         "AMIId": {
-          "default": ""
+          "default": "AMI Id"
         },
         "TagName": {
           "default": "Tag Name"
         },
         "TagValue": {
           "default": "Tag Value"
+        },
+        "MPS3BucketName": {
+          "Default": "S3 Template Bucket Name"
+        },
+        "MPS3BucketRegion": {
+          "Default": "S3 Template Bucket Region"
+        },
+        "MPS3KeyPrefix": {
+          "Default": "S3 Template Bucket Prefix"
         }
-      }
     }
   },
   "Rules": {
@@ -879,68 +829,9 @@
     }
   },
   "Mappings": {
-    "RegionMap": {
-      "Metadata": {
-        "Comment1": "This mapping is updated whenever a new AMI is submitted to Marketplace. us-east-1 and ap-south-east-2 are valid AMIs for the region before submission. Then they are updated by AWS."
-      },
-      "us-east-1": { "ImageId": "ami-018f8e056c9d6a6b8" },
-      "us-west-1": { "ImageId": "ami-018f8e056c9d6a6b8" },
-      "us-west-2": { "ImageId": "ami-018f8e056c9d6a6b8" },
-      "ca-central-1": { "ImageId": "ami-018f8e056c9d6a6b8" },
-      "eu-central-1": { "ImageId": "ami-018f8e056c9d6a6b8" },
-      "eu-west-1": { "ImageId": "ami-018f8e056c9d6a6b8" },
-      "eu-west-2": { "ImageId": "ami-018f8e056c9d6a6b8" },
-      "eu-west-3": { "ImageId": "ami-018f8e056c9d6a6b8" },
-      "eu-north-1": { "ImageId": "ami-018f8e056c9d6a6b8" },
-      "eu-south-1": { "ImageId": "ami-018f8e056c9d6a6b8" },
-      "ap-southeast-1": { "ImageId": "ami-0bedeb84bee729631" },
-      "ap-southeast-2": { "ImageId": "ami-04bd205706b37ecd9" },
-      "ap-south-1": { "ImageId": "ami-04bd205706b37ecd9" },
-      "ap-northeast-1": { "ImageId": "ami-04bd205706b37ecd9" },
-      "ap-northeast-2": { "ImageId": "ami-04bd205706b37ecd9" },
-      "ap-east-1": { "ImageId": "ami-04bd205706b37ecd9" },
-      "af-south-1": { "ImageId": "ami-04bd205706b37ecd9" },
-      "me-south-1": { "ImageId": "ami-04bd205706b37ecd9" },
-      "sa-east-1": { "ImageId": "ami-04bd205706b37ecd9" },
-    },
-    "AWSRegionArch2AMI15OldMapping": {
-      "Metadata": {
-        "Comment1": "This mapping is updated whenever a new AMI is submitted to Marketplace"
-      },
-      "us-east-1": {
-        "win2016": "ami-08840412302ed4d07",
-        "win2019": "ami-018f8e056c9d6a6b8",
-        "win2016jpn": "ami-0d15b49d1adfab2eb",
-        "win2019jpn": "ami-07b3023d8c25cb9ce",
-        "win2022": "ami-0d3dae866e7cd11c2",
-        "win2022jpn": "ami-0fd6e4260838c3a74"
-      },
-      "ap-southeast-1": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "ami-0bedeb84bee729631",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "ap-southeast-2": {
-        "win2016": "ami-0a4bac88a7051046c",
-        "win2019": "ami-04bd205706b37ecd9",
-        "win2016jpn": "ami-0e8f9345eaa213a7f",
-        "win2019jpn": "ami-096e2e1117a7559c4",
-        "win2022": "ami-0f4abcd92e65d0322",
-        "win2022jpn": "ami-05098e2665cddf91d"
-      }
-    },
     "CustomVariable": {
-      "TemplateRoot": {
-        "Value": "https://lansa.s3.ap-southeast-2.amazonaws.com/templates/"
-      },
       "WebServerTemplate": {
         "Value": "webserver-win.cfn.template"
-      },
-      "TemplateLevel": {
-        "Value": "R"
       },
       "NestedVPCTemplate": {
         "Value": "nested-vpc.cfn.template"
@@ -979,26 +870,6 @@
         }
       ]
     },
-    "IsReleaseLevel": {
-      "Fn::Equals": [
-        {
-          "Fn::FindInMap": [
-            "CustomVariable",
-            "TemplateLevel",
-            "Value"
-          ]
-        },
-        "R"
-      ]
-    },
-    "IsEmptyNamespace": {
-      "Fn::Equals": [
-        {
-          "Ref": "TemplateS3Namespace"
-        },
-        ""
-      ]
-    },
     "IsEmptyDBCCSID": {
       "Fn::Equals": [
         {
@@ -1030,22 +901,6 @@
         }
       ]
     },
-    "IsLansaVersion142": {
-      "Fn::Equals": [
-        {
-          "Ref": "LansaVersion"
-        },
-        "V14 SP2"
-      ]
-    },
-    "IsCustomImageSource": {
-      "Fn::Equals": [
-        {
-          "Ref": "ImageSource"
-        },
-        "Custom"
-      ]
-    },
     "3AZCondition": {
       "Fn::Equals": [
         {
@@ -1070,73 +925,10 @@
             }
           }
         ],
-        "TemplateURL": {
-          "Fn::If": [
-            "IsReleaseLevel",
-            {
-              "Fn::Sub": "https://${MPS3BucketName}.s3.${MPS3BucketRegion}.${AWS::URLSuffix}/${MPS3KeyPrefix}nested-template.yaml"
-            },
-            {
-              "Fn::If": [
-                "IsEmptyNamespace",
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "TemplateRoot",
-                          "Value"
-                        ]
-                      },
-                      {
-                        "Ref": "10LansaGitRepoBranch"
-                      },
-                      "/beta/",
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "NestedVPCTemplate",
-                          "Value"
-                        ]
-                      }
-                    ]
-                  ]
-                },
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "TemplateRoot",
-                          "Value"
-                        ]
-                      },
-                      {
-                        "Ref": "10LansaGitRepoBranch"
-                      },
-                      "/beta/",
-                      {
-                        "Ref": "TemplateS3Namespace"
-                      },
-                      "/",
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "NestedVPCTemplate",
-                          "Value"
-                        ]
-                      }
-                    ]
-                  ]
-                }
-              ]
-            }
-          ]
-        },
+        "TemplateURL": { "Fn::Join": [ "", [
+            { "Fn::Sub": "https://${MPS3BucketName}.s3.${MPS3BucketRegion}.${AWS::URLSuffix}/${MPS3KeyPrefix}"},
+            { "Fn::FindInMap": [ "CustomVariable", "NestedVPCTemplate", "Value" ] }
+        ]]},
         "Parameters": {
           "AvailabilityZones": {
             "Fn::Join": [
@@ -1191,7 +983,8 @@
                         }
                       ]
                     ]
-                  }
+                  },
+                  "cloudformation.amazonaws.com"
                 ]
               },
               "Action": [
@@ -1207,7 +1000,8 @@
           "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore",
           "arn:aws:iam::aws:policy/AWSResourceGroupsReadOnlyAccess",
           "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy",
-          "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"
+          "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess",
+          "arn:aws:iam::aws:policy/AmazonEC2FullAccess"
         ],
         "Path": "/"
       }
@@ -1236,129 +1030,10 @@
             }
           }
         ],
-        "TemplateURL": {
-          "Fn::If": [
-            "IsReleaseLevel",
-            {
-              "Fn::If": [
-                "IsEmptyNamespace",
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "TemplateRoot",
-                          "Value"
-                        ]
-                      },
-                      {
-                        "Ref": "10LansaGitRepoBranch"
-                      },
-                      "/",
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "NestedIOPSTemplate",
-                          "Value"
-                        ]
-                      }
-                    ]
-                  ]
-                },
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "TemplateRoot",
-                          "Value"
-                        ]
-                      },
-                      {
-                        "Ref": "10LansaGitRepoBranch"
-                      },
-                      "/",
-                      {
-                        "Ref": "TemplateS3Namespace"
-                      },
-                      "/",
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "NestedIOPSTemplate",
-                          "Value"
-                        ]
-                      }
-                    ]
-                  ]
-                }
-              ]
-            },
-            {
-              "Fn::If": [
-                "IsEmptyNamespace",
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "TemplateRoot",
-                          "Value"
-                        ]
-                      },
-                      {
-                        "Ref": "10LansaGitRepoBranch"
-                      },
-                      "/beta/",
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "NestedIOPSTemplate",
-                          "Value"
-                        ]
-                      }
-                    ]
-                  ]
-                },
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "TemplateRoot",
-                          "Value"
-                        ]
-                      },
-                      {
-                        "Ref": "10LansaGitRepoBranch"
-                      },
-                      "/beta/",
-                      {
-                        "Ref": "TemplateS3Namespace"
-                      },
-                      "/",
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "NestedIOPSTemplate",
-                          "Value"
-                        ]
-                      }
-                    ]
-                  ]
-                }
-              ]
-            }
-          ]
-        },
+        "TemplateURL": { "Fn::Join": [ "", [
+            { "Fn::Sub": "https://${MPS3BucketName}.s3.${MPS3BucketRegion}.${AWS::URLSuffix}/${MPS3KeyPrefix}"},
+            { "Fn::FindInMap": [ "CustomVariable", "NestedIOPSTemplate", "Value" ] }
+        ]]},
         "Parameters": {
           "IOPSRatio": {
             "Ref": "DBIOPSRatio"
@@ -1744,164 +1419,13 @@
             }
           }
         ],
-        "TemplateURL": {
-          "Fn::If": [
-            "IsReleaseLevel",
-            {
-              "Fn::If": [
-                "IsEmptyNamespace",
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "TemplateRoot",
-                          "Value"
-                        ]
-                      },
-                      {
-                        "Ref": "10LansaGitRepoBranch"
-                      },
-                      "/",
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "WebServerTemplate",
-                          "Value"
-                        ]
-                      }
-                    ]
-                  ]
-                },
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "TemplateRoot",
-                          "Value"
-                        ]
-                      },
-                      {
-                        "Ref": "10LansaGitRepoBranch"
-                      },
-                      "/",
-                      {
-                        "Ref": "TemplateS3Namespace"
-                      },
-                      "/",
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "WebServerTemplate",
-                          "Value"
-                        ]
-                      }
-                    ]
-                  ]
-                }
-              ]
-            },
-            {
-              "Fn::If": [
-                "IsEmptyNamespace",
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "TemplateRoot",
-                          "Value"
-                        ]
-                      },
-                      {
-                        "Ref": "10LansaGitRepoBranch"
-                      },
-                      "/beta/",
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "WebServerTemplate",
-                          "Value"
-                        ]
-                      }
-                    ]
-                  ]
-                },
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "TemplateRoot",
-                          "Value"
-                        ]
-                      },
-                      {
-                        "Ref": "10LansaGitRepoBranch"
-                      },
-                      "/beta/",
-                      {
-                        "Ref": "TemplateS3Namespace"
-                      },
-                      "/",
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "WebServerTemplate",
-                          "Value"
-                        ]
-                      }
-                    ]
-                  ]
-                }
-              ]
-            }
-          ]
-        },
+        "TemplateURL": { "Fn::Join": [ "", [
+            { "Fn::Sub": "https://${MPS3BucketName}.s3.${MPS3BucketRegion}.${AWS::URLSuffix}/${MPS3KeyPrefix}"},
+            { "Fn::FindInMap": [ "CustomVariable", "WebServerTemplate", "Value" ] }
+        ]]},
         "Parameters": {
           "AMI": {
-            "Fn::If": [
-              "IsCustomImageSource",
-              {
-                "Ref": "AMIId"
-              },
-              {
-                "Fn::If": [
-                  "IsLansaVersion142",
-                  {
-                    "Fn::FindInMap": [
-                      "AWSRegionArch2AMI142",
-                      {
-                        "Ref": "AWS::Region"
-                      },
-                      {
-                        "Ref": "11WebserverOSVersion"
-                      }
-                    ]
-                  },
-                  {
-                    "Fn::FindInMap": [
-                      "AWSRegionArch2AMI15",
-                      {
-                        "Ref": "AWS::Region"
-                      },
-                      {
-                        "Ref": "11WebserverOSVersion"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
+            "Ref": "AMIId"
           },
           "DBEndPoint": {
             "Fn::GetAtt": [
@@ -1961,13 +1485,6 @@
             "Ref": "LansaSecurityGroup"
           },
           "Sudb": "1",
-          "TemplateRoot": {
-            "Fn::FindInMap": [
-              "CustomVariable",
-              "TemplateRoot",
-              "Value"
-            ]
-          },
           "WebServerELB": {
             "Ref": "WebServerELB"
           },
@@ -1995,13 +1512,6 @@
           },
           "8RemoteAccessLocation": {
             "Ref": "08RemoteAccessLocation"
-          },
-          "90LansaTemplateLevel": {
-            "Fn::FindInMap": [
-              "CustomVariable",
-              "TemplateLevel",
-              "Value"
-            ]
           },
           "UpdateManagementScripts": {
             "Ref": "UpdateManagementScripts"
@@ -2077,140 +1587,13 @@
             }
           }
         ],
-        "TemplateURL": {
-          "Fn::If": [
-            "IsReleaseLevel",
-            {
-              "Fn::If": [
-                "IsEmptyNamespace",
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "TemplateRoot",
-                          "Value"
-                        ]
-                      },
-                      {
-                        "Ref": "10LansaGitRepoBranch"
-                      },
-                      "/",
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "WebServerTemplate",
-                          "Value"
-                        ]
-                      }
-                    ]
-                  ]
-                },
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "TemplateRoot",
-                          "Value"
-                        ]
-                      },
-                      {
-                        "Ref": "10LansaGitRepoBranch"
-                      },
-                      "/",
-                      {
-                        "Ref": "TemplateS3Namespace"
-                      },
-                      "/",
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "WebServerTemplate",
-                          "Value"
-                        ]
-                      }
-                    ]
-                  ]
-                }
-              ]
-            },
-            {
-              "Fn::If": [
-                "IsEmptyNamespace",
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "TemplateRoot",
-                          "Value"
-                        ]
-                      },
-                      {
-                        "Ref": "10LansaGitRepoBranch"
-                      },
-                      "/beta/",
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "WebServerTemplate",
-                          "Value"
-                        ]
-                      }
-                    ]
-                  ]
-                },
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "TemplateRoot",
-                          "Value"
-                        ]
-                      },
-                      {
-                        "Ref": "10LansaGitRepoBranch"
-                      },
-                      "/beta/",
-                      {
-                        "Ref": "TemplateS3Namespace"
-                      },
-                      "/",
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "WebServerTemplate",
-                          "Value"
-                        ]
-                      }
-                    ]
-                  ]
-                }
-              ]
-            }
-          ]
-        },
+        "TemplateURL": { "Fn::Join": [ "", [
+            { "Fn::Sub": "https://${MPS3BucketName}.s3.${MPS3BucketRegion}.${AWS::URLSuffix}/${MPS3KeyPrefix}"},
+            { "Fn::FindInMap": [ "CustomVariable", "WebServerTemplate", "Value" ] }
+        ]]},
         "Parameters": {
           "AMI": {
-            "Fn::If": [
-              "IsCustomImageSource",
-              {
-                "Ref": "AMIId"
-              },
-              {
-                "Fn::FindInMap": [ "RegionMap", { "Ref": "AWS::Region" }, "ImageId" ]
-              }
-            ]
+            "Ref": "AMIId"
           },
           "DBEndPoint": {
             "Fn::GetAtt": [
@@ -2228,13 +1611,6 @@
             "Ref": "LansaSecurityGroup"
           },
           "Sudb": "0",
-          "TemplateRoot": {
-            "Fn::FindInMap": [
-              "CustomVariable",
-              "TemplateRoot",
-              "Value"
-            ]
-          },
           "WebServerELB": {
             "Ref": "WebServerELB"
           },
@@ -2307,13 +1683,6 @@
           },
           "8RemoteAccessLocation": {
             "Ref": "08RemoteAccessLocation"
-          },
-          "90LansaTemplateLevel": {
-            "Fn::FindInMap": [
-              "CustomVariable",
-              "TemplateLevel",
-              "Value"
-            ]
           },
           "UpdateManagementScripts": {
             "Ref": "UpdateManagementScripts"
