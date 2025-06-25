@@ -275,38 +275,8 @@
     },
     "13DBInstanceClass": {
       "Default": "db.t3.small",
-      "Description": "A valid database instance class. See http://aws.amazon.com/rds/details/ for more information.",
-      "Type": "String",
-      "AllowedValues": [
-        "db.m4.large",
-        "db.m4.xlarge",
-        "db.m4.2xlarge",
-        "db.m4.4xlarge",
-        "db.m4.10xlarge",
-        "db.m4.16xlarge",
-        "db.m5.large",
-        "db.m5.xlarge",
-        "db.m5.2xlarge",
-        "db.m5.4xlarge",
-        "db.m5.8xlarge",
-        "db.m5.12xlarge",
-        "db.m5.16xlarge",
-        "db.m5.24xlarge",
-        "db.r5.large",
-        "db.r5.xlarge",
-        "db.r5.2xlarge",
-        "db.r5.4xlarge",
-        "db.r5.8xlarge",
-        "db.r5.12xlarge",
-        "db.r5.16xlarge",
-        "db.r5.24xlarge",
-        "db.t3.micro",
-        "db.t3.small",
-        "db.t3.medium",
-        "db.t3.large",
-        "db.t3.xlarge",
-        "db.t3.2xlarge"
-      ]
+      "Description": "A valid database instance class. See https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/SQLServer.Concepts.General.InstanceClasses.html for more information.",
+      "Type": "String"
     },
     "14DBName": {
       "Default": "lansa",
@@ -316,7 +286,7 @@
       "MaxLength": "64",
       "AllowedPattern": "[a-zA-Z][a-zA-Z0-9]*"
     },
-    "15DBEngine": {
+    "DBEngine": {
       "Description": "Database engine type. Must be a valid SQL Server engine type. Note that to support mirroring you need to choose 'sqlserver-ee' or 'sqlserver-se'. Otherwise you may choose 'sqlserver-web' or 'sqlserver-ex'.",
       "Type": "String",
       "Default": "sqlserver-web",
@@ -478,7 +448,7 @@
           "Parameters": [
             "13DBInstanceClass",
             "14DBName",
-            "15DBEngine",
+            "DBEngine",
             "DBCCSID",
             "DBTimeZone",
             "19DBAllocatedStorage",
@@ -584,7 +554,7 @@
         "14DBName": {
           "default": "Name"
         },
-        "15DBEngine": {
+        "DBEngine": {
           "default": "SQL Server Engine Type"
         },
         "DBCCSID": {
@@ -668,163 +638,108 @@
   "Rules": {
     "SqlServerExpress": {
       "RuleCondition": {
-        "Fn::Equals": [
-          {
-            "Ref": "15DBEngine"
-          },
-          "sqlserver-ex"
-        ]
+        "Fn::Equals": [{ "Ref": "DBEngine" }, "sqlserver-ex"]
       },
       "Assertions": [
         {
           "Assert": {
             "Fn::Contains": [
               [
-                "db.t3.small",
-                "db.t3.medium",
-                "db.t3.large",
-                "db.t3.xlarge"
+                "db.t3.micro", "db.t3.small", "db.t3.medium",
+                "db.t3.large", "db.t3.xlarge"
               ],
-              {
-                "Ref": "13DBInstanceClass"
-              }
+              { "Ref": "DBInstanceClass" }
             ]
           },
-          "AssertDescription": "For Sql Server Express, the instance type must be one of the following: db.t3.small, db.t3.medium, db.t3.large, db.t3.xlarge"
+          "AssertDescription": "Express supports only burstable t3.micro to t3.xlarge"
         }
       ]
     },
+
     "SqlServerWeb": {
       "RuleCondition": {
-        "Fn::Equals": [
-          {
-            "Ref": "15DBEngine"
-          },
-          "sqlserver-web"
-        ]
+        "Fn::Equals": [{ "Ref": "DBEngine" }, "sqlserver-web"]
       },
       "Assertions": [
         {
           "Assert": {
             "Fn::Contains": [
               [
-                "db.t3.small",
-                "db.t3.medium",
-                "db.t3.large",
-                "db.t3.xlarge",
-                "db.t3.2xlarge",
-                "db.m4.large",
-                "db.m4.xlarge",
-                "db.m4.2xlarge",
-                "db.m4.4xlarge",
-                "db.m5.large",
-                "db.m5.xlarge",
-                "db.m5.2xlarge",
-                "db.m5.4xlarge"
+                "db.t3.small", "db.t3.medium", "db.t3.large",
+                "db.t3.xlarge", "db.t3.2xlarge",
+                "db.r5.large", "db.r5.xlarge", "db.r5.2xlarge", "db.r5.4xlarge",
+                "db.r5b.large", "db.r5b.xlarge", "db.r5b.2xlarge", "db.r5b.4xlarge",
+                "db.r5d.large", "db.r5d.xlarge", "db.r5d.2xlarge", "db.r5d.4xlarge",
+                "db.r6i.large", "db.r6i.xlarge", "db.r6i.2xlarge", "db.r6i.4xlarge",
+                "db.m5.large", "db.m5.xlarge", "db.m5.2xlarge", "db.m5.4xlarge",
+                "db.m5d.large", "db.m5d.xlarge", "db.m5d.2xlarge", "db.m5d.4xlarge",
+                "db.m6i.large", "db.m6i.xlarge", "db.m6i.2xlarge", "db.m6i.4xlarge",
+                "db.z1d.large", "db.z1d.xlarge", "db.z1d.2xlarge", "db.z1d.3xlarge"
               ],
-              {
-                "Ref": "13DBInstanceClass"
-              }
+              { "Ref": "DBInstanceClass" }
             ]
           },
-          "AssertDescription": "For Sql Server Web, the instance type must be one of the following: db.t3.small, db.t3.medium, db.t3.large, db.t3.xlarge, db.t3.2xlarge, db.m4.large, db.m4.xlarge, db.m4.2xlarge, db.m4.4xlarge, db.m5.large, db.m5.xlarge, db.m5.2xlarge, db.m5.4xlarge"
+          "AssertDescription": "SQL Server Web supports burstable t3 up to 2xlarge, plus general purpose and memory-optimized larger classes up to 4xlarge"
         }
       ]
     },
+
     "SqlServerStandard": {
       "RuleCondition": {
-        "Fn::Equals": [
-          {
-            "Ref": "15DBEngine"
-          },
-          "sqlserver-se"
-        ]
+        "Fn::Equals": [{ "Ref": "DBEngine" }, "sqlserver-se"]
       },
       "Assertions": [
         {
           "Assert": {
             "Fn::Contains": [
               [
-                "db.t3.large",
-                "db.t3.xlarge",
-                "db.t3.2xlarge",
-                "db.m4.large",
-                "db.m4.xlarge",
-                "db.m4.2xlarge",
-                "db.m4.4xlarge",
-                "db.m4.10xlarge",
-                "db.m4.16xlarge",
-                "db.m5.large",
-                "db.m5.xlarge",
-                "db.m5.2xlarge",
-                "db.m5.4xlarge",
-                "db.m5.8xlarge",
-                "db.m5.12xlarge",
-                "db.m5.16xlarge",
-                "db.m5.24xlarge",
-                "db.r5.large",
-                "db.r5.xlarge",
-                "db.r5.2xlarge",
-                "db.r5.4xlarge",
-                "db.r5.8xlarge",
-                "db.r5.12xlarge",
-                "db.r5.16xlarge",
-                "db.r5.24xlarge"
+                "db.t3.xlarge", "db.t3.2xlarge",
+                "db.r5.large", "db.r5.xlarge", "db.r5.2xlarge", "db.r5.4xlarge", "db.r5.24xlarge",
+                "db.r5b.large", "db.r5b.xlarge", "db.r5b.2xlarge", "db.r5b.4xlarge", "db.r5b.24xlarge",
+                "db.r5d.large", "db.r5d.xlarge", "db.r5d.2xlarge", "db.r5d.4xlarge", "db.r5d.24xlarge",
+                "db.r6i.large", "db.r6i.xlarge", "db.r6i.2xlarge", "db.r6i.4xlarge", "db.r6i.8xlarge",
+                "db.m5.large", "db.m5.xlarge", "db.m5.2xlarge", "db.m5.4xlarge", "db.m5.24xlarge",
+                "db.m5d.large", "db.m5d.xlarge", "db.m5d.2xlarge", "db.m5d.4xlarge", "db.m5d.24xlarge",
+                "db.m6i.large", "db.m6i.xlarge", "db.m6i.2xlarge", "db.m6i.4xlarge", "db.m6i.8xlarge",
+                "db.x2iedn.xlarge", "db.x2iedn.32xlarge",
+                "db.z1d.large", "db.z1d.xlarge", "db.z1d.2xlarge", "db.z1d.3xlarge", "db.z1d.6xlarge", "db.z1d.12xlarge",
+                "db.x1.16xlarge", "db.x1.32xlarge",
+                "db.x1e.xlarge", "db.x1e.32xlarge"
               ],
-              {
-                "Ref": "13DBInstanceClass"
-              }
+              { "Ref": "DBInstanceClass" }
             ]
           },
-          "AssertDescription": "For Sql Server Standard Edition, the instance type must be one of the following: db.t3.large, db.t3.xlarge, db.t3.2xlarge, db.m4.*, db.m5.*, db.r5.*"
+          "AssertDescription": "SQL Server Standard supports larger burstable and general-purpose including memory-optimized and high-memory classes"
         }
       ]
     },
+
     "SqlServerEnterprise": {
       "RuleCondition": {
-        "Fn::Equals": [
-          {
-            "Ref": "15DBEngine"
-          },
-          "sqlserver-ee"
-        ]
+        "Fn::Equals": [{ "Ref": "DBEngine" }, "sqlserver-ee"]
       },
       "Assertions": [
         {
           "Assert": {
             "Fn::Contains": [
               [
-                "db.t3.xlarge",
-                "db.t3.2xlarge",
-                "db.m4.large",
-                "db.m4.xlarge",
-                "db.m4.2xlarge",
-                "db.m4.4xlarge",
-                "db.m4.10xlarge",
-                "db.m4.16xlarge",
-                "db.m5.large",
-                "db.m5.xlarge",
-                "db.m5.2xlarge",
-                "db.m5.4xlarge",
-                "db.m5.8xlarge",
-                "db.m5.12xlarge",
-                "db.m5.16xlarge",
-                "db.m5.24xlarge",
-                "db.r5.large",
-                "db.r5.xlarge",
-                "db.r5.2xlarge",
-                "db.r5.4xlarge",
-                "db.r5.8xlarge",
-                "db.r5.12xlarge",
-                "db.r5.16xlarge",
-                "db.r5.24xlarge"
+                "db.t3.xlarge", "db.t3.2xlarge",
+                "db.r5.xlarge", "db.r5.2xlarge", "db.r5.4xlarge", "db.r5.24xlarge",
+                "db.r5b.xlarge", "db.r5b.2xlarge", "db.r5b.4xlarge", "db.r5b.24xlarge",
+                "db.r5d.xlarge", "db.r5d.2xlarge", "db.r5d.4xlarge", "db.r5d.24xlarge",
+                "db.r6i.xlarge", "db.r6i.2xlarge", "db.r6i.4xlarge", "db.r6i.8xlarge", "db.r6i.32xlarge",
+                "db.m5.xlarge", "db.m5.2xlarge", "db.m5.4xlarge", "db.m5.24xlarge",
+                "db.m5d.xlarge", "db.m5d.2xlarge", "db.m5d.4xlarge", "db.m5d.24xlarge",
+                "db.m6i.xlarge", "db.m6i.2xlarge", "db.m6i.4xlarge", "db.m6i.8xlarge", "db.m6i.32xlarge",
+                "db.x2iedn.xlarge", "db.x2iedn.32xlarge",
+                "db.z1d.xlarge", "db.z1d.2xlarge", "db.z1d.3xlarge", "db.z1d.6xlarge", "db.z1d.12xlarge",
+                "db.x1.16xlarge", "db.x1.32xlarge",
+                "db.x1e.xlarge", "db.x1e.32xlarge"
               ],
-              {
-                "Ref": "13DBInstanceClass"
-              }
+              { "Ref": "DBInstanceClass" }
             ]
           },
-          "AssertDescription": "For Sql Server Enterprise Edition, the instance type must be one of the following: db.t3.xlarge, db.t3.2xlarge, db.m4.*, db.m5.*, db.r5.*"
+          "AssertDescription": "SQL Server Enterprise supports all large-general and memory-optimized instance classes including high-memory"
         }
       ]
     }
@@ -1152,7 +1067,7 @@
           ]
         },
         "Engine": {
-          "Ref": "15DBEngine"
+          "Ref": "DBEngine"
         },
         "MasterUsername": {
           "Ref": "03DBUsername"
