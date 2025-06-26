@@ -648,7 +648,7 @@
                 "db.t3.micro", "db.t3.small", "db.t3.medium",
                 "db.t3.large", "db.t3.xlarge"
               ],
-              { "Ref": "DBInstanceClass" }
+              { "Ref": "13DBInstanceClass" }
             ]
           },
           "AssertDescription": "Express supports only burstable t3.micro to t3.xlarge"
@@ -676,7 +676,7 @@
                 "db.m6i.large", "db.m6i.xlarge", "db.m6i.2xlarge", "db.m6i.4xlarge",
                 "db.z1d.large", "db.z1d.xlarge", "db.z1d.2xlarge", "db.z1d.3xlarge"
               ],
-              { "Ref": "DBInstanceClass" }
+              { "Ref": "13DBInstanceClass" }
             ]
           },
           "AssertDescription": "SQL Server Web supports burstable t3 up to 2xlarge, plus general purpose and memory-optimized larger classes up to 4xlarge"
@@ -706,7 +706,7 @@
                 "db.x1.16xlarge", "db.x1.32xlarge",
                 "db.x1e.xlarge", "db.x1e.32xlarge"
               ],
-              { "Ref": "DBInstanceClass" }
+              { "Ref": "13DBInstanceClass" }
             ]
           },
           "AssertDescription": "SQL Server Standard supports larger burstable and general-purpose including memory-optimized and high-memory classes"
@@ -736,7 +736,7 @@
                 "db.x1.16xlarge", "db.x1.32xlarge",
                 "db.x1e.xlarge", "db.x1e.32xlarge"
               ],
-              { "Ref": "DBInstanceClass" }
+              { "Ref": "13DBInstanceClass" }
             ]
           },
           "AssertDescription": "SQL Server Enterprise supports all large-general and memory-optimized instance classes including high-memory"
@@ -890,15 +890,7 @@
               "Principal": {
                 "Service": [
                   {
-                    "Fn::Join": [
-                      ".",
-                      [
-                        "ec2",
-                        {
-                          "Ref": "AWS::URLSuffix"
-                        }
-                      ]
-                    ]
+                    "Fn::Join": [ ".", ["ec2",{ "Ref": "AWS::URLSuffix"}]]
                   },
                   "cloudformation.amazonaws.com"
                 ]
@@ -907,17 +899,15 @@
                 "sts:AssumeRole"
               ]
             }
+
           ]
         },
         "ManagedPolicyArns": [
-          "arn:aws:iam::aws:policy/AWSHealthFullAccess",
           "arn:aws:iam::aws:policy/AWSConfigUserAccess",
-          "arn:aws:iam::aws:policy/AmazonSSMFullAccess",
           "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore",
           "arn:aws:iam::aws:policy/AWSResourceGroupsReadOnlyAccess",
           "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy",
-          "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess",
-          "arn:aws:iam::aws:policy/AmazonEC2FullAccess"
+          "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"
         ],
         "Path": "/"
       }
