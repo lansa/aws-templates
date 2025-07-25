@@ -232,7 +232,7 @@
     },
     "ImageId": {
       "Type": "AWS::EC2::Image::Id",
-      "Default": "ami-04bd205706b37ecd9",
+      "Default": "ami-0af3a14194d88cdc2",
       "Description": "The AMI that will be used to launch the Web Servers."
     },
     "MPS3BucketName": {

@@ -5,7 +5,7 @@
 
     "Parameters" : {
         "ImageId"  : {
-            "Type": "String"
+            "Type": "AWS::EC2::Image::Id"
         },
         "DBEndPoint": {
             "Type": "String",
