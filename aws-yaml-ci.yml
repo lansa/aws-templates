@@ -87,7 +87,47 @@ jobs:
       s3BucketName: $(BucketNamePreview)
       s3ObjectKey: templates/$(CookbooksBranch)/lansa-master-win.cfn.template
       templateParametersSource: inline
-      templateParameters: "[{\n    \"ParameterKey\": \"$(DBPasswordKey)\",\n    \"ParameterValue\": \"$(DBPasswordValue)\"\n}, {\n    \"ParameterKey\": \"$(WebPasswordKey)\",\n    \"ParameterValue\": \"$(WebPasswordValue)\"\n}, {\n    \"ParameterKey\": \"$(KeyNameKey)\",    \n    \"ParameterValue\": \"$(KeyNameValue)\"\n}, {\n    \"ParameterKey\": \"$(RemoteAccessLocationKey)\",   \n    \"ParameterValue\": \"$(RemoteAccessLocationValue)\"\n},{\n    \"ParameterKey\": \"10LansaGitRepoBranch\",\n    \"ParameterValue\": \"$(CookbooksBranch)\"\n},{\n    \"ParameterKey\": \"UpdateManagementScripts\",\n    \"ParameterValue\": \"Yes\"\n}, {\n    \"ParameterKey\": \"$(LansaMSIKey)\",   \n    \"ParameterValue\": \"$(msiURLLatest)\"\n}, {\n    \"ParameterKey\": \"CurrentVPC\",   \n    \"ParameterValue\": \"$(CurrentVPC)\"\n}, {\n    \"ParameterKey\": \"AvailabilityZones\",   \n    \"ParameterValue\": \"$(AvailabilityZones)\"\n}, {\n    \"ParameterKey\": \"NumberOfAZs\",   \n    \"ParameterValue\": \"$(NumberOfAZs)\"\n}, {\n    \"ParameterKey\": \"DBSubnetGroupName\",   \n    \"ParameterValue\": \"$(DBSubnetGroupName)\"\n}, {\n    \"ParameterKey\": \"ELBSubnetIds\",   \n    \"ParameterValue\": \"$(ELBSubnetIds)\"\n}, {\n    \"ParameterKey\": \"03DBUsername\",   \n    \"ParameterValue\": \"$(03DBUsername)\"\n}\n]"
+      templateParameters: |
+        [{
+            "ParameterKey": "$(DBPasswordKey)",
+            "ParameterValue": "$(DBPasswordValue)"
+        }, {
+            "ParameterKey": "$(WebPasswordKey)",
+            "ParameterValue": "$(WebPasswordValue)"
+        }, {
+            "ParameterKey": "$(KeyNameKey)",
+            "ParameterValue": "$(KeyNameValue)"
+        }, {
+            "ParameterKey": "$(RemoteAccessLocationKey)",
+            "ParameterValue": "$(RemoteAccessLocationValue)"
+        },{
+            "ParameterKey": "10LansaGitRepoBranch",
+            "ParameterValue": "$(CookbooksBranch)"
+        },{
+            "ParameterKey": "UpdateManagementScripts",
+            "ParameterValue": "Yes"
+        }, {
+            "ParameterKey": "$(LansaMSIKey)",
+            "ParameterValue": "$(msiURLLatest)"
+        }, {
+            "ParameterKey": "CurrentVPC",
+            "ParameterValue": "$(CurrentVPC)"
+        }, {
+            "ParameterKey": "AvailabilityZones",
+            "ParameterValue": "$(AvailabilityZones)"
+        }, {
+            "ParameterKey": "NumberOfAZs",
+            "ParameterValue": "$(NumberOfAZs)"
+        }, {
+            "ParameterKey": "DBSubnetGroupName",
+            "ParameterValue": "$(DBSubnetGroupName)"
+        }, {
+            "ParameterKey": "ELBSubnetIds",
+            "ParameterValue": "$(ELBSubnetIds)"
+        }, {
+            "ParameterKey":  "03DBUsername",
+            "ParameterValue": "$(03DBUsername)"
+        }]
       tags: usage=temp-test
       onFailure: DO_NOTHING
       outputVariable: deploymentOutput
