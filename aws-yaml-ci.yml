@@ -19,7 +19,7 @@ resources:
     ref: support/scalable
 jobs:
 - job: Job_2
-  displayName: 'Agent job: CFN Tests Win'
+  displayName: 'Test Template CI'
   timeoutInMinutes: 360
   pool:
     vmImage: windows-2022
@@ -36,8 +36,9 @@ jobs:
         *.template
       targetFolder: templates/$(CookbooksBranch)
       filesAcl: public-read-write
+
   - task: AmazonWebServices.aws-vsts-tools.AWSPowerShellModuleScript.AWSPowerShellModuleScript@1
-    displayName: 'Cleanup CFN Template : BakingDP'
+    displayName: 'Delete existing stack : BakingDP'
     inputs:
       awsCredentials: $(awsCredentials)
       regionName: $(regionName)
@@ -73,9 +74,10 @@ jobs:
         Write-Host "There is no stack or it was deleted"
 
         }
+
   - task: AmazonWebServices.aws-vsts-tools.CloudFormationCreateOrUpdateStack.CloudFormationCreateOrUpdateStack@1
     name: ''
-    displayName: 'Deploy CFN Template : BakingDP-TemplateTest'
+    displayName: 'Deploy BakingDP-TemplateTest stack'
     inputs:
       awsCredentials: $(awsCredentials)
       regionName: $(regionName)
@@ -92,75 +94,43 @@ jobs:
       captureStackOutputs: $(captureStackOutputs)
       captureAsSecuredVars: false
       timeoutInMins: 100
+
   - task: AmazonWebServices.aws-vsts-tools.AWSPowerShellModuleScript.AWSPowerShellModuleScript@1
-    displayName: 'Test CFN Deployment : URL Tests'
+    displayName: 'Run URL Tests'
     inputs:
       awsCredentials: $(awsCredentials)
       regionName: $(regionName)
       arguments: -Gatestack $(stackname)
       filePath: scripts\TestCFNDeployment.ps1
+
   - task: AmazonWebServices.aws-vsts-tools.AWSPowerShellModuleScript.AWSPowerShellModuleScript@1
-    displayName: 'Aws PowerShell : Test Image Version w19d-15-0 Prod'
+    displayName: 'Test Image Version w19d-15-0 Prod'
     condition: or(succeeded(), eq(variables['ForceDeploy'], 'True'))
     inputs:
       awsCredentials: $(awsCredentials)
       regionName: $(regionName)
       arguments: -Gatestack $(stackname) -Gateversion "w19d-15-0-$(VersionText-TemplateCI)" -Region 'ap-southeast-2'
       filePath: scripts/AlternateImageVersion.ps1
-  # - task: AmazonWebServices.aws-vsts-tools.AWSPowerShellModuleScript.AWSPowerShellModuleScript@1
-  #   displayName: 'Cleanup CFN Template : BakingDP '
-  #   inputs:
-  #     awsCredentials: $(awsCredentials)
-  #     regionName: $(regionName)
-  #     scriptType: inline
-  #     inlineScript: >-
-  #       try{
 
-  #       Get-CFNStack -StackName $(stackname)
-
-  #       Remove-CFNStack -StackName $(stackname) -Force
-
-  #       $count =0
-
-  #       while($count -lt 20){
-  #          try{
-  #                Get-CFNStack -StackName $(stackname)
-  #                Start-Sleep -Seconds 200
-  #                Write-Host "Deleting stack"
-  #                $count = $count +1
-  #              }
-  #           catch{
-  #                Write-Host "Stack Deleted"
-  #                break
-  #                 }
-  #            }
-
-  #       Write-Host "Stack deleted"
-
-  #       }
-
-  #       catch{
-
-  #       Write-Host "There is no stack or it was deleted"
-
-  #       }
   - task: CopyFiles@2
-    displayName: 'Copy Files to: Artifact Staging Directory'
+    displayName: 'Copy Files to Artifact Staging Directory'
     inputs:
       SourceFolder: CloudFormationWindows
       Contents: '*.template'
       TargetFolder: $(build.artifactstagingdirectory)
       CleanTargetFolder: true
       OverWrite: true
+
   - task: ArchiveFiles@2
-    displayName: Archive Files in Staging Directory
+    displayName: 'Zip Files in Staging Directory'
     inputs:
       rootFolderOrFile: $(build.artifactstagingdirectory)
       sevenZipCompression: 5
       archiveFile: $(Build.ArtifactStagingDirectory)/AwsTemplates.zip
       verbose: true
+
   - task: PublishBuildArtifacts@1
-    displayName: 'Publish Artifact: Solution Template'
+    displayName: 'Publish Solution Template Artifact'
     inputs:
       ArtifactName: Solution Template
       FileCopyOptions: ''
