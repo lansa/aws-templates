@@ -31,6 +31,11 @@ if (-not $?) {
   Write-Host("git delete $GitBranch failed. Ignoring");
 }
 
+git branch -D $GitBranch
+if (-not $?) {
+  Write-Host("git delete local $GitBranch failed. Ignoring");
+}
+
 Write-Host 'checkout temp branch'
 git checkout -b $GitBranch
 if (-not $?) {
