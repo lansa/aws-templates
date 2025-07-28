@@ -8,44 +8,44 @@ param (
     $GitRepoName
   )
 
-# change to project directory
+Write-Host 'change to project directory'
 cd "$($env:Pipeline_Workspace)/$($GitRepoName)"
 
-# sync with git server
+Write-Host 'sync with git server'
 git fetch
 if (-not $?) {
   Write-Host("git fetch failed");
   exit 1
 }
 
-# sync remote branches
+Write-Host 'sync remote branches'
 git branch --remote
 if (-not $?) {
   Write-Host("git branch --remote failed");
   exit 1
 }
 
-# delete git branch remote one
+Write-Host "delete git branch remote one $GitBranch"
 git push origin :$GitBranch
 if (-not $?) {
   Write-Host("git delete $GitBranch failed. Ignoring");
 }
 
-# checkout temp branch
+Write-Host 'checkout temp branch'
 git checkout -b $GitBranch
 if (-not $?) {
   Write-Host("git checkout -b $GitBranch failed");
   exit 1
 }
 
-# push temp branch
+Write-Host 'push temp branch'
 git push origin $GitBranch
 if (-not $?) {
   Write-Host("git push origin $GitBranch failed");
   exit 1
 }
 
-# set branch to push current one
+Write-Host 'set branch to push current one'
 git config --global push.default current
 if (-not $?) {
   Write-Host("git config --global push.default current failed");
