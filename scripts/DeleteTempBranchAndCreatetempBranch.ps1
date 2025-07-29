@@ -12,9 +12,9 @@ Write-Host 'change to project directory'
 cd "$($env:Pipeline_Workspace)/$($GitRepoName)"
 
 Write-Host 'sync with git server'
-git fetch
+git pull
 if (-not $?) {
-  Write-Host("git fetch failed");
+  Write-Host("git pull failed");
   exit 1
 }
 
