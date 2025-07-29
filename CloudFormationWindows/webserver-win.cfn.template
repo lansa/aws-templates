@@ -212,8 +212,9 @@
             "Type": "AWS::AutoScaling::AutoScalingGroup",
             "Properties": {
                 "VPCZoneIdentifier" : { "Ref": "WebServerSubnet"},
-                "LaunchConfigurationName": {
-                    "Ref": "LaunchWebServer"
+                "LaunchTemplate": {
+                    "LaunchTemplateId": { "Ref": "LaunchWebServerTemplate" },
+                    "Version": { "Fn::GetAtt": [ "LaunchWebServerTemplate", "LatestVersionNumber" ] }
                 },
                 "MinSize": {"Ref" : "18WebServerCapacity"},
                 "MaxSize": {"Ref" : "18WebServerCapacityMaxSize"},
@@ -229,8 +230,8 @@
 
             }
         },
-        "LaunchWebServer": {
-            "Type": "AWS::AutoScaling::LaunchConfiguration",
+        "LaunchWebServerTemplate": {
+            "Type": "AWS::AutoScaling::LaunchTemplate",
             "Metadata": {
                 "TriggerCakeUpdate": { "Ref": "22TriggerCakeUpdate" },
                 "TriggerChefUpdate": { "Ref": "23TriggerChefUpdate" },
@@ -812,49 +813,56 @@
                 }
             },
             "Properties": {
-                "ImageId":  { "Ref" : "ImageId" },
-                "InstanceType": { "Ref": "11WebServerInstanceTyp" },
-                "IamInstanceProfile": { "Ref": "IAMRoleInstanceProfile" },
-                "SecurityGroups": [ { "Ref": "LansaSecurityGroup" } ],
-                "KeyName": { "Ref": "07KeyName" },
-                "UserData": {
-                    "Fn::Base64": {
-                        "Fn::Join": [
-                            "",
-                            [
-                                "<powershell>\n",
-                                "# Only install MSI if the url has been provided\n",
-                                "[Console]::OutputEncoding = [System.Text.Encoding]::UTF8\n",
-                                "if ('' -ne '",
-                                { "Ref": "01LansaMSI" },
-                                "') {",
-                                    "& cfn-init.exe --% -v ",
-                                    "  --stack ",
-                                    { "Ref": "AWS::StackId" },
-                                    "  --resource LaunchWebServer",
-                                    "  --configsets icing-install ",
-                                    "  --region ",
-                                    { "Ref": "AWS::Region" },
-                                    "\n",
-                                "} else {",
-                                    "Write-Host('Skipping MSI install as 01LansaMSI template parameter is blank');",
-                                    "& cfn-init.exe --% -v ",
-                                    "  --stack ",
-                                    { "Ref": "AWS::StackId" },
-                                    "  --resource LaunchWebServer",
-                                    "  --configsets no-icing ",
-                                    "  --region ",
-                                    { "Ref": "AWS::Region" },
-                                    "\n",
-                                "}",
+                "LaunchTemplateName": "LaunchWebServerTemplate",
+                "LaunchTemplateData": {
+                    "ImageId":  { "Ref" : "ImageId" },
+                    "InstanceType": { "Ref": "11WebServerInstanceTyp" },
+                    "IamInstanceProfile": { "Ref": "IAMRoleInstanceProfile" },
+                    "SecurityGroupIds": [ { "Ref": "LansaSecurityGroup" } ],
+                    "KeyName": { "Ref": "07KeyName" },
+                    "MetadataOptions": {
+                        "HttpTokens": "required",
+                        "HttpEndpoint": "enabled"
+                    },
+                    "UserData": {
+                        "Fn::Base64": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "<powershell>\n",
+                                    "# Only install MSI if the url has been provided\n",
+                                    "[Console]::OutputEncoding = [System.Text.Encoding]::UTF8\n",
+                                    "if ('' -ne '",
+                                    { "Ref": "01LansaMSI" },
+                                    "') {",
+                                        "& cfn-init.exe --% -v ",
+                                        "  --stack ",
+                                        { "Ref": "AWS::StackId" },
+                                        "  --resource LaunchWebServer",
+                                        "  --configsets icing-install ",
+                                        "  --region ",
+                                        { "Ref": "AWS::Region" },
+                                        "\n",
+                                    "} else {",
+                                        "Write-Host('Skipping MSI install as 01LansaMSI template parameter is blank');",
+                                        "& cfn-init.exe --% -v ",
+                                        "  --stack ",
+                                        { "Ref": "AWS::StackId" },
+                                        "  --resource LaunchWebServer",
+                                        "  --configsets no-icing ",
+                                        "  --region ",
+                                        { "Ref": "AWS::Region" },
+                                        "\n",
+                                    "}",
 
-                                "& cfn-signal.exe -e $LASTEXITCODE --% ",
-                                { "Fn::Base64": { "Ref": "WaitHandle" } },
-                                "\n",
+                                    "& cfn-signal.exe -e $LASTEXITCODE --% ",
+                                    { "Fn::Base64": { "Ref": "WaitHandle" } },
+                                    "\n",
 
-                                "</powershell>\n"
+                                    "</powershell>\n"
+                                ]
                             ]
-                        ]
+                        }
                     }
                 }
             }
