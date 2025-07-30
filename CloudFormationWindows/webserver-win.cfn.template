@@ -817,7 +817,7 @@
                 "LaunchTemplateData": {
                     "ImageId":  { "Ref" : "ImageId" },
                     "InstanceType": { "Ref": "11WebServerInstanceTyp" },
-                    "IamInstanceProfile": { "Ref": "IAMRoleInstanceProfile" },
+                    "IamInstanceProfile": { "Name": { "Ref": "IAMRoleInstanceProfile" } },
                     "SecurityGroupIds": [ { "Ref": "LansaSecurityGroup" } ],
                     "KeyName": { "Ref": "07KeyName" },
                     "MetadataOptions": {
