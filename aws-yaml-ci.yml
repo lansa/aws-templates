@@ -108,7 +108,7 @@ jobs:
             "ParameterValue": "Yes"
         }, {
             "ParameterKey": "$(LansaMSIKey)",
-            "ParameterValue": "$(msiURLLatest)"
+            "ParameterValue": "$(msiURLv16)"
         }, {
             "ParameterKey": "CurrentVPC",
             "ParameterValue": "$(CurrentVPC)"
