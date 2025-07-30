@@ -224,14 +224,14 @@
                 "MaxInstanceLifetime" : {"Ref": "MaxInstanceLifetime"},
                 "LoadBalancerNames": [ { "Ref": "WebServerELB" } ],
                 "Tags": [
-                    { "Key": {"Ref":"TagName"}, "Value": {"Ref":"TagValue"},          "PropagateAtLaunch": "true"},
-                    { "Key": "Name",            "Value": { "Ref" : "WebServerName" }, "PropagateAtLaunch": "true"}
+                    { "Key": {"Ref":"TagName"}, "Value": { "Ref": "TagValue"},       "PropagateAtLaunch": "true"},
+                    { "Key": "Name",            "Value": { "Ref": "WebServerName" }, "PropagateAtLaunch": "true"}
                 ]
 
             }
         },
         "LaunchWebServerTemplate": {
-            "Type": "AWS::AutoScaling::LaunchTemplate",
+            "Type": "AWS::EC2::LaunchTemplate",
             "Metadata": {
                 "TriggerCakeUpdate": { "Ref": "22TriggerCakeUpdate" },
                 "TriggerChefUpdate": { "Ref": "23TriggerChefUpdate" },
