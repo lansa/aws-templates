@@ -203,13 +203,6 @@
             "Description": "Value of the tag with which to tag every resource"
         }
     },
-    "Mappings": {
-        "CustomVariable": {
-            "LaunchTemplateName": {
-                "Value": { "Fn::Sub": "LaunchTemplate-${AWS::StackName}" }
-            }
-        }
-    },
     "Conditions" : {
         "DoesNotHaveUserScript" : {"Fn::Equals" : [{"Ref" : "17UserScriptHook"}, ""]},
         "HasUserScript" : {"Fn::Not" : [{"Condition" : "DoesNotHaveUserScript"}]}
@@ -220,8 +213,8 @@
             "Properties": {
                 "VPCZoneIdentifier" : { "Ref": "WebServerSubnet"},
                 "LaunchTemplate": {
-                    "LaunchTemplateId": { "Ref": { "Fn::FindInMap": [ "CustomVariable", "LaunchTemplateName", "Value" ] } },
-                    "Version": { "Fn::GetAtt": [ { "Fn::FindInMap": [ "CustomVariable", "LaunchTemplateName", "Value" ] }, "LatestVersionNumber" ] }
+                    "LaunchTemplateId": { "Ref": { "Fn::Sub": "LaunchTemplate-${AWS::StackName}" } },
+                    "Version": { "Fn::GetAtt": [ { "Fn::Sub": "LaunchTemplate-${AWS::StackName}" }, "LatestVersionNumber" ] }
                 },
                 "MinSize": {"Ref" : "18WebServerCapacity"},
                 "MaxSize": {"Ref" : "18WebServerCapacityMaxSize"},
@@ -820,7 +813,7 @@
                 }
             },
             "Properties": {
-                "LaunchTemplateName": { "Fn::FindInMap": [ "CustomVariable", "LaunchTemplateName", "Value" ] },
+                "LaunchTemplateName": { "Fn::Sub": "LaunchTemplate-${AWS::StackName}" },
                 "LaunchTemplateData": {
                     "ImageId":  { "Ref" : "ImageId" },
                     "InstanceType": { "Ref": "11WebServerInstanceTyp" },
