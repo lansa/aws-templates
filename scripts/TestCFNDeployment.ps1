@@ -46,7 +46,7 @@ $failureCount = 0
 forEach($url in $urls) {
     Write-Host $url
     try{
-        $response = Invoke-WebRequest -Uri $url -TimeoutSec 60
+        $response = Invoke-WebRequest -Uri $url -TimeoutSec 60 -UseBasicParsing
         $ResponseCode = $response.StatusCode
         if($ResponseCode -ne 200) {
             Write-Host "Response code not equal to 200: $ResponseCode"
