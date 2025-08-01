@@ -213,8 +213,8 @@
             "Properties": {
                 "VPCZoneIdentifier" : { "Ref": "WebServerSubnet"},
                 "LaunchTemplate": {
-                    "LaunchTemplateId": { "Ref": { "Fn::Sub": "LaunchTemplate-${AWS::StackName}" } },
-                    "Version": { "Fn::GetAtt": [ { "Fn::Sub": "LaunchTemplate-${AWS::StackName}" }, "LatestVersionNumber" ] }
+                    "LaunchTemplateId": { "Ref": "LaunchWebServerTemplate" },
+                    "Version": { "Fn::GetAtt": [ "LaunchWebServerTemplate", "LatestVersionNumber" ] }
                 },
                 "MinSize": {"Ref" : "18WebServerCapacity"},
                 "MaxSize": {"Ref" : "18WebServerCapacityMaxSize"},
