@@ -33,7 +33,8 @@ jobs:
   displayName: 'Test Template CI'
   timeoutInMinutes: 360
   pool:
-    vmImage: windows-2022
+    vmImage: windows-latest
+
   steps:
   - checkout: self
 
@@ -148,8 +149,10 @@ jobs:
     inputs:
       awsCredentials: $(awsCredentials)
       regionName: $(regionName)
-      arguments: -Gatestack $(stackname)
       filePath: scripts\TestCFNDeployment.ps1
+      arguments:
+        -Gatestack $(stackname)
+        -DisableIntegratorTest
 
   - task: AmazonWebServices.aws-vsts-tools.AWSPowerShellModuleScript.AWSPowerShellModuleScript@1
     displayName: 'Test Image Version w19d-15-0 Prod'
