@@ -1,3 +1,12 @@
+# Note: This file is in a separate repository and its not currently seen as worth while
+# to move it to the main repository. It is used for CI/CD of AWS CloudFormation templates.
+# Therefore:
+# 1. it doesn't use the self-hosted agent pool which requires scripts declared in the main repository.
+#
+# Also note that it uses the ImageId specified in the template. This needs to be updated
+# manually when the image is updated. It would be better to pick up the image id from, say
+# the published image artefacts. But its about template validation, not image validation.
+# Therefore the image id is unimportant.
 variables:
 - name: captureStackOutputs
   value: asJSON
@@ -25,17 +34,11 @@ jobs:
     vmImage: windows-2022
   steps:
   - checkout: self
-  - task: AmazonWebServices.aws-vsts-tools.S3Upload.S3Upload@1
-    displayName: 'S3 Upload: lansa'
-    inputs:
-      awsCredentials: $(awsCredentials)
-      regionName: $(regionName)
-      bucketName: $(BucketNamePreview)
+
+  - template: AWSValidateTemplates.yml
+    parameters:
       sourceFolder: CloudFormationWindows
-      globExpressions: >
-        *.template
       targetFolder: templates/$(CookbooksBranch)
-      filesAcl: public-read-write
 
   - task: AmazonWebServices.aws-vsts-tools.AWSPowerShellModuleScript.AWSPowerShellModuleScript@1
     displayName: 'Delete existing stack : BakingDP'
@@ -127,6 +130,9 @@ jobs:
         }, {
             "ParameterKey":  "03DBUsername",
             "ParameterValue": "$(03DBUsername)"
+        }, {
+            "ParameterKey": "MPS3KeyPrefix",
+            "ParameterValue": "templates/$(CookbooksBranch)$(TemplateS3Namespace)/"
         }]
       tags: usage=temp-test
       onFailure: DO_NOTHING
@@ -149,8 +155,11 @@ jobs:
     inputs:
       awsCredentials: $(awsCredentials)
       regionName: $(regionName)
-      arguments: -Gatestack $(stackname) -Gateversion "w19d-15-0-$(VersionText-TemplateCI)" -Region 'ap-southeast-2'
       filePath: scripts/AlternateImageVersion.ps1
+      arguments:
+        -Gatestack $(stackname)
+        -Gateversion "w19d-15-0-$(VersionText-TemplateCI)"
+        -Region 'ap-southeast-2'
 
   - task: CopyFiles@2
     displayName: 'Copy Files to Artifact Staging Directory'
