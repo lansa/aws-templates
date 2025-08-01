@@ -14,6 +14,8 @@ variables:
   value: $(Build.Repository.LocalPath)\cookbooks
 - name: CookbooksSource1
   value: c:\lansa
+- name: TemplateS3Namespace
+  value:
 - name: regionName
   value: ap-southeast-2
 - group: "Default Branch"
