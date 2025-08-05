@@ -6,7 +6,7 @@ param (
 
 try{
 Get-CFNStack -StackName $($Gatestack)
-Remove-CFNStack -StackName $($Gatestack) -Force
+Remove-CFNStack -StackName $($Gatestack) -Force -DeletionMode FORCE_DELETE_STACK
 $count =0
 while($count -lt 20){
    try{
