@@ -6,7 +6,8 @@ param (
 
 try{
     Get-CFNStack -StackName $($Gatestack)
-    Remove-CFNStack -StackName $($Gatestack) -Force -DeletionMode FORCE_DELETE_STACK
+    # Documentation says that there is a  -DeletionMode parameter, but it throws an error saying the parameter does not exist
+    Remove-CFNStack -StackName $($Gatestack) -Force
     $count =0
     while($count -lt 20){
         try{
