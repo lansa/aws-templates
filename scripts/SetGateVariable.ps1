@@ -22,11 +22,16 @@ if (Test-Path $path) {
         $imageName -match "$BaseImageName[-]?[0-9]+"
         $version = $Matches[0]
         Write-Host "Version : $version"
+
+        $VersionDigits = [regex]::Match($Version, '-(\d+)$').Groups[1].Value
+        Write-Host "Version Digits : $VersionDigits"
+
         $stackname = "$stackname-$BaseImageName"
         Write-Host "Stack name : $stackname"
         #Set Variables
         Write-Host "##vso[task.setvariable variable=stack;isOutput=true]$stackname"
         Write-Host "##vso[task.setvariable variable=version;isOutput=true]$version"
+        Write-Host "##vso[task.setvariable variable=VersionDigits;isOutput=true]$VersionDigits"
         Write-Host "##vso[task.setvariable variable=ImageID;isOutput=true]$amiID"
         Write-Host "##vso[task.setvariable variable=IsEnabled;isOutput=true]True"
         Write-host "The value of Variable IsEnabled is updated to True and output variable ImageID to $amiID"
