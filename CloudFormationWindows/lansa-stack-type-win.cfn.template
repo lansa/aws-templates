@@ -273,7 +273,7 @@
     "Mappings": {
         "StackDifferences": {
             "Metadata": { "Comment1": "Table of differences between the 5 Stack Types" },
-            "13DBInstanceClass": { "Development": "db.t3.small", "Test" : "db.t3.large",  "Small" : "db.t3.2xlarge",  "Medium" : "db.r5.xlarge",  "Large" : "db.r5.8xlarge" },
+            "13DBInstanceClass": { "Development": "db.t3.small", "Test" : "db.t3.large",  "Small" : "db.t3.2xlarge",  "Medium" : "db.r5.xlarge",  "Large" : "db.r6i.8xlarge" },
             "DBEngine": { "Development": "sqlserver-ex", "Test" : "sqlserver-web",  "Small" : "sqlserver-web",  "Medium" : "sqlserver-se",  "Large" : "sqlserver-ee" },
             "19DBAllocatedStorage": { "Development": "20", "Test" : "100",  "Small" : "500",  "Medium" : "1000",  "Large" : "1000" },
             "DBIOPSRatio": { "Development": "0", "Test" : "10",  "Small" : "10",  "Medium" : "10",  "Large" : "10" },
