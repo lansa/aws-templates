@@ -39,7 +39,7 @@
     },
     "01LansaMSI": {
       "Type": "String",
-      "Description": "URL of the LANSA MSI to install. The MSI must have been previously uploaded to the specified location in Amazon S3 BLOB storage. Here is an example application you may use https://s3-ap-southeast-2.amazonaws.com/lansa/app/Test/AWAMAPP_v14.2.21217_en-us.msi"
+      "Description": "URL of the LANSA MSI to install. The MSI must have been previously uploaded to the specified location in Amazon S3 BLOB storage. Here is an example application you may use https://s3-ap-southeast-2.amazonaws.com/lansa/app/Test/AWAMAPP_v15.0.24110_en-us.msi"
     },
     "02LansaMSIBitness": {
       "Default": "1",
@@ -104,187 +104,10 @@
       "Description": "Git branch to checkout from Lansa Git repository and the S3 folder from which the nested templates are loaded. This pulls in the script files which are used to assemble the Icing. This is performed during the initial launch and also everytime a Trigger is fired.",
       "Type": "String"
     },
-    "TemplateS3Namespace": {
-      "Default": "",
-      "Description": "Usually left empty. Adds another sub folder level to the template location in S3 so that developers and CI/CD pipelines may segregate their template versions. ",
-      "Type": "String"
-    },
-    "11WebserverOSVersion": {
-      "Default": "win2019",
-      "Description": "WebServer Windows operating system version.",
-      "Type": "String",
-      "AllowedValues": [
-        "win2016",
-        "win2019",
-        "win2016jpn",
-        "win2019jpn",
-        "win2022",
-        "win2022jpn"
-      ]
-    },
     "11WebServerInstanceTyp": {
       "Description": "WebServer EC2 instance type. See http://aws.amazon.com/ec2/instance-types/ for more information.",
       "Type": "String",
-      "Default": "t3.medium",
-      "AllowedValues": [
-        "c4.large",
-        "c4.xlarge",
-        "c4.2xlarge",
-        "c4.4xlarge",
-        "c4.8xlarge",
-        "c5.large",
-        "c5.xlarge",
-        "c5.2xlarge",
-        "c5.4xlarge",
-        "c5.9xlarge",
-        "c5.12xlarge",
-        "c5.18xlarge",
-        "c5.24xlarge",
-        "c5.metal",
-        "c5d.large",
-        "c5d.xlarge",
-        "c5d.2xlarge",
-        "c5d.4xlarge",
-        "c5d.9xlarge",
-        "c5d.12xlarge",
-        "c5d.18xlarge",
-        "c5d.24xlarge",
-        "c5d.metal",
-        "c5n.large",
-        "c5n.xlarge",
-        "c5n.2xlarge",
-        "c5n.4xlarge",
-        "c5n.9xlarge",
-        "c5n.18xlarge",
-        "c5n.metal",
-        "d2.xlarge",
-        "d2.2xlarge",
-        "d2.4xlarge",
-        "d2.8xlarge",
-        "g3.4xlarge",
-        "g3.8xlarge",
-        "g3.16xlarge",
-        "i3.large",
-        "i3.xlarge",
-        "i3.2xlarge",
-        "i3.4xlarge",
-        "i3.8xlarge",
-        "i3.16xlarge",
-        "i3.metal",
-        "m4.large",
-        "m4.xlarge",
-        "m4.2xlarge",
-        "m4.4xlarge",
-        "m4.10xlarge",
-        "m4.16xlarge",
-        "m5.large",
-        "m5.2xlarge",
-        "m5.4xlarge",
-        "m5.8xlarge",
-        "m5.12xlarge",
-        "m5.16xlarge",
-        "m5.24xlarge",
-        "m5.metal",
-        "m5a.large",
-        "m5a.xlarge",
-        "m5a.2xlarge",
-        "m5a.4xlarge",
-        "m5a.8xlarge",
-        "m5a.12xlarge",
-        "m5a.16xlarge",
-        "m5a.24xlarge",
-        "m5ad.large",
-        "m5ad.xlarge",
-        "m5ad.2xlarge",
-        "m5ad.4xlarge",
-        "m5ad.8xlarge",
-        "m5ad.12xlarge",
-        "m5ad.24xlarge",
-        "m5d.large",
-        "m5d.xlarge",
-        "m5d.2xlarge",
-        "m5d.4xlarge",
-        "m5d.8xlarge",
-        "m5d.12xlarge",
-        "m5d.16xlarge",
-        "m5d.24xlarge",
-        "m5d.metal",
-        "m5dn.large",
-        "m5dn.xlarge",
-        "m5dn.2xlarge",
-        "m5dn.4xlarge",
-        "m5dn.8xlarge",
-        "m5dn.12xlarge",
-        "m5dn.16xlarge",
-        "m5dn.24xlarge",
-        "m5n.large",
-        "m5n.xlarge",
-        "m5n.2xlarge",
-        "m5n.4xlarge",
-        "m5n.8xlarge",
-        "m5n.12xlarge",
-        "m5n.16xlarge",
-        "m5n.24xlarge",
-        "p2.xlarge",
-        "p2.8xlarge",
-        "p2.16xlarge",
-        "p3.2xlarge",
-        "p3.8xlarge",
-        "p3.16xlarge",
-        "r4.large",
-        "r4.xlarge",
-        "r4.2xlarge",
-        "r4.4xlarge",
-        "r4.8xlarge",
-        "r4.16xlarge",
-        "r5.large",
-        "r5.xlarge",
-        "r5.2xlarge",
-        "r5.4xlarge",
-        "r5.8xlarge",
-        "r5.12xlarge",
-        "r5.16xlarge",
-        "r5.24xlarge",
-        "r5.metal",
-        "r5d.large",
-        "r5d.xlarge",
-        "r5d.2xlarge",
-        "r5d.4xlarge",
-        "r5d.8xlarge",
-        "r5d.12xlarge",
-        "r5d.16xlarge",
-        "r5d.24xlarge",
-        "r5d.metal",
-        "t2.nano",
-        "t2.micro",
-        "t2.small",
-        "t2.medium",
-        "t2.large",
-        "t2.xlarge",
-        "t2.2xlarge",
-        "t3.nano",
-        "t3.micro",
-        "t3.small",
-        "t3.medium",
-        "t3.large",
-        "t3.xlarge",
-        "t3.2xlarge",
-        "t3a.nano",
-        "t3a.micro",
-        "t3a.small",
-        "t3a.medium",
-        "t3a.large",
-        "t3a.xlarge",
-        "t3a.2xlarge",
-        "x1.16xlarge",
-        "x1.32xlarge",
-        "x1e.xlarge",
-        "x1e.2xlarge",
-        "x1e.4xlarge",
-        "x1e.8xlarge",
-        "x1e.16xlarge",
-        "x1e.32xlarge"
-      ]
+      "Default": "t3a.2xlarge"
     },
     "12WebServerMaxConnec": {
       "Description": "The maximum number of LANSA jobs to run on each Web Server. Setting TriggerWebConfig will cause this value to be updated.",
@@ -293,38 +116,8 @@
     },
     "13DBInstanceClass": {
       "Default": "db.t3.small",
-      "Description": "A valid database instance class. See http://aws.amazon.com/rds/details/ for more information.",
-      "Type": "String",
-      "AllowedValues": [
-        "db.m4.large",
-        "db.m4.xlarge",
-        "db.m4.2xlarge",
-        "db.m4.4xlarge",
-        "db.m4.10xlarge",
-        "db.m4.16xlarge",
-        "db.m5.large",
-        "db.m5.xlarge",
-        "db.m5.2xlarge",
-        "db.m5.4xlarge",
-        "db.m5.8xlarge",
-        "db.m5.12xlarge",
-        "db.m5.16xlarge",
-        "db.m5.24xlarge",
-        "db.r5.large",
-        "db.r5.xlarge",
-        "db.r5.2xlarge",
-        "db.r5.4xlarge",
-        "db.r5.8xlarge",
-        "db.r5.12xlarge",
-        "db.r5.16xlarge",
-        "db.r5.24xlarge",
-        "db.t3.micro",
-        "db.t3.small",
-        "db.t3.medium",
-        "db.t3.large",
-        "db.t3.xlarge",
-        "db.t3.2xlarge"
-      ]
+      "Description": "A valid database instance class. See https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/SQLServer.Concepts.General.InstanceClasses.html for more information.",
+      "Type": "String"
     },
     "14DBName": {
       "Default": "lansa",
@@ -334,7 +127,7 @@
       "MaxLength": "64",
       "AllowedPattern": "[a-zA-Z][a-zA-Z0-9]*"
     },
-    "15DBEngine": {
+    "DBEngine": {
       "Description": "Database engine type. Must be a valid SQL Server engine type. Note that to support mirroring you need to choose 'sqlserver-ee' or 'sqlserver-se'. Otherwise you may choose 'sqlserver-web' or 'sqlserver-ex'.",
       "Type": "String",
       "Default": "sqlserver-web",
@@ -427,29 +220,6 @@
       "Default": "/change me",
       "Description": "Update Stack: S3 folder which will contain the patches. (case sensitive). Note that ALL sub-directories are searched so ensure the directory used to store the patches has no sub directories. For the demo use app/test-patches. See TriggerPatchInstall parameter for more details."
     },
-    "LansaVersion": {
-      "Type": "String",
-      "AllowedValues": [
-        "V15 GA",
-        "V14 SP2"
-      ],
-      "Default": "V15 GA",
-      "Description": "Visual LANSA Version"
-    },
-    "ImageSource": {
-      "Type": "String",
-      "AllowedValues": [
-        "Marketplace",
-        "Custom"
-      ],
-      "Default": "Marketplace",
-      "Description": "Location from where the image must be picked"
-    },
-    "AMIId": {
-      "Type": "String",
-      "Default": "",
-      "Description": "The AMI Id of the custom image. Not required when Image Source is set to Marketplace"
-    },
     "TagName": {
       "Default": "Environment",
       "Type": "String",
@@ -459,6 +229,26 @@
       "Default": "Production",
       "Type": "String",
       "Description": "Value of the tag with which to tag every resource"
+    },
+    "ImageId": {
+      "Type": "AWS::EC2::Image::Id",
+      "Default": "ami-0af3a14194d88cdc2",
+      "Description": "The AMI that will be used to launch the Web Servers."
+    },
+    "MPS3BucketName": {
+      "Type": "String",
+      "Default": "lansa",
+      "Description": "Name of the S3 bucket for your copy of the nested templates."
+    },
+    "MPS3BucketRegion": {
+      "Type": "String",
+      "Default": "ap-southeast-2",
+      "Description": "AWS Region where the S3 bucket for your copy of the nested templates is hosted."
+    },
+    "MPS3KeyPrefix": {
+      "Type": "String",
+      "Default": "templates/support/scalable/",
+      "Description": "S3 key prefix that is used to simulate a folder for your copy of the nested templates. There MUST be a '/' on the end"
     }
   },
   "Metadata": {
@@ -499,7 +289,7 @@
           "Parameters": [
             "13DBInstanceClass",
             "14DBName",
-            "15DBEngine",
+            "DBEngine",
             "DBCCSID",
             "DBTimeZone",
             "19DBAllocatedStorage",
@@ -511,10 +301,6 @@
             "default": "Web Server Configuration"
           },
           "Parameters": [
-            "LansaVersion",
-            "11WebserverOSVersion",
-            "ImageSource",
-            "AMIId",
             "11WebServerInstanceTyp",
             "12WebServerMaxConnec",
             "18WebServerCapacity"
@@ -545,8 +331,18 @@
             "TagName",
             "TagValue",
             "UpdateManagementScripts",
-            "10LansaGitRepoBranch",
-            "TemplateS3Namespace"
+            "10LansaGitRepoBranch"
+          ]
+        },
+        {
+          "Label": {
+            "default": "AWS Marketplace Parameters"
+          },
+          "Parameters": [
+            "ImageId",
+            "MPS3BucketName",
+            "MPS3BucketRegion",
+            "MPS3KeyPrefix"
           ]
         }
       ],
@@ -599,7 +395,7 @@
         "14DBName": {
           "default": "Name"
         },
-        "15DBEngine": {
+        "DBEngine": {
           "default": "SQL Server Engine Type"
         },
         "DBCCSID": {
@@ -613,9 +409,6 @@
         },
         "DBIOPSRatio": {
           "default": "Database IOPS Ratio"
-        },
-        "11WebserverOSVersion": {
-          "default": "OS Version"
         },
         "11WebServerInstanceTyp": {
           "default": "Instance Type"
@@ -662,23 +455,23 @@
         "10LansaGitRepoBranch": {
           "default": "Git Repository Branch"
         },
-        "TemplateS3Namespace": {
-          "default": "Template S3 Namespace"
-        },
-        "LansaVersion": {
-          "default": "Visual LANSA Version"
-        },
-        "ImageSource": {
-          "default": "Image Source"
-        },
-        "AMIId": {
-          "default": ""
+        "ImageId": {
+          "default": "AMI Id"
         },
         "TagName": {
           "default": "Tag Name"
         },
         "TagValue": {
           "default": "Tag Value"
+        },
+        "MPS3BucketName": {
+          "Default": "S3 Template Bucket Name"
+        },
+        "MPS3BucketRegion": {
+          "Default": "S3 Template Bucket Region"
+        },
+        "MPS3KeyPrefix": {
+          "Default": "S3 Template Bucket Prefix"
         }
       }
     }
@@ -686,507 +479,116 @@
   "Rules": {
     "SqlServerExpress": {
       "RuleCondition": {
-        "Fn::Equals": [
-          {
-            "Ref": "15DBEngine"
-          },
-          "sqlserver-ex"
-        ]
+        "Fn::Equals": [{ "Ref": "DBEngine" }, "sqlserver-ex"]
       },
       "Assertions": [
         {
           "Assert": {
             "Fn::Contains": [
               [
-                "db.t3.small",
-                "db.t3.medium",
-                "db.t3.large",
-                "db.t3.xlarge"
+                "db.t3.micro", "db.t3.small", "db.t3.medium",
+                "db.t3.large", "db.t3.xlarge"
               ],
-              {
-                "Ref": "13DBInstanceClass"
-              }
+              { "Ref": "13DBInstanceClass" }
             ]
           },
-          "AssertDescription": "For Sql Server Express, the instance type must be one of the following: db.t3.small, db.t3.medium, db.t3.large, db.t3.xlarge"
+          "AssertDescription": "Express supports only burstable t3.micro to t3.xlarge"
         }
       ]
     },
+
     "SqlServerWeb": {
       "RuleCondition": {
-        "Fn::Equals": [
-          {
-            "Ref": "15DBEngine"
-          },
-          "sqlserver-web"
-        ]
+        "Fn::Equals": [{ "Ref": "DBEngine" }, "sqlserver-web"]
       },
       "Assertions": [
         {
           "Assert": {
             "Fn::Contains": [
               [
-                "db.t3.small",
-                "db.t3.medium",
-                "db.t3.large",
-                "db.t3.xlarge",
-                "db.t3.2xlarge",
-                "db.m4.large",
-                "db.m4.xlarge",
-                "db.m4.2xlarge",
-                "db.m4.4xlarge",
-                "db.m5.large",
-                "db.m5.xlarge",
-                "db.m5.2xlarge",
-                "db.m5.4xlarge"
+                "db.t3.small", "db.t3.medium", "db.t3.large",
+                "db.t3.xlarge", "db.t3.2xlarge",
+                "db.r5.large", "db.r5.xlarge", "db.r5.2xlarge", "db.r5.4xlarge",
+                "db.r5b.large", "db.r5b.xlarge", "db.r5b.2xlarge", "db.r5b.4xlarge",
+                "db.r5d.large", "db.r5d.xlarge", "db.r5d.2xlarge", "db.r5d.4xlarge",
+                "db.r6i.large", "db.r6i.xlarge", "db.r6i.2xlarge", "db.r6i.4xlarge",
+                "db.m5.large", "db.m5.xlarge", "db.m5.2xlarge", "db.m5.4xlarge",
+                "db.m5d.large", "db.m5d.xlarge", "db.m5d.2xlarge", "db.m5d.4xlarge",
+                "db.m6i.large", "db.m6i.xlarge", "db.m6i.2xlarge", "db.m6i.4xlarge",
+                "db.z1d.large", "db.z1d.xlarge", "db.z1d.2xlarge", "db.z1d.3xlarge"
               ],
-              {
-                "Ref": "13DBInstanceClass"
-              }
+              { "Ref": "13DBInstanceClass" }
             ]
           },
-          "AssertDescription": "For Sql Server Web, the instance type must be one of the following: db.t3.small, db.t3.medium, db.t3.large, db.t3.xlarge, db.t3.2xlarge, db.m4.large, db.m4.xlarge, db.m4.2xlarge, db.m4.4xlarge, db.m5.large, db.m5.xlarge, db.m5.2xlarge, db.m5.4xlarge"
+          "AssertDescription": "SQL Server Web supports burstable t3 up to 2xlarge, plus general purpose and memory-optimized larger classes up to 4xlarge"
         }
       ]
     },
+
     "SqlServerStandard": {
       "RuleCondition": {
-        "Fn::Equals": [
-          {
-            "Ref": "15DBEngine"
-          },
-          "sqlserver-se"
-        ]
+        "Fn::Equals": [{ "Ref": "DBEngine" }, "sqlserver-se"]
       },
       "Assertions": [
         {
           "Assert": {
             "Fn::Contains": [
               [
-                "db.t3.large",
-                "db.t3.xlarge",
-                "db.t3.2xlarge",
-                "db.m4.large",
-                "db.m4.xlarge",
-                "db.m4.2xlarge",
-                "db.m4.4xlarge",
-                "db.m4.10xlarge",
-                "db.m4.16xlarge",
-                "db.m5.large",
-                "db.m5.xlarge",
-                "db.m5.2xlarge",
-                "db.m5.4xlarge",
-                "db.m5.8xlarge",
-                "db.m5.12xlarge",
-                "db.m5.16xlarge",
-                "db.m5.24xlarge",
-                "db.r5.large",
-                "db.r5.xlarge",
-                "db.r5.2xlarge",
-                "db.r5.4xlarge",
-                "db.r5.8xlarge",
-                "db.r5.12xlarge",
-                "db.r5.16xlarge",
-                "db.r5.24xlarge"
+                "db.t3.xlarge", "db.t3.2xlarge",
+                "db.r5.large", "db.r5.xlarge", "db.r5.2xlarge", "db.r5.4xlarge", "db.r5.24xlarge",
+                "db.r5b.large", "db.r5b.xlarge", "db.r5b.2xlarge", "db.r5b.4xlarge", "db.r5b.24xlarge",
+                "db.r5d.large", "db.r5d.xlarge", "db.r5d.2xlarge", "db.r5d.4xlarge", "db.r5d.24xlarge",
+                "db.r6i.large", "db.r6i.xlarge", "db.r6i.2xlarge", "db.r6i.4xlarge", "db.r6i.8xlarge",
+                "db.m5.large", "db.m5.xlarge", "db.m5.2xlarge", "db.m5.4xlarge", "db.m5.24xlarge",
+                "db.m5d.large", "db.m5d.xlarge", "db.m5d.2xlarge", "db.m5d.4xlarge", "db.m5d.24xlarge",
+                "db.m6i.large", "db.m6i.xlarge", "db.m6i.2xlarge", "db.m6i.4xlarge", "db.m6i.8xlarge",
+                "db.x2iedn.xlarge", "db.x2iedn.32xlarge",
+                "db.z1d.large", "db.z1d.xlarge", "db.z1d.2xlarge", "db.z1d.3xlarge", "db.z1d.6xlarge", "db.z1d.12xlarge",
+                "db.x1.16xlarge", "db.x1.32xlarge",
+                "db.x1e.xlarge", "db.x1e.32xlarge"
               ],
-              {
-                "Ref": "13DBInstanceClass"
-              }
+              { "Ref": "13DBInstanceClass" }
             ]
           },
-          "AssertDescription": "For Sql Server Standard Edition, the instance type must be one of the following: db.t3.large, db.t3.xlarge, db.t3.2xlarge, db.m4.*, db.m5.*, db.r5.*"
+          "AssertDescription": "SQL Server Standard supports larger burstable and general-purpose including memory-optimized and high-memory classes"
         }
       ]
     },
+
     "SqlServerEnterprise": {
       "RuleCondition": {
-        "Fn::Equals": [
-          {
-            "Ref": "15DBEngine"
-          },
-          "sqlserver-ee"
-        ]
+        "Fn::Equals": [{ "Ref": "DBEngine" }, "sqlserver-ee"]
       },
       "Assertions": [
         {
           "Assert": {
             "Fn::Contains": [
               [
-                "db.t3.xlarge",
-                "db.t3.2xlarge",
-                "db.m4.large",
-                "db.m4.xlarge",
-                "db.m4.2xlarge",
-                "db.m4.4xlarge",
-                "db.m4.10xlarge",
-                "db.m4.16xlarge",
-                "db.m5.large",
-                "db.m5.xlarge",
-                "db.m5.2xlarge",
-                "db.m5.4xlarge",
-                "db.m5.8xlarge",
-                "db.m5.12xlarge",
-                "db.m5.16xlarge",
-                "db.m5.24xlarge",
-                "db.r5.large",
-                "db.r5.xlarge",
-                "db.r5.2xlarge",
-                "db.r5.4xlarge",
-                "db.r5.8xlarge",
-                "db.r5.12xlarge",
-                "db.r5.16xlarge",
-                "db.r5.24xlarge"
+                "db.t3.xlarge", "db.t3.2xlarge",
+                "db.r5.xlarge", "db.r5.2xlarge", "db.r5.4xlarge", "db.r5.24xlarge",
+                "db.r5b.xlarge", "db.r5b.2xlarge", "db.r5b.4xlarge", "db.r5b.24xlarge",
+                "db.r5d.xlarge", "db.r5d.2xlarge", "db.r5d.4xlarge", "db.r5d.24xlarge",
+                "db.r6i.xlarge", "db.r6i.2xlarge", "db.r6i.4xlarge", "db.r6i.8xlarge", "db.r6i.32xlarge",
+                "db.m5.xlarge", "db.m5.2xlarge", "db.m5.4xlarge", "db.m5.24xlarge",
+                "db.m5d.xlarge", "db.m5d.2xlarge", "db.m5d.4xlarge", "db.m5d.24xlarge",
+                "db.m6i.xlarge", "db.m6i.2xlarge", "db.m6i.4xlarge", "db.m6i.8xlarge", "db.m6i.32xlarge",
+                "db.x2iedn.xlarge", "db.x2iedn.32xlarge",
+                "db.z1d.xlarge", "db.z1d.2xlarge", "db.z1d.3xlarge", "db.z1d.6xlarge", "db.z1d.12xlarge",
+                "db.x1.16xlarge", "db.x1.32xlarge",
+                "db.x1e.xlarge", "db.x1e.32xlarge"
               ],
-              {
-                "Ref": "13DBInstanceClass"
-              }
+              { "Ref": "13DBInstanceClass" }
             ]
           },
-          "AssertDescription": "For Sql Server Enterprise Edition, the instance type must be one of the following: db.t3.xlarge, db.t3.2xlarge, db.m4.*, db.m5.*, db.r5.*"
+          "AssertDescription": "SQL Server Enterprise supports all large-general and memory-optimized instance classes including high-memory"
         }
       ]
     }
   },
   "Mappings": {
-    "AWSRegionArch2AMI142": {
-      "Metadata": {
-        "Comment1": "This mapping is updated whenever a new AMI is submitted to Marketplace"
-      },
-      "us-east-1": {
-        "win2016": "ami-03cdd920d4ec67d27",
-        "win2019": "ami-0dc4932c09ee84b85",
-        "win2016jpn": "ami-0a8da75617543b3a0",
-        "win2019jpn": "ami-07a7cead928c3e4d0",
-        "win2022": "ami-0fb7319324abc5af8",
-        "win2022jpn": "ami-0c30a12ede613e954"
-      },
-      "us-east-2": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "us-west-1": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "us-west-2": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "ca-central-1": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "eu-central-1": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "eu-west-1": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "eu-west-2": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "eu-west-3": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "eu-north-1": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "eu-south-1": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "ap-southeast-1": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "ap-southeast-2": {
-        "win2016": "ami-0ff7d5f5ff0a18cca",
-        "win2019": "ami-0607f12c40bf4d381",
-        "win2016jpn": "ami-0db9618e4517c783c",
-        "win2019jpn": "ami-0d15b00c52981fcac",
-        "win2022": "ami-0ad1735aa8c03dc57",
-        "win2022jpn": "ami-02fd556c0aba1c43d"
-      },
-      "ap-south-1": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "ap-northeast-1": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "ap-northeast-2": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "ap-east-1": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "af-south-1": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "me-south-1": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "sa-east-1": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      }
-    },
-    "AWSRegionArch2AMI15": {
-      "Metadata": {
-        "Comment1": "This mapping is updated whenever a new AMI is submitted to Marketplace"
-      },
-      "us-east-1": {
-        "win2016": "ami-08840412302ed4d07",
-        "win2019": "ami-018f8e056c9d6a6b8",
-        "win2016jpn": "ami-0d15b49d1adfab2eb",
-        "win2019jpn": "ami-07b3023d8c25cb9ce",
-        "win2022": "ami-0d3dae866e7cd11c2",
-        "win2022jpn": "ami-0fd6e4260838c3a74"
-      },
-      "us-east-2": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "us-west-1": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "us-west-2": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "ca-central-1": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "eu-central-1": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "eu-west-1": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "eu-west-2": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "eu-west-3": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "eu-north-1": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "eu-south-1": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "ap-southeast-1": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "ami-0bedeb84bee729631",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "ap-southeast-2": {
-        "win2016": "ami-0a4bac88a7051046c",
-        "win2019": "ami-04bd205706b37ecd9",
-        "win2016jpn": "ami-0e8f9345eaa213a7f",
-        "win2019jpn": "ami-096e2e1117a7559c4",
-        "win2022": "ami-0f4abcd92e65d0322",
-        "win2022jpn": "ami-05098e2665cddf91d"
-      },
-      "ap-south-1": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "ap-northeast-1": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "ap-northeast-2": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "ap-east-1": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "af-south-1": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "me-south-1": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      },
-      "sa-east-1": {
-        "win2016": "",
-        "win2019": "",
-        "win2016jpn": "",
-        "win2019jpn": "",
-        "win2022": "",
-        "win2022jpn": ""
-      }
-    },
     "CustomVariable": {
-      "TemplateRoot": {
-        "Value": "https://lansa.s3.ap-southeast-2.amazonaws.com/templates/"
-      },
       "WebServerTemplate": {
         "Value": "webserver-win.cfn.template"
-      },
-      "TemplateLevel": {
-        "Value": "R"
       },
       "NestedVPCTemplate": {
         "Value": "nested-vpc.cfn.template"
@@ -1225,26 +627,6 @@
         }
       ]
     },
-    "IsReleaseLevel": {
-      "Fn::Equals": [
-        {
-          "Fn::FindInMap": [
-            "CustomVariable",
-            "TemplateLevel",
-            "Value"
-          ]
-        },
-        "R"
-      ]
-    },
-    "IsEmptyNamespace": {
-      "Fn::Equals": [
-        {
-          "Ref": "TemplateS3Namespace"
-        },
-        ""
-      ]
-    },
     "IsEmptyDBCCSID": {
       "Fn::Equals": [
         {
@@ -1276,22 +658,6 @@
         }
       ]
     },
-    "IsLansaVersion142": {
-      "Fn::Equals": [
-        {
-          "Ref": "LansaVersion"
-        },
-        "V14 SP2"
-      ]
-    },
-    "IsCustomImageSource": {
-      "Fn::Equals": [
-        {
-          "Ref": "ImageSource"
-        },
-        "Custom"
-      ]
-    },
     "3AZCondition": {
       "Fn::Equals": [
         {
@@ -1316,129 +682,10 @@
             }
           }
         ],
-        "TemplateURL": {
-          "Fn::If": [
-            "IsReleaseLevel",
-            {
-              "Fn::If": [
-                "IsEmptyNamespace",
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "TemplateRoot",
-                          "Value"
-                        ]
-                      },
-                      {
-                        "Ref": "10LansaGitRepoBranch"
-                      },
-                      "/",
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "NestedVPCTemplate",
-                          "Value"
-                        ]
-                      }
-                    ]
-                  ]
-                },
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "TemplateRoot",
-                          "Value"
-                        ]
-                      },
-                      {
-                        "Ref": "10LansaGitRepoBranch"
-                      },
-                      "/",
-                      {
-                        "Ref": "TemplateS3Namespace"
-                      },
-                      "/",
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "NestedVPCTemplate",
-                          "Value"
-                        ]
-                      }
-                    ]
-                  ]
-                }
-              ]
-            },
-            {
-              "Fn::If": [
-                "IsEmptyNamespace",
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "TemplateRoot",
-                          "Value"
-                        ]
-                      },
-                      {
-                        "Ref": "10LansaGitRepoBranch"
-                      },
-                      "/beta/",
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "NestedVPCTemplate",
-                          "Value"
-                        ]
-                      }
-                    ]
-                  ]
-                },
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "TemplateRoot",
-                          "Value"
-                        ]
-                      },
-                      {
-                        "Ref": "10LansaGitRepoBranch"
-                      },
-                      "/beta/",
-                      {
-                        "Ref": "TemplateS3Namespace"
-                      },
-                      "/",
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "NestedVPCTemplate",
-                          "Value"
-                        ]
-                      }
-                    ]
-                  ]
-                }
-              ]
-            }
-          ]
-        },
+        "TemplateURL": { "Fn::Join": [ "", [
+            { "Fn::Sub": "https://${MPS3BucketName}.s3.${MPS3BucketRegion}.${AWS::URLSuffix}/${MPS3KeyPrefix}"},
+            { "Fn::FindInMap": [ "CustomVariable", "NestedVPCTemplate", "Value" ] }
+        ]]},
         "Parameters": {
           "AvailabilityZones": {
             "Fn::Join": [
@@ -1484,28 +731,20 @@
               "Principal": {
                 "Service": [
                   {
-                    "Fn::Join": [
-                      ".",
-                      [
-                        "ec2",
-                        {
-                          "Ref": "AWS::URLSuffix"
-                        }
-                      ]
-                    ]
-                  }
+                    "Fn::Join": [ ".", ["ec2",{ "Ref": "AWS::URLSuffix"}]]
+                  },
+                  "cloudformation.amazonaws.com"
                 ]
               },
               "Action": [
                 "sts:AssumeRole"
               ]
             }
+
           ]
         },
         "ManagedPolicyArns": [
-          "arn:aws:iam::aws:policy/AWSHealthFullAccess",
           "arn:aws:iam::aws:policy/AWSConfigUserAccess",
-          "arn:aws:iam::aws:policy/AmazonSSMFullAccess",
           "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore",
           "arn:aws:iam::aws:policy/AWSResourceGroupsReadOnlyAccess",
           "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy",
@@ -1538,129 +777,10 @@
             }
           }
         ],
-        "TemplateURL": {
-          "Fn::If": [
-            "IsReleaseLevel",
-            {
-              "Fn::If": [
-                "IsEmptyNamespace",
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "TemplateRoot",
-                          "Value"
-                        ]
-                      },
-                      {
-                        "Ref": "10LansaGitRepoBranch"
-                      },
-                      "/",
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "NestedIOPSTemplate",
-                          "Value"
-                        ]
-                      }
-                    ]
-                  ]
-                },
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "TemplateRoot",
-                          "Value"
-                        ]
-                      },
-                      {
-                        "Ref": "10LansaGitRepoBranch"
-                      },
-                      "/",
-                      {
-                        "Ref": "TemplateS3Namespace"
-                      },
-                      "/",
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "NestedIOPSTemplate",
-                          "Value"
-                        ]
-                      }
-                    ]
-                  ]
-                }
-              ]
-            },
-            {
-              "Fn::If": [
-                "IsEmptyNamespace",
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "TemplateRoot",
-                          "Value"
-                        ]
-                      },
-                      {
-                        "Ref": "10LansaGitRepoBranch"
-                      },
-                      "/beta/",
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "NestedIOPSTemplate",
-                          "Value"
-                        ]
-                      }
-                    ]
-                  ]
-                },
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "TemplateRoot",
-                          "Value"
-                        ]
-                      },
-                      {
-                        "Ref": "10LansaGitRepoBranch"
-                      },
-                      "/beta/",
-                      {
-                        "Ref": "TemplateS3Namespace"
-                      },
-                      "/",
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "NestedIOPSTemplate",
-                          "Value"
-                        ]
-                      }
-                    ]
-                  ]
-                }
-              ]
-            }
-          ]
-        },
+        "TemplateURL": { "Fn::Join": [ "", [
+            { "Fn::Sub": "https://${MPS3BucketName}.s3.${MPS3BucketRegion}.${AWS::URLSuffix}/${MPS3KeyPrefix}"},
+            { "Fn::FindInMap": [ "CustomVariable", "NestedIOPSTemplate", "Value" ] }
+        ]]},
         "Parameters": {
           "IOPSRatio": {
             "Ref": "DBIOPSRatio"
@@ -1778,7 +898,7 @@
           ]
         },
         "Engine": {
-          "Ref": "15DBEngine"
+          "Ref": "DBEngine"
         },
         "MasterUsername": {
           "Ref": "03DBUsername"
@@ -2046,164 +1166,13 @@
             }
           }
         ],
-        "TemplateURL": {
-          "Fn::If": [
-            "IsReleaseLevel",
-            {
-              "Fn::If": [
-                "IsEmptyNamespace",
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "TemplateRoot",
-                          "Value"
-                        ]
-                      },
-                      {
-                        "Ref": "10LansaGitRepoBranch"
-                      },
-                      "/",
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "WebServerTemplate",
-                          "Value"
-                        ]
-                      }
-                    ]
-                  ]
-                },
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "TemplateRoot",
-                          "Value"
-                        ]
-                      },
-                      {
-                        "Ref": "10LansaGitRepoBranch"
-                      },
-                      "/",
-                      {
-                        "Ref": "TemplateS3Namespace"
-                      },
-                      "/",
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "WebServerTemplate",
-                          "Value"
-                        ]
-                      }
-                    ]
-                  ]
-                }
-              ]
-            },
-            {
-              "Fn::If": [
-                "IsEmptyNamespace",
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "TemplateRoot",
-                          "Value"
-                        ]
-                      },
-                      {
-                        "Ref": "10LansaGitRepoBranch"
-                      },
-                      "/beta/",
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "WebServerTemplate",
-                          "Value"
-                        ]
-                      }
-                    ]
-                  ]
-                },
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "TemplateRoot",
-                          "Value"
-                        ]
-                      },
-                      {
-                        "Ref": "10LansaGitRepoBranch"
-                      },
-                      "/beta/",
-                      {
-                        "Ref": "TemplateS3Namespace"
-                      },
-                      "/",
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "WebServerTemplate",
-                          "Value"
-                        ]
-                      }
-                    ]
-                  ]
-                }
-              ]
-            }
-          ]
-        },
+        "TemplateURL": { "Fn::Join": [ "", [
+            { "Fn::Sub": "https://${MPS3BucketName}.s3.${MPS3BucketRegion}.${AWS::URLSuffix}/${MPS3KeyPrefix}"},
+            { "Fn::FindInMap": [ "CustomVariable", "WebServerTemplate", "Value" ] }
+        ]]},
         "Parameters": {
-          "AMI": {
-            "Fn::If": [
-              "IsCustomImageSource",
-              {
-                "Ref": "AMIId"
-              },
-              {
-                "Fn::If": [
-                  "IsLansaVersion142",
-                  {
-                    "Fn::FindInMap": [
-                      "AWSRegionArch2AMI142",
-                      {
-                        "Ref": "AWS::Region"
-                      },
-                      {
-                        "Ref": "11WebserverOSVersion"
-                      }
-                    ]
-                  },
-                  {
-                    "Fn::FindInMap": [
-                      "AWSRegionArch2AMI15",
-                      {
-                        "Ref": "AWS::Region"
-                      },
-                      {
-                        "Ref": "11WebserverOSVersion"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
+          "ImageId": {
+            "Ref": "ImageId"
           },
           "DBEndPoint": {
             "Fn::GetAtt": [
@@ -2263,13 +1232,6 @@
             "Ref": "LansaSecurityGroup"
           },
           "Sudb": "1",
-          "TemplateRoot": {
-            "Fn::FindInMap": [
-              "CustomVariable",
-              "TemplateRoot",
-              "Value"
-            ]
-          },
           "WebServerELB": {
             "Ref": "WebServerELB"
           },
@@ -2297,13 +1259,6 @@
           },
           "8RemoteAccessLocation": {
             "Ref": "08RemoteAccessLocation"
-          },
-          "90LansaTemplateLevel": {
-            "Fn::FindInMap": [
-              "CustomVariable",
-              "TemplateLevel",
-              "Value"
-            ]
           },
           "UpdateManagementScripts": {
             "Ref": "UpdateManagementScripts"
@@ -2379,164 +1334,13 @@
             }
           }
         ],
-        "TemplateURL": {
-          "Fn::If": [
-            "IsReleaseLevel",
-            {
-              "Fn::If": [
-                "IsEmptyNamespace",
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "TemplateRoot",
-                          "Value"
-                        ]
-                      },
-                      {
-                        "Ref": "10LansaGitRepoBranch"
-                      },
-                      "/",
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "WebServerTemplate",
-                          "Value"
-                        ]
-                      }
-                    ]
-                  ]
-                },
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "TemplateRoot",
-                          "Value"
-                        ]
-                      },
-                      {
-                        "Ref": "10LansaGitRepoBranch"
-                      },
-                      "/",
-                      {
-                        "Ref": "TemplateS3Namespace"
-                      },
-                      "/",
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "WebServerTemplate",
-                          "Value"
-                        ]
-                      }
-                    ]
-                  ]
-                }
-              ]
-            },
-            {
-              "Fn::If": [
-                "IsEmptyNamespace",
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "TemplateRoot",
-                          "Value"
-                        ]
-                      },
-                      {
-                        "Ref": "10LansaGitRepoBranch"
-                      },
-                      "/beta/",
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "WebServerTemplate",
-                          "Value"
-                        ]
-                      }
-                    ]
-                  ]
-                },
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "TemplateRoot",
-                          "Value"
-                        ]
-                      },
-                      {
-                        "Ref": "10LansaGitRepoBranch"
-                      },
-                      "/beta/",
-                      {
-                        "Ref": "TemplateS3Namespace"
-                      },
-                      "/",
-                      {
-                        "Fn::FindInMap": [
-                          "CustomVariable",
-                          "WebServerTemplate",
-                          "Value"
-                        ]
-                      }
-                    ]
-                  ]
-                }
-              ]
-            }
-          ]
-        },
+        "TemplateURL": { "Fn::Join": [ "", [
+            { "Fn::Sub": "https://${MPS3BucketName}.s3.${MPS3BucketRegion}.${AWS::URLSuffix}/${MPS3KeyPrefix}"},
+            { "Fn::FindInMap": [ "CustomVariable", "WebServerTemplate", "Value" ] }
+        ]]},
         "Parameters": {
-          "AMI": {
-            "Fn::If": [
-              "IsCustomImageSource",
-              {
-                "Ref": "AMIId"
-              },
-              {
-                "Fn::If": [
-                  "IsLansaVersion142",
-                  {
-                    "Fn::FindInMap": [
-                      "AWSRegionArch2AMI142",
-                      {
-                        "Ref": "AWS::Region"
-                      },
-                      {
-                        "Ref": "11WebserverOSVersion"
-                      }
-                    ]
-                  },
-                  {
-                    "Fn::FindInMap": [
-                      "AWSRegionArch2AMI15",
-                      {
-                        "Ref": "AWS::Region"
-                      },
-                      {
-                        "Ref": "11WebserverOSVersion"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
+          "ImageId": {
+            "Ref": "ImageId"
           },
           "DBEndPoint": {
             "Fn::GetAtt": [
@@ -2554,13 +1358,6 @@
             "Ref": "LansaSecurityGroup"
           },
           "Sudb": "0",
-          "TemplateRoot": {
-            "Fn::FindInMap": [
-              "CustomVariable",
-              "TemplateRoot",
-              "Value"
-            ]
-          },
           "WebServerELB": {
             "Ref": "WebServerELB"
           },
@@ -2633,13 +1430,6 @@
           },
           "8RemoteAccessLocation": {
             "Ref": "08RemoteAccessLocation"
-          },
-          "90LansaTemplateLevel": {
-            "Fn::FindInMap": [
-              "CustomVariable",
-              "TemplateLevel",
-              "Value"
-            ]
           },
           "UpdateManagementScripts": {
             "Ref": "UpdateManagementScripts"

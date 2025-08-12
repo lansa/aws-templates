@@ -47,8 +47,7 @@ if ( $TemplateJson ) {
     $amiID = ""
     foreach ( $ImageName in $BaseImageNameArray ) {
 
-        #Developement and Production uses same file path location
-        #$path = "$($env:System_DefaultWorkingDirectory)/_Build Image Release Artefacts/aws/$ImageName.txt"
+        #Development and Production uses same file path location
         $path = "$($env:Pipeline_Workspace)/_Build Image Release Artefacts/aws/$ImageName.txt"
 
         switch ($ImageType)

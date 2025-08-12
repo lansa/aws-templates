@@ -6,7 +6,11 @@ param (
 
     [Parameter(Mandatory=$false)]
     [string]
-    $Language='ENG'
+    $Language='ENG',
+
+    [Parameter(Mandatory=$false)]
+    [switch]
+    $DisableIntegratorTest
 )
 
 $stackoutput=(Get-CFNStack -StackName $($Gatestack)).Outputs[0].OutputValue
@@ -14,16 +18,18 @@ Write-Host "Stack Output: $stackoutput"
 
 $IpAddress =$stackoutput
 
-$url1 = "$IpAddress/cgi-bin/probe"
-$url2 = "$IpAddress/cgi-bin/lansaweb?about"
+$urls = @()
+$urls += "$IpAddress/cgi-bin/probe"
+$urls += "$IpAddress/cgi-bin/lansaweb?about"
 if($Language -eq 'JPN') {
-  $url3 = "$IpAddress/JPNTESTs/TEST"
-  $url4 = "$IpAddress/JPNTESTs/DUMMY"
+  $urls += "$IpAddress/JPNTESTs/TEST"
+  $urls += "$IpAddress/JPNTESTs/DUMMY"
 } else {
-  $url3 = "$IpAddress/cgi-bin/lansaweb?wam=DEPTABWA&webrtn=BuildFirst&ml=LANSA:XHTML&part=DEX&lang=ENG"
-  $url4 = "$IpAddress/cgi-bin/lansaweb?wam=JSMLICE&webrtn=weblic&ml=LANSA:XHTML&part=DEX&lang=ENG"
+  $urls += "$IpAddress/cgi-bin/lansaweb?wam=DEPTABWA&webrtn=BuildFirst&ml=LANSA:XHTML&part=DEX&lang=ENG"
+  if ( -not $DisableIntegratorTest ) {
+     $urls += "$IpAddress/cgi-bin/lansaweb?wam=JSMLICE&webrtn=weblic&ml=LANSA:XHTML&part=DEX&lang=ENG"
+  }
 }
-$urls = @($url1, $url2, $url3, $url4)
 add-type @"
     using System.Net;
     using System.Security.Cryptography.X509Certificates;
@@ -40,7 +46,7 @@ $failureCount = 0
 forEach($url in $urls) {
     Write-Host $url
     try{
-        $response = Invoke-WebRequest -Uri $url -TimeoutSec 60
+        $response = Invoke-WebRequest -Uri $url -TimeoutSec 60 -UseBasicParsing
         $ResponseCode = $response.StatusCode
         if($ResponseCode -ne 200) {
             Write-Host "Response code not equal to 200: $ResponseCode"

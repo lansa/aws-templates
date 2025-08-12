@@ -17,8 +17,10 @@ $imageID = "$($Copyid)"
 New-EC2Tag -Resource $imageID -Tag @{ Key = "Name" ; Value = "$($Copyname)"} | Out-Default | Write-Host
 Write-Host "Saving the Copied ami ID $imageID "
 #$line = "$imageID - $($Copyname)"
-$line = "$imageID"
-Write-Host "$line"
+#$line = "$imageID"
 $path = "$($env:Pipeline_Workspace)/$BaseImageName.txt"
-Add-Content -Path $path $line | Out-Default | Write-Host
+Write-Host "Adding this AMI: $imageID to $path"
+Set-Content -Path $path $imageID | Out-Default | Write-Host
+
+Write-Host "Contents of ${path}:"
 Get-Content -Path $path | Out-Default | Write-Host

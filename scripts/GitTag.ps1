@@ -1,17 +1,17 @@
 param (
     [Parameter(Mandatory=$true)]
     [string]
-    $GitRepoName,
+    $GitRepoPath,
 
     [Parameter(Mandatory=$true)]
     [string[]]
     $Tags
   )
 
-# cd "$($env:System_DeWorkinfaultgDirectory)/$($GitRepoName)"
+# cd "$($env:System_DeWorkinfaultgDirectory)/$($GitRepoPath)"
 
 # Change path System_DeWorkinfaultgDirectory to Pipeline_Workspace
-cd "$($env:Pipeline_Workspace)/$($GitRepoName)" 
+cd "$($env:Pipeline_Workspace)/$($GitRepoPath)"
 
 Write-Host( "Tagging the current HEAD")
 git status

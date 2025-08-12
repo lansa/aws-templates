@@ -51,7 +51,7 @@
         },
         "01LansaMSI": {
             "Type": "String",
-            "Description": "URL of the LANSA MSI to install. The MSI must have been previously uploaded to the specified location in Amazon S3 BLOB storage. Here is an example application you may use https://s3-ap-southeast-2.amazonaws.com/lansa/app/Test/AWAMAPP_v14.2.21217_en-us.msi"
+            "Description": "URL of the LANSA MSI to install. The MSI must have been previously uploaded to the specified location in Amazon S3 BLOB storage. Here is an example application you may use https://s3-ap-southeast-2.amazonaws.com/lansa/app/Test/AWAMAPP_v15.0.24110_en-us.msi"
         },
         "03DBUsername": {
             "Description": "The LANSA database administrator account username. Must begin with a letter and contain only alphanumeric characters. Maximum length 16.",
@@ -106,41 +106,25 @@
                 "Yes"
             ]
         },
-        "11WebserverOSVersion": {
-            "Default": "win2019",
-            "Description": "WebServer Windows operating system version.",
-            "Type": "String",
-            "AllowedValues": [
-                "win2016",
-                "win2019",
-                "win2016jpn",
-                "win2019jpn",
-                "win2022",
-                "win2022jpn"
-            ]
+        "ImageId": {
+            "Type": "AWS::EC2::Image::Id",
+            "Default": "ami-0af3a14194d88cdc2",
+            "Description": "The AMI that will be used to launch the Web Servers."
         },
-        "LansaVersion": {
-            "Default": "V15 GA",
+        "MPS3BucketName": {
             "Type": "String",
-            "AllowedValues": [
-                "V15 GA",
-                "V14 SP2"
-            ],
-            "Description": "Visual LANSA Version"
+            "Default": "lansa",
+            "Description": "Name of the S3 bucket for your copy of the nested templates."
         },
-        "ImageSource": {
-            "Default": "Marketplace",
+        "MPS3BucketRegion": {
             "Type": "String",
-            "AllowedValues": [
-               "Marketplace",
-               "Custom"
-            ],
-            "Description": "Location from where the image must be picked"
+            "Default": "ap-southeast-2",
+            "Description": "AWS Region where the S3 bucket for your copy of the nested templates is hosted."
         },
-        "AMIId": {
-            "Default": "",
+        "MPS3KeyPrefix": {
             "Type": "String",
-            "Description": "The AMI Id of the custom image. Not required when Image Source is set to Marketplace"
+            "Default": "templates/support/scalable/",
+            "Description": "S3 key prefix that is used to simulate a folder for your copy of the nested templates. There MUST be a '/' on the end"
         },
         "DBCCSID": {
             "Default": "",
@@ -223,12 +207,12 @@
                     ]
                 },
                 {
-                    "Label": { "default":"Web Server Configuration" },
-                    "Parameters" : [
-                        "LansaVersion",
-                        "11WebserverOSVersion",
-                        "ImageSource",
-                        "AMIId"
+                    "Label": { "default": "AWS Marketplace Parameters" },
+                    "Parameters": [
+                        "ImageId",
+                        "MPS3BucketName",
+                        "MPS3BucketRegion",
+                        "MPS3KeyPrefix"
                     ]
                 },
                 {
@@ -270,10 +254,7 @@
                 "DBCCSID" : { "default" : "SQL Server Collation" },
                 "DBTImeZone" : { "default" : "SQL Server Time Zone" },
 
-                "LansaVersion":  { "default":  "Visual LANSA Version"},
-                "11WebserverOSVersion":  { "default":  "OS Version"},
-                "ImageSource" :  { "default" :  "Image Source"},
-                "AMIId" :  { "default" :  "AMI Id"},
+                "ImageId" :  { "default" :  "AMI Id"},
 
                 "25TriggerWebConfig": { "default": "Trigger Web Config" },
                 "26TriggerIcingUpdate": { "default": "Trigger Icing Update" },
@@ -292,41 +273,28 @@
     "Mappings": {
         "StackDifferences": {
             "Metadata": { "Comment1": "Table of differences between the 5 Stack Types" },
-            "13DBInstanceClass": { "Development": "db.t3.small", "Test" : "db.t3.large",  "Small" : "db.t3.2xlarge",  "Medium" : "db.r5.xlarge",  "Large" : "db.r5.8xlarge" },
-            "15DBEngine": { "Development": "sqlserver-ex", "Test" : "sqlserver-web",  "Small" : "sqlserver-web",  "Medium" : "sqlserver-se",  "Large" : "sqlserver-ee" },
+            "13DBInstanceClass": { "Development": "db.t3.small", "Test" : "db.t3.large",  "Small" : "db.t3.2xlarge",  "Medium" : "db.r5.xlarge",  "Large" : "db.r6i.8xlarge" },
+            "DBEngine": { "Development": "sqlserver-ex", "Test" : "sqlserver-web",  "Small" : "sqlserver-web",  "Medium" : "sqlserver-se",  "Large" : "sqlserver-ee" },
             "19DBAllocatedStorage": { "Development": "20", "Test" : "100",  "Small" : "500",  "Medium" : "1000",  "Large" : "1000" },
             "DBIOPSRatio": { "Development": "0", "Test" : "10",  "Small" : "10",  "Medium" : "10",  "Large" : "10" },
-            "11WebServerInstanceTyp": { "Development": "t3.micro", "Test" : "t3.medium",  "Small" : "t3.medium",  "Medium" : "t3.2xlarge",  "Large" : "r5.large" },
+            "11WebServerInstanceTyp": { "Development": "t3.micro", "Test" : "t3.medium",  "Small" : "t3.medium",  "Medium" : "t3a.2xlarge",  "Large" : "c5n.9xlarge" },
             "12WebServerMaxConnec": { "Development": "10", "Test" : "20",  "Small" : "20",  "Medium" : "60",  "Large" : "120" }
         },
         "CustomVariable": {
-            "TemplateRoot": { "Value": "https://lansa.s3.ap-southeast-2.amazonaws.com/templates/" },
-            "MasterTemplate": { "Value": "lansa-master-win.cfn.template" },
-            "TemplateLevel": { "Value": "R" }
+            "MasterTemplate": { "Value": "lansa-master-win.cfn.template" }
         }
     },
     "Conditions": {
-        "IsReleaseLevel": {"Fn::Equals": [{ "Fn::FindInMap": [ "CustomVariable", "TemplateLevel", "Value" ] }, "R"]}
     },
     "Resources": {
         "MasterStackApp": {
             "Type": "AWS::CloudFormation::Stack",
             "Properties": {
                 "Tags" : [ { "Key" : {"Ref":"TagName"}, "Value" : {"Ref":"TagValue"} } ],
-                "TemplateURL": { "Fn::If": [ "IsReleaseLevel",
-                    { "Fn::Join": ["", [
-                        { "Fn::FindInMap": [ "CustomVariable", "TemplateRoot", "Value" ] },
-                        { "Ref": "10LansaGitRepoBranch" },
-                        "/",
-                        { "Fn::FindInMap": [ "CustomVariable", "MasterTemplate", "Value" ] }
-                    ]]}  ,
-                    { "Fn::Join": ["", [
-                        { "Fn::FindInMap": [ "CustomVariable", "TemplateRoot", "Value" ] },
-                        { "Ref": "10LansaGitRepoBranch" },
-                        "/beta/",
-                        { "Fn::FindInMap": [ "CustomVariable", "MasterTemplate", "Value" ] }
-                    ]]}
-                ]},
+                "TemplateURL": { "Fn::Join": [ "", [
+                    { "Fn::Sub": "https://${MPS3BucketName}.s3.${MPS3BucketRegion}.${AWS::URLSuffix}/${MPS3KeyPrefix}"},
+                    { "Fn::FindInMap": [ "CustomVariable", "MasterTemplate", "Value" ] }
+                ]]},
                 "Parameters": {
                     "CreateVPC": { "Ref" : "CreateVPC" },
                     "CurrentVPC": { "Ref" : "CurrentVPC" },
@@ -344,16 +312,13 @@
 
                     "13DBInstanceClass": { "Fn::FindInMap" : [ "StackDifferences", "13DBInstanceClass", { "Ref": "StackType" }]},
                     "14DBName": "lansa",
-                    "15DBEngine": { "Fn::FindInMap" : [ "StackDifferences", "15DBEngine", { "Ref": "StackType" }]},
+                    "DBEngine": { "Fn::FindInMap" : [ "StackDifferences", "DBEngine", { "Ref": "StackType" }]},
                     "19DBAllocatedStorage": { "Fn::FindInMap" : [ "StackDifferences", "19DBAllocatedStorage", { "Ref": "StackType" }]},
                     "DBIOPSRatio":{ "Fn::FindInMap" : [ "StackDifferences", "DBIOPSRatio", { "Ref": "StackType" }]},
                     "DBCCSID": { "Ref": "DBCCSID" },
                     "DBTimeZone": { "Ref": "DBTimeZone" },
 
-                    "LansaVersion": { "Ref" : "LansaVersion" },
-                    "11WebserverOSVersion": { "Ref" : "11WebserverOSVersion" },
-                    "ImageSource" : { "Ref" : "ImageSource" },
-                    "AMIId" : { "Ref" : "AMIId" },
+                    "ImageId" : { "Ref" : "ImageId" },
                     "11WebServerInstanceTyp" : { "Fn::FindInMap" : [ "StackDifferences", "11WebServerInstanceTyp", { "Ref": "StackType" }]},
                     "12WebServerMaxConnec" : { "Fn::FindInMap" : [ "StackDifferences", "12WebServerMaxConnec", { "Ref": "StackType" }]},
 
@@ -364,7 +329,11 @@
                     "29PatchFolderName": { "Ref" : "29PatchFolderName" },
 
                     "10LansaGitRepoBranch": { "Ref" : "10LansaGitRepoBranch" },
-                    "UpdateManagementScripts": { "Ref" : "UpdateManagementScripts" }
+                    "UpdateManagementScripts": { "Ref" : "UpdateManagementScripts" },
+
+                    "MPS3BucketName": { "Ref" : "MPS3BucketName" },
+                    "MPS3BucketRegion": { "Ref" : "MPS3BucketRegion" },
+                    "MPS3KeyPrefix": { "Ref" : "MPS3KeyPrefix" }
                 }
             }
         }
