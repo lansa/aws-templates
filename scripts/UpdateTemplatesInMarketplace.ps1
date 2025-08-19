@@ -46,14 +46,26 @@ try {
         Write-Host "Processing product: $productId"
 
         # Step 1: Describe the product entity to get details
-        $entityResponse = Get-MCATEntity -Catalog 'AWSMarketplace' -Type 'AmiProduct@1.0' -Identifier $productId
+        $entityResponse = Get-MCATEntity -Catalog 'AWSMarketplace' -EntityId $productId # -Type 'AmiProduct@1.0'
+        if (-not $entityResponse) {
+            Write-Error "Failed to retrieve entity for product $productId"
+            continue
+        }
+        $entityResponse | Out-Default | Write-Host
+
         $productDetails = $entityResponse.Details | ConvertFrom-Json
+        if (-not $productDetails) {
+            Write-Error "Failed to retrieve details for product $productId"
+            continue
+        }
+        $productDetails | Format-List | Out-Default | Write-Host
 
         # Step 2: Find the target version (assume first version; customize if needed)
         if ($productDetails.Versions.Count -eq 0) {
             Write-Error "No versions found for product $productId"
             continue
         }
+        $productDetails.Versions | ForEach-Object { Write-Host "Available Version: $($_.VersionTitle)" }
         $targetVersion = $productDetails.Versions | Where-Object { $_.VersionTitle -eq $Version }
         if (-not $targetVersion) {
             Write-Error "Version $Version not found for product $productId"
