@@ -4,11 +4,11 @@
 # Assumptions:
 # - AWS PowerShell module is installed (e.g., AWS.Tools.MarketplaceCatalog).
 # - Credentials are set via environment variables or default profile.
-# - Updates the first version of each product; assumes version format aligns with $Version (e.g., "15.0.19").
+# - Updates the specified version of each product.
 # - Hardcoded list of Product IDs and five specific templates per product.
 # - Templates are sourced from a fixed S3 URL: https://lansa.s3.ap-southeast-2.amazonaws.com/templates/support/scalable/.
 # - Runs in Azure DevOps self-hosted Windows agent context.
-# - Compatible with PowerShell 5.1 (removes ?? operator for compatibility).
+# - Compatible with PowerShell 5.1.
 
 param (
     [Parameter(Mandatory=$false)]
@@ -32,10 +32,10 @@ $productIds = @(
 # Template names (same for all products)
 $templateNames = @(
     'lansa-stack-type-win.cfn.template',
-    'lansa-master-win.cfn.template',
-    'lansa-template1.cfn.template',  # Replace with actual template names
-    'lansa-template2.cfn.template',  # Replace with actual template names
-    'lansa-template3.cfn.template'   # Replace with actual template names
+    'lansa-master-win.cfn.template'
+    # 'webserver-win.cfn.template',
+    # 'nested-vpc.cfn.template',
+    # 'calculate-iops.cfn.template'
 )
 
 # Base S3 URL for templates
@@ -60,7 +60,7 @@ try {
         }
         $productDetails | Format-List | Out-Default | Write-Host
 
-        # Step 2: Find the target version (assume first version; customize if needed)
+        # Step 2: Find the target version
         if ($productDetails.Versions.Count -eq 0) {
             Write-Error "No versions found for product $productId"
             continue
@@ -72,35 +72,64 @@ try {
             continue
         }
         $targetVersion | Format-List | Out-Default | Write-Host
-        $versionIdentifier = "$($targetVersion.Id)@1"  # Assume revision 1 **********
 
-        # Step 3: Get all delivery options for the version
-        $targetVersion.DeliveryOptions | ForEach-Object { Write-Host "Delivery Option: $_" }
+        # Step 2.1: Get the version's current revision by describing the version entity
+        $productRevision = $entityResponse.EntityIdentifier.Split('@')[1]
+        Write-Host "Retrieving version entity for product $productId, version $productRevision Revision $($targetVersion.Id)"
+        $versionEntityId = "$productId@$productRevision#$($targetVersion.Id)"
+        $versionEntityResponse = Get-MCATEntity -Catalog 'AWSMarketplace' -EntityId $versionEntityId
+        if (-not $versionEntityResponse) {
+            Write-Error "Failed to retrieve version entity for $versionEntityId"
+            continue
+        }
+        $versionIdentifier = $versionEntityResponse.EntityIdentifier  # This is <version-id>@<revision>
+        Write-Host "Version Entity Identifier: $versionIdentifier"
+
+        # Step 3: Get all CloudFormation delivery options for the version
         if (-not $targetVersion.DeliveryOptions) {
             Write-Error "No delivery options found for version $Version in product $productId"
             continue
         }
-        $deliveryOptions = $targetVersion.DeliveryOptions | Where-Object { $_.Details.DeploymentTemplateDeliveryOptionDetails }
+        Write-Host "Delivery Options for version $Version in product $($productId):"
+        $targetVersion.DeliveryOptions | ForEach-Object { Write-Host "Delivery Option: $_" }
+        $deliveryOptions = $targetVersion.DeliveryOptions | Where-Object { $_.Type -eq 'CloudFormationTemplate' }
         if (-not $deliveryOptions) {
             Write-Error "No CloudFormation delivery options found in version $Version for product $productId"
             continue
         }
+        Write-Host "Found $(($deliveryOptions | Measure-Object).Count) CloudFormation delivery options"
+        $deliveryOptions | ForEach-Object { Write-Host "Delivery Option ID: $($_.Id), Source ID: $($_.SourceId)" }
+        $deliveryOptions | Format-List | Out-Default | Write-Host
 
         # Step 4: Construct the DetailsDocument with updated template URLs
         $deliveryOptionsUpdates = @()
         foreach ($deliveryOption in $deliveryOptions) {
-            $currentTemplate = $deliveryOption.Details.DeploymentTemplateDeliveryOptionDetails.Template
+            Write-Host "Find the corresponding source to get the current template URL"
+            Write-Host "Available Sources for version $Version in product $($productId):"
+            $targetVersion.Sources | ForEach-Object { Write-Host "Source ID: $($_.Id), Template: $($_.Template)" }
+            Write-Host "Processing Delivery Option ID: $($deliveryOption.Id), Source ID: $($deliveryOption.SourceId)"
+            $source = $targetVersion.Sources | Where-Object { $_.Id -eq $deliveryOption.SourceId }
+            if (-not $source) {
+                Write-Error "No source found for delivery option $($deliveryOption.Id)"
+                continue
+            }
+            $source | Format-List | Out-Default | Write-Host
+            $currentTemplate = $source.Template
+
             # Find matching template name or default to first
             $matchingTemplate = $templateNames | Where-Object { $currentTemplate -like "*$_" }
             $templateName = if ($matchingTemplate) { $matchingTemplate } else { $templateNames[0] }
             $newTemplateUrl = "${baseS3Url}${templateName}"
+
+            Write-Host "Matching Template: $matchingTemplate"
+            Write-Host "New Template URL: $newTemplateUrl"
 
             $deliveryOptionsUpdates += @{
                 Id = $deliveryOption.Id
                 Details = @{
                     DeploymentTemplateDeliveryOptionDetails = @{
                         Template = $newTemplateUrl
-                        # Preserve other fields as needed
+                        # Preserve or update other fields as needed, e.g., DeliveryOptionTitle, UsageInstructions
                     }
                 }
             }
@@ -122,6 +151,7 @@ try {
         $change.Entity.Type = 'AmiProduct@1.0'
         $change.Entity.Identifier = $versionIdentifier
         $change.Details = $detailsJson
+        throw "Exiting before updating to allow review of changes"
 
         # Step 6: Start the ChangeSet
         $clientToken = [guid]::NewGuid().ToString()
@@ -152,5 +182,5 @@ try {
     Write-Host "All products updated successfully."
 } catch {
     Write-Error "Error: $_"
-    exit 1
+    throw "Error occurred while updating templates for product $productId"
 }
