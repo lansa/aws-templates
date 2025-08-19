@@ -8,15 +8,16 @@
 # - Hardcoded list of Product IDs and five specific templates per product.
 # - Templates are sourced from a fixed S3 URL: https://lansa.s3.ap-southeast-2.amazonaws.com/templates/support/scalable/.
 # - Runs in Azure DevOps self-hosted Windows agent context.
+# - Compatible with PowerShell 5.1 (removes ?? operator for compatibility).
 
 param (
-    [Parameter(Mandatory=$true)]
-    [string]$Version  # e.g., "15.0.19"
+    [Parameter(Mandatory=$false)]
+    [string]$Version = "15.0.19"
 )
 
 # Import required modules
 Import-Module AWS.Tools.Common
-Import-Module AWS.Tools.MarketplaceCatalog
+# Import-Module AWS.Tools.MarketplaceCatalog
 
 # Set default region for Marketplace Catalog API (global service, but set for consistency)
 Set-DefaultAWSRegion -Region 'us-east-1'
@@ -32,9 +33,9 @@ $productIds = @(
 $templateNames = @(
     'lansa-stack-type-win.cfn.template',
     'lansa-master-win.cfn.template',
-    'webserver-win.cfn.template',
-    'nested-vpc.cfn.template',
-    'calculate-iops.cfn.template'
+    'lansa-template1.cfn.template',  # Replace with actual template names
+    'lansa-template2.cfn.template',  # Replace with actual template names
+    'lansa-template3.cfn.template'   # Replace with actual template names
 )
 
 # Base S3 URL for templates
@@ -53,7 +54,6 @@ try {
             Write-Error "No versions found for product $productId"
             continue
         }
-        $productDetails.Versions | ForEach-Object { Write-Host "Available Version: $($_.VersionTitle)" }
         $targetVersion = $productDetails.Versions | Where-Object { $_.VersionTitle -eq $Version }
         if (-not $targetVersion) {
             Write-Error "Version $Version not found for product $productId"
@@ -72,7 +72,9 @@ try {
         $deliveryOptionsUpdates = @()
         foreach ($deliveryOption in $deliveryOptions) {
             $currentTemplate = $deliveryOption.Details.DeploymentTemplateDeliveryOptionDetails.Template
-            $templateName = ($templateNames | Where-Object { $currentTemplate -like "*$_" }) ?? $templateNames[0]  # Match or default to first
+            # Find matching template name or default to first
+            $matchingTemplate = $templateNames | Where-Object { $currentTemplate -like "*$_" }
+            $templateName = if ($matchingTemplate) { $matchingTemplate } else { $templateNames[0] }
             $newTemplateUrl = "${baseS3Url}${templateName}"
 
             $deliveryOptionsUpdates += @{
@@ -119,12 +121,12 @@ try {
         }
 
         if ($status -eq 'SUCCEEDED') {
-            Write-Host "Template update succeeded for product $($productId)."
+            Write-Host "Template update succeeded for product $productId."
         } elseif ($status -eq 'FAILED') {
-            Write-Error "Template update failed for product $($productId). Failure reason: $($changeSetStatus.FailureDescription)"
+            Write-Error "Template update failed for product $productId. Failure reason: $($changeSetStatus.FailureDescription)"
             exit 1
         } else {
-            Write-Error "Unexpected status for product $productId: $status"
+            Write-Error "Unexpected status for product $($productId): $status"
             exit 1
         }
     }
@@ -132,5 +134,5 @@ try {
     Write-Host "All products updated successfully."
 } catch {
     Write-Error "Error: $_"
-    throw "Failed to update templates in AWS Marketplace."
+    exit 1
 }
