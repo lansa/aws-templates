@@ -16,7 +16,7 @@ param (
 )
 
 # Import required modules
-Import-Module AWS.Tools.Common
+# Import-Module AWS.Tools.Common
 # Import-Module AWS.Tools.MarketplaceCatalog
 
 # Set default region for Marketplace Catalog API (global service, but set for consistency)
