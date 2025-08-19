@@ -71,9 +71,15 @@ try {
             Write-Error "Version $Version not found for product $productId"
             continue
         }
-        $versionIdentifier = "$($targetVersion.Id)@1"  # Assume revision 1
+        $targetVersion | Format-List | Out-Default | Write-Host
+        $versionIdentifier = "$($targetVersion.Id)@1"  # Assume revision 1 **********
 
         # Step 3: Get all delivery options for the version
+        $targetVersion.DeliveryOptions | ForEach-Object { Write-Host "Delivery Option: $_" }
+        if (-not $targetVersion.DeliveryOptions) {
+            Write-Error "No delivery options found for version $Version in product $productId"
+            continue
+        }
         $deliveryOptions = $targetVersion.DeliveryOptions | Where-Object { $_.Details.DeploymentTemplateDeliveryOptionDetails }
         if (-not $deliveryOptions) {
             Write-Error "No CloudFormation delivery options found in version $Version for product $productId"
