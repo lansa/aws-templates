@@ -81,22 +81,22 @@ try {
         try {
             $versionEntityResponse = Get-MCATEntity -Catalog 'AWSMarketplace' -EntityId $versionEntityId
         } catch {
-            Write-Error "Error retrieving version entity for $versionEntityId : $_"
-            try {
-                Write-Host "Retrieving version entity for VersionId $($targetVersion.Id), revision $productRevision"
-                $versionEntityId = "$($targetVersion.Id)@$($productRevision)"  # Fallback to <version-id>@<revision>
-                $versionEntityResponse = Get-MCATEntity -Catalog 'AWSMarketplace' -EntityId $versionEntityId
-            }catch {
-                Write-Error "Error retrieving version entity for $versionEntityId : $_"
-                try {
-                    Write-Host "Retrieving version entity for VersionId $($targetVersion.Id), revision 1"
-                    $versionEntityId = "$($targetVersion.Id)@1"  # Fallback to <version-id>@<revision>
-                    $versionEntityResponse = Get-MCATEntity -Catalog 'AWSMarketplace' -EntityId $versionEntityId
-                } catch {
-                    Write-Error "Error retrieving version entity for $versionEntityId : $_"
-                    throw
-                }
-            }
+            Write-Host "Error retrieving version entity for $versionEntityId : $_"
+        }
+        try {
+            Write-Host "Retrieving version entity for VersionId $($targetVersion.Id), revision $productRevision"
+            $versionEntityId = "$($targetVersion.Id)@$($productRevision)"  # Fallback to <version-id>@<revision>
+            $versionEntityResponse = Get-MCATEntity -Catalog 'AWSMarketplace' -EntityId $versionEntityId
+        }catch {
+            Write-Host "Error retrieving version entity for $versionEntityId : $_"
+        }
+        try {
+            Write-Host "Retrieving version entity for VersionId $($targetVersion.Id), revision 1"
+            $versionEntityId = "$($targetVersion.Id)@1"  # Fallback to <version-id>@<revision>
+            $versionEntityResponse = Get-MCATEntity -Catalog 'AWSMarketplace' -EntityId $versionEntityId
+        } catch {
+            Write-Host "Error retrieving version entity for $versionEntityId : $_"
+            throw
         }
         $versionIdentifier = $versionEntityResponse.EntityIdentifier  # This is <version-id>@<revision>
         Write-Host "Version Entity Identifier: $versionIdentifier"
