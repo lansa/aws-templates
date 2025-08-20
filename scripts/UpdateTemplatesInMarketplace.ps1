@@ -76,7 +76,7 @@ try {
         # Step 2.1: Get the version's current revision by describing the version entity
         $productRevision = $entityResponse.EntityIdentifier.Split('@')[1]
         Write-Host "Retrieving version entity for product $productId, VersionId $($targetVersion.Id), revision $productRevision"
-        $versionEntityId = "$productId@$($targetVersion.Id)"  # Format: <product-id>@<version-id>@<revision> @$productRevision removed in order to use the latest revision
+        $versionEntityId = "$productId@$($targetVersion.Id)@$productRevision"  # Format: <product-id>@<version-id>@<revision> @$productRevision removed in order to use the latest revision
         $versionEntityResponse = Get-MCATEntity -Catalog 'AWSMarketplace' -EntityId $versionEntityId
         if (-not $versionEntityResponse) {
             Write-Error "Failed to retrieve version entity for $versionEntityId"
