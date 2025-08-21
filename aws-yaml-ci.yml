@@ -16,6 +16,8 @@ variables:
   value: c:\lansa
 - name: TemplateS3Namespace
   value:
+- name: ImageId
+  value: ami-07f2b3b3c5111b145
 - name: regionName
   value: ap-southeast-2
 - group: "Default Branch"
@@ -133,6 +135,9 @@ jobs:
         }, {
             "ParameterKey":  "03DBUsername",
             "ParameterValue": "$(03DBUsername)"
+        }, {
+            "ParameterKey": "ImageId",
+            "ParameterValue": "$(ImageId)"
         }, {
             "ParameterKey": "MPS3KeyPrefix",
             "ParameterValue": "templates/$(CookbooksBranch)$(TemplateS3Namespace)/"
