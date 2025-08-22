@@ -128,13 +128,14 @@ try {
         foreach ($deliveryOption in $versionDetails.DeliveryOptions) {
             Write-Host "Processing Delivery Option ID: $($deliveryOption.Id), Source ID: $($deliveryOption.SourceId)"
             $details = @{}
+            # Find the source matching the delivery option's SourceId
+            $source = $versionDetails.Sources | Where-Object { $_.Id -eq $deliveryOption.SourceId }
+            if (-not $source) {
+                Write-Error "No source found for SourceId $($deliveryOption.SourceId) in version $($versionDetails.VersionTitle)"
+                exit 1
+            }
             if ($deliveryOption.Type -eq 'AmazonMachineImage') {
-                # Find the source matching the delivery option's SourceId
-                $source = $versionDetails.Sources | Where-Object { $_.Id -eq $deliveryOption.SourceId }
-                if (-not $source) {
-                    Write-Error "No source found for SourceId $($deliveryOption.SourceId) in version $($versionDetails.VersionTitle)"
-                    exit 1
-                }
+                Write-Host "AMI Source: UserName=$($source.OperatingSystem.Username), OperatingSystemName=$($source.OperatingSystem.Name), OperatingSystemVersion=$($source.OperatingSystem.Version), ScanningPort=$($source.OperatingSystem.ScanningPort)"
                 if ($changeType -eq 'UpdateDeliveryOptions') {
                     $details = @{
                         AmiDeliveryOptionDetails = @{
@@ -155,6 +156,7 @@ try {
                                 UserName = $source.OperatingSystem.Username
                                 OperatingSystemName = $source.OperatingSystem.Name
                                 OperatingSystemVersion = $source.OperatingSystem.Version
+                                ScanningPort = $source.OperatingSystem.ScanningPort
                             }
                             UsageInstructions = $deliveryOption.Instructions.Usage
                             RecommendedInstanceType = $deliveryOption.Recommendations.InstanceType
@@ -163,12 +165,6 @@ try {
                     }
                 }
             } elseif ($deliveryOption.Type -eq 'CloudFormationTemplate') {
-                # Find the source matching the delivery option's SourceId
-                $source = $versionDetails.Sources | Where-Object { $_.Id -eq $deliveryOption.SourceId }
-                if (-not $source) {
-                    Write-Error "No source found for SourceId $($deliveryOption.SourceId) in version $($versionDetails.VersionTitle)"
-                    exit 1
-                }
                 $currentTemplate = $source.Template
                 $matchingTemplate = $templateNames | Where-Object { $currentTemplate -like "*$_" }
                 if (-not $matchingTemplate) {
@@ -179,6 +175,7 @@ try {
                 $newTemplateUrl = "${baseS3Url}${templateName}"
                 Write-Host "Matching Template: $templateName"
                 Write-Host "New Template URL: $newTemplateUrl"
+                Write-Host "SourceParameters: ParameterName=$($source.SourceParameters.ParameterName), SourceId=$($source.SourceParameters.SourceId)"
                 if ($changeType -eq 'UpdateDeliveryOptions') {
                     $details = @{
                         DeploymentTemplateDeliveryOptionDetails = @{
@@ -196,6 +193,12 @@ try {
                             UsageInstructions = $deliveryOption.Instructions.Usage
                             RecommendedInstanceType = $deliveryOption.Recommendations.InstanceType
                             ArchitectureDiagram = $source.ArchitectureDiagram
+                            SourceParameters = @(
+                                @{
+                                    ParameterName = $source.SourceParameters.ParameterName
+                                    SourceId = $source.SourceParameters.SourceId
+                                }
+                            )
                         }
                     }
                 }
@@ -229,6 +232,7 @@ try {
         }
 
         $detailsJson = $detailsDocument | ConvertTo-Json -Depth 10 -Compress
+        Write-Host "DetailsDocument JSON: $detailsJson"
 
         # Step 5: Create the Change object
         $change = New-Object Amazon.MarketplaceCatalog.Model.Change
@@ -237,7 +241,7 @@ try {
         $change.Entity.Type = 'AmiProduct@1.0'
         $change.Entity.Identifier = $productId
         $change.Details = $detailsJson
-exit 1
+
         # Step 6: Start the ChangeSet
         $clientToken = [guid]::NewGuid().ToString()
         if ($changeType -eq 'AddDeliveryOptions') {
