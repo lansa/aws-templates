@@ -1,6 +1,7 @@
 # UpdateMarketplaceTemplates.ps1
-# This script updates or adds version 15.0.20 for AWS Marketplace AMI-based products, focusing on updating CloudFormation template URLs.
-# It uses AWS PowerShell cmdlets to describe products, add template artifacts, and update/add delivery options.
+# This script updates or adds version 15.0.20 for AWS Marketplace AMI-based products, updating AMI IDs and CloudFormation template URLs.
+# Templates are only updated when adding a new version; existing versions issue a warning.
+# It uses AWS PowerShell cmdlets to describe products, identify versions, and submit change sets.
 # Assumptions:
 # - AWS PowerShell module is installed (e.g., AWS.Tools.MarketplaceCatalog).
 # - Credentials are set via environment variables or default profile.
@@ -34,6 +35,9 @@ $templateNames = @(
 
 # Base S3 URL for templates
 $baseS3Url = "https://lansa.s3.ap-southeast-2.amazonaws.com/templates/support/scalable/"
+
+# IAM Role ARN for AMI access
+$iamRoleArn = "arn:aws:iam::775488040364:role/AWS-Marketplace-Ingestion"
 
 # Import required modules
 # Import-Module AWS.Tools.Common
@@ -81,7 +85,7 @@ try {
         $changeType = $null
         $versionDetails = $null
         if ($targetVersion) {
-            Write-Host "Found target version $Version for product $($productId) with ID $($targetVersion.Id)"
+            Write-Warning "Version $Version already exists for product $($productId). Template updates are not allowed for existing versions. Skipping template update."
             $changeType = 'UpdateDeliveryOptions'
             # Fetch delivery options for the target version
             $versionDetailsResponse = Get-MCATEntity -Catalog 'AWSMarketplace' -EntityId $productId
@@ -123,18 +127,19 @@ try {
         $deliveryOptions | ForEach-Object { Write-Host "Delivery Option ID: $($_.Id), Source ID: $($_.SourceId)" }
         $deliveryOptions | Format-List | Out-Default | Write-Host
 
-        # Step 4: Construct the ChangeSet with AddResource and Delivery Option changes
-        $changeSet = @()
+        # Step 4: Construct the DetailsDocument
+        $deliveryOptionsUpdates = @()
         foreach ($deliveryOption in $versionDetails.DeliveryOptions) {
             Write-Host "Processing Delivery Option ID: $($deliveryOption.Id), Source ID: $($deliveryOption.SourceId)"
+            $details = @{}
+            # Find the source matching the delivery option's SourceId
+            $source = $versionDetails.Sources | Where-Object { $_.Id -eq $deliveryOption.SourceId }
+            if (-not $source) {
+                Write-Error "No source found for SourceId $($deliveryOption.SourceId) in version $($versionDetails.VersionTitle)"
+                exit 1
+            }
             if ($deliveryOption.Type -eq 'AmazonMachineImage') {
-                continue
-                # Find the source matching the delivery option's SourceId
-                $source = $versionDetails.Sources | Where-Object { $_.Id -eq $deliveryOption.SourceId }
-                if (-not $source) {
-                    Write-Error "No source found for SourceId $($deliveryOption.SourceId) in version $($versionDetails.VersionTitle)"
-                    exit 1
-                }
+                Write-Host "AMI Source: UserName=$($source.OperatingSystem.Username), OperatingSystemName=$($source.OperatingSystem.Name), OperatingSystemVersion=$($source.OperatingSystem.Version), ScanningPort=$($source.OperatingSystem.ScanningPort)"
                 if ($changeType -eq 'UpdateDeliveryOptions') {
                     $details = @{
                         AmiDeliveryOptionDetails = @{
@@ -155,6 +160,7 @@ try {
                                 UserName = $source.OperatingSystem.Username
                                 OperatingSystemName = $source.OperatingSystem.Name
                                 OperatingSystemVersion = $source.OperatingSystem.Version
+                                ScanningPort = $source.OperatingSystem.ScanningPort
                             }
                             UsageInstructions = $deliveryOption.Instructions.Usage
                             RecommendedInstanceType = $deliveryOption.Recommendations.InstanceType
@@ -163,12 +169,6 @@ try {
                     }
                 }
             } elseif ($deliveryOption.Type -eq 'CloudFormationTemplate') {
-                # Find the source matching the delivery option's SourceId
-                $source = $versionDetails.Sources | Where-Object { $_.Id -eq $deliveryOption.SourceId }
-                if (-not $source) {
-                    Write-Error "No source found for SourceId $($deliveryOption.SourceId) in version $($versionDetails.VersionTitle)"
-                    exit 1
-                }
                 $currentTemplate = $source.Template
                 $matchingTemplate = $templateNames | Where-Object { $currentTemplate -like "*$_" }
                 if (-not $matchingTemplate) {
@@ -180,39 +180,14 @@ try {
                 Write-Host "Matching Template: $templateName"
                 Write-Host "New Template URL: $newTemplateUrl"
                 Write-Host "SourceParameters: ParameterName=$($source.SourceParameters.ParameterName), SourceId=$($source.SourceParameters.SourceId)"
-
-                # Create unique artifact ID for the new template
-                $artifactId = "artifact-$($deliveryOption.Id)-$(Get-Date -Format 'yyyyMMddHHmmss')"
-                $artifactChange = @{
-                    ChangeType = "AddResource"
-                    Entity = @{
-                        Type = "CLOUDFORMATION_TEMPLATE"
-                    }
-                    Details = @{
-                        Name = $templateName
-                        Description = "CloudFormation template for $productId version $Version"
-                        Source = @{
-                            S3Url = $newTemplateUrl
-                        }
-                    } | ConvertTo-Json -Compress -Depth 5
-                    Id = $artifactId
-                }
-                $changeSet += $artifactChange
-
-                # Define delivery option change
-                $deliveryOptionDetails = if ($changeType -eq 'UpdateDeliveryOptions') {
-                    @{
-                        DeploymentTemplateDeliveryOptionDetails = @{
-                            ArtifactId = $artifactId
-                            ArtifactType = "CLOUDFORMATION_TEMPLATE"
-                        }
-                    }
+                if ($changeType -eq 'UpdateDeliveryOptions') {
+                    # Skip template update for existing versions
+                    continue
                 } else {
-                    # AddDeliveryOptions: Copy all fields
-                    @{
+                    # AddDeliveryOptions: Include Template and all fields
+                    $details = @{
                         DeploymentTemplateDeliveryOptionDetails = @{
-                            ArtifactId = $artifactId
-                            ArtifactType = "CLOUDFORMATION_TEMPLATE"
+                            Template = $newTemplateUrl
                             DeliveryOptionTitle = $deliveryOption.Title
                             ShortDescription = $deliveryOption.ShortDescription
                             LongDescription = $deliveryOption.LongDescription
@@ -228,57 +203,61 @@ try {
                         }
                     }
                 }
-
-                $deliveryOptionChange = @{
-                    ChangeType = $changeType
-                    Entity = @{
-                        Type = "AmiProduct@1.0"
-                        Identifier = $productId
-                    }
-                    Details = if ($changeType -eq 'UpdateDeliveryOptions') {
-                        @{
-                            Version = @{
-                                ReleaseNotes = "Updated CloudFormation template for version $Version on $(Get-Date -Format 'yyyy-MM-dd')"
-                            }
-                            DeliveryOptions = @(
-                                @{
-                                    Id = $deliveryOption.Id
-                                    Details = $deliveryOptionDetails
-                                }
-                            )
-                        } | ConvertTo-Json -Compress -Depth 5
-                    } else {
-                        @{
-                            Version = @{
-                                VersionTitle = $Version
-                                ReleaseNotes = "Added version $Version with updated CloudFormation template on $(Get-Date -Format 'yyyy-MM-dd')"
-                            }
-                            DeliveryOptions = @(
-                                @{
-                                    Id = $deliveryOption.Id
-                                    Details = $deliveryOptionDetails
-                                }
-                            )
-                        } | ConvertTo-Json -Compress -Depth 5
-                    }
-                }
-                $changeSet += $deliveryOptionChange
             } else {
                 Write-Error "Unsupported delivery option type: $($deliveryOption.Type)"
                 continue
             }
+
+            $deliveryOptionsUpdates += @{
+                Id = $deliveryOption.Id
+                Details = $details
+            }
         }
 
-        # Step 5: Start the ChangeSet
+        if ($deliveryOptionsUpdates.Count -eq 0) {
+            Write-Warning "No updates to apply for product $($productId). Skipping ChangeSet submission."
+            continue
+        }
+
+        $detailsDocument = if ($changeType -eq 'UpdateDeliveryOptions') {
+            @{
+                Version = @{
+                    ReleaseNotes = "Updated AMI for version $Version on $(Get-Date -Format 'yyyy-MM-dd')"
+                }
+                DeliveryOptions = $deliveryOptionsUpdates
+            }
+        } else {
+            # AddDeliveryOptions: Copy all fields from latest version, update AMI and templates
+            @{
+                Version = @{
+                    VersionTitle = $Version
+                    ReleaseNotes = "Added version $Version with updated AMI and templates on $(Get-Date -Format 'yyyy-MM-dd')"
+                }
+                DeliveryOptions = $deliveryOptionsUpdates
+            }
+        }
+
+        $detailsJson = $detailsDocument | ConvertTo-Json -Depth 10 -Compress
+        Write-Host "DetailsDocument JSON: $detailsJson"
+
+        # Step 5: Create the Change object
+        $change = New-Object Amazon.MarketplaceCatalog.Model.Change
+        $change.ChangeType = $changeType
+        $change.Entity = New-Object Amazon.MarketplaceCatalog.Model.Entity
+        $change.Entity.Type = 'AmiProduct@1.0'
+        $change.Entity.Identifier = $productId
+        $change.Details = $detailsJson
+
+        # Step 6: Start the ChangeSet
         $clientToken = [guid]::NewGuid().ToString()
         if ($changeType -eq 'AddDeliveryOptions') {
-            $changeSetResponse = Start-MCATChangeSet -Catalog 'AWSMarketplace' -ChangeSet $changeSet -ClientRequestToken $clientToken -ChangeSetName "ValidateNewRevision-$productId-$Version-$(Get-Date -Format 'yyyyMMddHHmmss')" -Intent 'Validate'
+            $changeSetResponse = Start-MCATChangeSet -Catalog 'AWSMarketplace' -ChangeSet @($change) -ClientRequestToken $clientToken -ChangeSetName "ValidateNewRevision-$productId-$Version-$(Get-Date -Format 'yyyyMMddHHmmss')" -Intent 'Validate'
         } else {
-            $changeSetResponse = Start-MCATChangeSet -Catalog 'AWSMarketplace' -ChangeSet $changeSet -ClientRequestToken $clientToken -ChangeSetName "UpdateDeliveryOptions-$productId-$Version-$(Get-Date -Format 'yyyyMMddHHmmss')"
+            $changeSetResponse = Start-MCATChangeSet -Catalog 'AWSMarketplace' -ChangeSet @($change) -ClientRequestToken $clientToken -ChangeSetName "UpdateDeliveryOptions-$productId-$Version-$(Get-Date -Format 'yyyyMMddHHmmss')"
         }
         Write-Host "ChangeSet started for product $($productId): ID = $($changeSetResponse.ChangeSetId), ARN = $($changeSetResponse.ChangeSetArn)"
 
-        # Step 6: Poll for ChangeSet status
+        # Step 7: Poll for ChangeSet status
         $status = 'PREPARING'
         while ($status -eq 'PREPARING' -or $status -eq 'APPLYING') {
             Start-Sleep -Seconds 10
@@ -288,9 +267,9 @@ try {
         }
 
         if ($status -eq 'SUCCEEDED') {
-            Write-Host "Template update succeeded for product $($productId)."
+            Write-Host "Update succeeded for product $($productId)."
         } elseif ($status -eq 'FAILED') {
-            Write-Error "Template update failed for product $($productId). Failure reason: $($changeSetStatus.FailureDescription)"
+            Write-Error "Update failed for product $($productId). Failure reason: $($changeSetStatus.FailureDescription)"
             exit 1
         } else {
             Write-Error "Unexpected status for product $($productId): $status"
@@ -298,7 +277,7 @@ try {
         }
     }
 
-    Write-Host "All products updated successfully."
+    Write-Host "All products processed successfully."
 } catch {
     Write-Error "Error: $_"
     exit 1
