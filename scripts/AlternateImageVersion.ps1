@@ -1,19 +1,26 @@
 param (
     [Parameter(Mandatory=$true)]
-    [string]
-    $Gatestack,
+    [string] $Gatestack,
+
     [Parameter(Mandatory=$true)]
-    [string]
-    $Gateversion,
+    [string] $Gateversion,
+
     [Parameter(Mandatory=$false)]
-    [string]
-    $Region
+    [string] $Region,
+
+    [Parameter(Mandatory=$false)]
+    [switch] $EnforceMarketplaceProductCodeValidation
 )
 if ( $Region -ne "" ) {
     Write-Host ("Warning: Region $Region is ignored")
 }
 
 $SkuName = "$($Gateversion)"
+
+$EnforceMarketplaceProductCodeValidationParameter = ""
+if ( $EnforceMarketplaceProductCodeValidation ) {
+    $EnforceMarketplaceProductCodeValidationParameter = "-EnforceMarketplaceProductCodeValidation"
+}
 
 # Autoscaling Instance Id
 $childstack = (Get-CFNStack | Where-Object {$_.StackName -like "$($Gatestack)*-Web*" }).StackName
@@ -23,7 +30,7 @@ $instanceDetails = Get-ASAutoScalingInstance | ? {$_.AutoScalingGroupName -eq $w
 $instanceId = (Get-ASAutoScalingGroup -AutoScalingGroupName $webServerGroupResource.PhysicalResourceId).Instances.InstanceId
 #Send command
 $DebugPreference = "SilentlyContinue"
-$result = Send-SSMCommand -InstanceId $instanceId  -DocumentName "AWS-RunPowerShellScript" -Comment "Checking Image Version" -Parameter @{'commands'=@("c:\lansa\Tests\TestImageVersion.ps1 -ImgName $SkuName")}
+$result = Send-SSMCommand -InstanceId $instanceId  -DocumentName "AWS-RunPowerShellScript" -Comment "Checking Image Version" -Parameter @{'commands'=@("c:\lansa\Tests\TestImageVersion.ps1 -ImgName $SkuName $EnforceMarketplaceProductCodeValidationParameter")} -TimeoutSeconds 600
 do{
     Start-Sleep -Seconds 5
     $Output = Get-SSMCommandInvocation -InstanceId $instanceId -CommandId $result.CommandId
