@@ -150,7 +150,7 @@
     },
     "17UserScriptHook": {
       "Type": "String",
-      "Default": "https://s3-ap-southeast-2.amazonaws.com/lansa/scripts/user-script.ps1",
+      "Default": "",
       "Description": "URL of a Powershell script to execute after installing the LANSA MSI. The script must have been previously uploaded to the specified location in Amazon S3 BLOB storage."
     },
     "18WebServerCapacity": {
