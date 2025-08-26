@@ -136,6 +136,11 @@
             "Description": "Database Server Time Zone. It is recommended not to change this setting. Defaults to SQL Server default of UTC/GMT when left unspecified",
             "Type": "String"
         },
+        "17UserScriptHook": {
+            "Type": "String",
+            "Default": "",
+            "Description": "URL of a Powershell script to execute after installing the LANSA MSI. The script must have been previously uploaded to the specified location in Amazon S3 BLOB storage."
+        },
         "25TriggerWebConfig": {
             "Default": "1",
             "Type": "String",
@@ -218,6 +223,7 @@
                 {
                     "Label": { "default":"Stack Maintenance" },
                     "Parameters" : [
+                        "17UserScriptHook",
                         "25TriggerWebConfig",
                         "26TriggerIcingUpdate",
                         "27TriggerPatchInstall",
@@ -256,6 +262,7 @@
 
                 "ImageId" :  { "default" :  "AMI Id"},
 
+                "17UserScriptHook": { "default": "User Script Hook" },
                 "25TriggerWebConfig": { "default": "Trigger Web Config" },
                 "26TriggerIcingUpdate": { "default": "Trigger Icing Update" },
                 "27TriggerPatchInstall": { "default": "Trigger Patch Install" },
@@ -322,6 +329,7 @@
                     "11WebServerInstanceTyp" : { "Fn::FindInMap" : [ "StackDifferences", "11WebServerInstanceTyp", { "Ref": "StackType" }]},
                     "12WebServerMaxConnec" : { "Fn::FindInMap" : [ "StackDifferences", "12WebServerMaxConnec", { "Ref": "StackType" }]},
 
+                    "17UserScriptHook": { "Ref" : "17UserScriptHook" },
                     "25TriggerWebConfig": { "Ref" : "25TriggerWebConfig" },
                     "26TriggerIcingUpdate": { "Ref" : "26TriggerIcingUpdate" },
                     "27TriggerPatchInstall": { "Ref" : "27TriggerPatchInstall" },
