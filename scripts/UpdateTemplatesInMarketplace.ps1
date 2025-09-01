@@ -47,6 +47,9 @@ $iamRoleArn = "arn:aws:iam::775488040364:role/AWS-Marketplace-Ingestion"
 Set-DefaultAWSRegion -Region 'us-east-1'
 
 try {
+    # Initialize array to collect ChangeSet responses
+    $changeSetResponses = @()
+
     foreach ($amiEntry in $amiList) {
         $baseName = $amiEntry[0]
         $amiId = $amiEntry[1]
@@ -159,6 +162,9 @@ try {
                 if ($deliveryOption.Type -eq 'AmazonMachineImage') {
                     $amiSourceSource = $versionDetails.Sources | Where-Object { $_.Id -eq $deliveryOption.SourceId }
                     if ($amiSourceSource) {
+                        if (-not $amiSourceSource.OperatingSystem.Name -or -not $amiSourceSource.OperatingSystem.Version) {
+                            throw "Missing OperatingSystemName or OperatingSystemVersion for AMI source in product $productId"
+                        }
                         $amiSource = @{
                             AmiId = $amiId
                             AccessRoleArn = $iamRoleArn
@@ -178,6 +184,23 @@ try {
             # Add AMI delivery option
             $amiDeliveryOption = $versionDetails.DeliveryOptions | Where-Object { $_.Type -eq 'AmazonMachineImage' } | Select-Object -First 1
             if ($amiDeliveryOption) {
+                if (-not $amiDeliveryOption.Recommendations -or -not $amiDeliveryOption.Recommendations.SecurityGroups) {
+                    throw "No SecurityGroups found in Recommendations for AMI delivery option in product $productId"
+                }
+                $securityGroups = @()
+                foreach ($sg in $amiDeliveryOption.Recommendations.SecurityGroups) {
+                    if (-not $sg.Protocol -or -not $sg.CidrIps -or -not $sg.FromPort -or -not $sg.ToPort) {
+                        throw "Missing required SecurityGroups properties (Protocol, CidrIps, FromPort, ToPort) for AMI delivery option in product $productId"
+                    }
+                    $ipRanges = @()
+                    $ipRanges += $sg.CidrIps
+                    $securityGroups += @{
+                        IpProtocol = $sg.Protocol
+                        IpRanges = $ipRanges
+                        FromPort = $sg.FromPort
+                        ToPort = $sg.ToPort
+                    }
+                }
                 $details = @{
                     DeliveryOptionTitle = if ($amiDeliveryOption.Title) { $amiDeliveryOption.Title } else { "AMI Delivery Option" }
                     Details = @{
@@ -185,7 +208,7 @@ try {
                             AmiSource = $amiSource
                             UsageInstructions = $amiDeliveryOption.Instructions.Usage
                             RecommendedInstanceType = $amiDeliveryOption.Recommendations.InstanceType
-                            SecurityGroups = $amiDeliveryOption.Recommendations.SecurityGroups
+                            SecurityGroups = $securityGroups
                         }
                     }
                 }
@@ -218,13 +241,7 @@ try {
                                     @{
                                         ParameterName = $source.SourceParameters.ParameterName
                                         SourceId = $source.SourceParameters.SourceId
-                                        AmiSource = @{
-                                            AmiId = $amiSource.AmiId
-                                            AccessRoleArn = $amiSource.AccessRoleArn
-                                            UserName = $amiSource.UserName
-                                            OperatingSystemName = $amiSource.OperatingSystemName
-                                            OperatingSystemVersion = $amiSource.OperatingSystemVersion
-                                        }
+                                        AmiSource = $amiSource
                                     }
                                 )
                             }
@@ -263,24 +280,62 @@ try {
         }
         Write-Host "ChangeSet started for product $productId : ID = $($changeSetResponse.ChangeSetId), ARN = $($changeSetResponse.ChangeSetArn)"
 
-        # Step 7: Poll for ChangeSet status
-        $status = 'PREPARING'
-        while ($status -eq 'PREPARING' -or $status -eq 'APPLYING') {
+        # Collect ChangeSet response for later polling
+        $changeSetResponses += @{
+            ChangeSetResponse = $changeSetResponse
+            ProductId = $productId
+            ChangeType = $changeType
+            Status = $null
+            FailureDescription = $null
+        }
+    }
+
+    # Step 7: Poll for ChangeSet status for all collected responses and store results
+    Write-Host "Polling status for all submitted ChangeSets..."
+    foreach ($response in $changeSetResponses) {
+        $changeSetResponse = $response.ChangeSetResponse
+        $productId = $response.ProductId
+        $response.Status = 'PREPARING'
+        Write-Host "Checking status for product $productId, ChangeSet ID: $($changeSetResponse.ChangeSetId)"
+        while ($response.Status -eq 'PREPARING' -or $response.Status -eq 'APPLYING') {
             Start-Sleep -Seconds 10
             $changeSetStatus = Get-MCATChangeSet -Catalog 'AWSMarketplace' -ChangeSetId $changeSetResponse.ChangeSetId
-            $status = $changeSetStatus.Status
-            Write-Host "Current status for product $($productId): $status"
+            $response.Status = $changeSetStatus.Status
+            $response.FailureDescription = $changeSetStatus.FailureDescription
+            Write-Host "Current status for product $productId : $($response.Status)"
         }
-
-        if ($status -eq 'SUCCEEDED') {
+        Write-Host "Final status for product $productId : $($response.Status)"
+        if ($response.Status -eq 'SUCCEEDED') {
             Write-Host "Update succeeded for product $productId."
-        } elseif ($status -eq 'FAILED') {
-            Write-Error "Update failed for product $productId. Failure reason: $($changeSetStatus.FailureDescription)"
-            throw
+        } elseif ($response.Status -eq 'FAILED') {
+            Write-Error "Update failed for product $productId. Failure reason: $($response.FailureDescription)"
         } else {
-            Write-Error "Unexpected status for product $productId : $status"
-            exit 1
+            Write-Error "Unexpected status for product $productId : $($response.Status)"
         }
+    }
+
+    # Display summary of all ChangeSet statuses
+    Write-Host "`n=== ChangeSet Status Summary ==="
+    Write-Host "Timestamp: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') AEST"
+    $summaryTable = $changeSetResponses | ForEach-Object {
+        [PSCustomObject]@{
+            ProductId = $_.ProductId
+            ChangeSetId = $_.ChangeSetResponse.ChangeSetId
+            ChangeType = $_.ChangeType
+            Status = $_.Status
+            FailureDescription = if ($_.FailureDescription) { $_.FailureDescription } else { "N/A" }
+        }
+    }
+    $summaryTable | Format-Table -AutoSize | Out-String | Write-Host
+
+    # Check for failed ChangeSets and throw after summary
+    $failedChangeSets = $changeSetResponses | Where-Object { $_.Status -eq 'FAILED' }
+    if ($failedChangeSets) {
+        $errorMessage = "One or more ChangeSets failed:`n"
+        foreach ($failed in $failedChangeSets) {
+            $errorMessage += "Product $($failed.ProductId), ChangeSet ID $($failed.ChangeSetResponse.ChangeSetId): $($failed.FailureDescription)`n"
+        }
+        throw $errorMessage
     }
 
     Write-Host "All products processed successfully."
