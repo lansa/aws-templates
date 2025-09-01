@@ -13,18 +13,18 @@ param (
     [string]$Version = "15.0.20",
     [Parameter(Mandatory=$false)]
     [array]$amiList = @(
-        @('w19d_15_0', 'ami-050c4e7c670bd83dd'),  # English
-        @('w19d_15_0j', 'ami-0b8c391f2f8bbd47d')   # Japanese
+        @('w19d-15-0', 'ami-050c4e7c670bd83dd'),  # English
+        @('w19d-15-0j', 'ami-0b8c391f2f8bbd47d')   # Japanese
     )
 )
 
 # Hardcoded mapping of base names to product IDs
 $productMapping = @(
-    @('w19d_15_0', 'prod-pgisjel5bhxsi'),  # English
-    @('w19d_15_0j', 'prod-csfkcd5qvnclexxxx')   # Japanese
+    @('w19d-15-0', 'prod-pgisjel5bhxsi'),  # English
+    @('w19d-15-0j', 'prod-csfkcd5qvnclexxxx')   # Japanese
 
-    #@('w19d_15_0', 'prod-7c4xdvxkskdfs'),  # English
-    #@('w19d_15_0j', 'prod-csfkcd5qvncle')   # Japanese
+    # @('w19d-15-0', 'prod-7c4xdvxkskdfs'),  # English
+    # @('w19d-15-0j', 'prod-csfkcd5qvncle')   # Japanese
 )
 
 # Template names (same for all products)
