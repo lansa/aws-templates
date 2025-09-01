@@ -1,5 +1,5 @@
 # UpdateMarketplaceTemplates.ps1
-# This script updates or adds version 15.0.20 for AWS Marketplace AMI-based products, updating AMI IDs and CloudFormation template URLs.
+# This script updates or adds a version for AWS Marketplace AMI-based products, updating AMI IDs and CloudFormation template URLs.
 # Templates are only updated when adding a new version; existing versions issue a warning.
 # It uses AWS PowerShell cmdlets to describe products, identify versions, and submit change sets.
 # Assumptions:
@@ -10,18 +10,18 @@
 
 param (
     [Parameter(Mandatory=$false)]
-    [string]$Version = "15.0.20",
+    [string]$Version = "15.0.21",
     [Parameter(Mandatory=$false)]
     [array]$amiList = @(
-        @('w19d-15-0', 'ami-050c4e7c670bd83dd'),  # English
-        @('w19d-15-0j', 'ami-0b8c391f2f8bbd47d')   # Japanese
+        @('w19d-15-0', 'ami-079801eb19b89d0ba'),  # English
+        @('w19d-15-0j', 'ami-0b8c391f2f8bbxxxx')   # Japanese
     )
 )
 
 # Hardcoded mapping of base names to product IDs
 $productMapping = @(
     @('w19d-15-0', 'prod-pgisjel5bhxsi'),  # English
-    @('w19d-15-0j', 'prod-csfkcd5qvnclexxxx')   # Japanese
+    @('w19d-15-0j', 'prod-csfkcd5qvncle')   # Japanese
 
     # @('w19d-15-0', 'prod-7c4xdvxkskdfs'),  # English
     # @('w19d-15-0j', 'prod-csfkcd5qvncle')   # Japanese
@@ -52,31 +52,27 @@ try {
         $amiId = $amiEntry[1]
         $mapping = $productMapping | Where-Object { $_[0] -eq $baseName }
         if (-not $mapping) {
-            Write-Error "No product ID found for base name $baseName"
-            continue
+            throw "No product ID found for base name $baseName"
         }
         $productId = $mapping[1]
-        Write-Host "Processing product: $($productId) (BaseName: $baseName, AMI ID: $amiId)"
+        Write-Host "Processing product: $productId (BaseName: $baseName, AMI ID: $amiId)"
 
         # Step 1: Describe the product entity to get version details
         $entityResponse = Get-MCATEntity -Catalog 'AWSMarketplace' -EntityId $productId
         if (-not $entityResponse) {
-            Write-Error "Failed to retrieve entity for product $($productId)"
-            continue
+            throw "Failed to retrieve entity for product $productId"
         }
-        $entityResponse | Out-Default | Write-Host
+        $entityResponse | Out-String | Write-Host
 
         $productDetails = $entityResponse.Details | ConvertFrom-Json
         if (-not $productDetails) {
-            Write-Error "Failed to parse details for product $($productId)"
-            continue
+            throw "Failed to parse details for product $productId"
         }
-        $productDetails | Format-List | Out-Default | Write-Host
+        $productDetails | Out-Default | Write-Host
 
         # Step 2: Find the target version or prepare to add delivery options
         if ($productDetails.Versions.Count -eq 0) {
-            Write-Error "No versions found for product $($productId)"
-            continue
+            throw "No versions found for product $productId"
         }
         Write-Host "Available versions for product $($productId):"
         $productDetails.Versions | ForEach-Object { Write-Host "Version: $($_.VersionTitle) (ID: $($_.Id), CreationDate: $($_.CreationDate))" }
@@ -91,41 +87,37 @@ try {
             $versionDetailsResponse = Get-MCATEntity -Catalog 'AWSMarketplace' -EntityId $productId
             $versionDetails = ($versionDetailsResponse.Details | ConvertFrom-Json).Versions | Where-Object { $_.VersionTitle -eq $Version }
             if (-not $versionDetails) {
-                Write-Error "Failed to retrieve delivery options for version $Version in product $($productId)"
-                continue
+                throw "Failed to retrieve delivery options for version $Version in product $productId"
             }
             Write-Host "Target version details for $Version in product $($productId):"
             $versionDetails | Format-List | Out-Default | Write-Host
         } else {
-            Write-Host "Version $Version not found for product $($productId). Adding new delivery options."
+            Write-Host "Version $Version not found for product $productId. Adding new delivery options."
             $changeType = 'AddDeliveryOptions'
             # Fetch all details of the latest version
             $latestVersion = $productDetails.Versions | Sort-Object CreationDate -Descending | Select-Object -First 1
             $latestVersionResponse = Get-MCATEntity -Catalog 'AWSMarketplace' -EntityId $productId
             $versionDetails = ($latestVersionResponse.Details | ConvertFrom-Json).Versions | Where-Object { $_.VersionTitle -eq $latestVersion.VersionTitle }
             if (-not $versionDetails) {
-                Write-Error "No latest version details found for product $($productId)"
-                continue
+                throw "No latest version details found for product $productId"
             }
             Write-Host "Copying details from latest version: $($versionDetails.VersionTitle) (ID: $($versionDetails.Id))"
-            $versionDetails | Format-List | Out-Default | Write-Host
+            $versionDetails | Out-Default | Write-Host
         }
 
         # Step 3: Get delivery options
         if (-not $versionDetails.DeliveryOptions) {
-            Write-Error "No delivery options found for version $($versionDetails.VersionTitle) in product $($productId)"
-            continue
+            throw "No delivery options found for version $($versionDetails.VersionTitle) in product $productId"
         }
         Write-Host "Delivery Options for version $($versionDetails.VersionTitle) in product $($productId):"
         $versionDetails.DeliveryOptions | ForEach-Object { Write-Host "Delivery Option: $_" }
         $deliveryOptions = $versionDetails.DeliveryOptions
         if (-not $deliveryOptions) {
-            Write-Error "No delivery options found in version $($versionDetails.VersionTitle) for product $($productId)"
-            continue
+            throw "No delivery options found in version $($versionDetails.VersionTitle) for product $productId"
         }
         Write-Host "Found $(($deliveryOptions | Measure-Object).Count) delivery options"
         $deliveryOptions | ForEach-Object { Write-Host "Delivery Option ID: $($_.Id), Source ID: $($_.SourceId)" }
-        $deliveryOptions | Format-List | Out-Default | Write-Host
+        $deliveryOptions | Out-Default | Write-Host
 
         # Step 4: Construct the DetailsDocument
         $deliveryOptionsUpdates = @()
@@ -135,8 +127,7 @@ try {
             # Find the source matching the delivery option's SourceId
             $source = $versionDetails.Sources | Where-Object { $_.Id -eq $deliveryOption.SourceId }
             if (-not $source) {
-                Write-Error "No source found for SourceId $($deliveryOption.SourceId) in version $($versionDetails.VersionTitle)"
-                exit 1
+                throw "No source found for SourceId $($deliveryOption.SourceId) in version $($versionDetails.VersionTitle)"
             }
             if ($deliveryOption.Type -eq 'AmazonMachineImage') {
                 Write-Host "AMI Source: UserName=$($source.OperatingSystem.Username), OperatingSystemName=$($source.OperatingSystem.Name), OperatingSystemVersion=$($source.OperatingSystem.Version), ScanningPort=$($source.OperatingSystem.ScanningPort)"
@@ -172,8 +163,7 @@ try {
                 $currentTemplate = $source.Template
                 $matchingTemplate = $templateNames | Where-Object { $currentTemplate -like "*$_" }
                 if (-not $matchingTemplate) {
-                    Write-Error "No matching template found for current template URL $currentTemplate in version $($versionDetails.VersionTitle)"
-                    exit 1
+                    throw "No matching template found for current template URL $currentTemplate in version $($versionDetails.VersionTitle)"
                 }
                 $templateName = $matchingTemplate
                 $newTemplateUrl = "${baseS3Url}${templateName}"
@@ -188,13 +178,13 @@ try {
                     $details = @{
                         DeploymentTemplateDeliveryOptionDetails = @{
                             Template = $newTemplateUrl
-                            DeliveryOptionTitle = $deliveryOption.Title
+                            # DeliveryOptionTitle = $deliveryOption.Title
                             ShortDescription = $deliveryOption.ShortDescription
                             LongDescription = $deliveryOption.LongDescription
                             UsageInstructions = $deliveryOption.Instructions.Usage
                             RecommendedInstanceType = $deliveryOption.Recommendations.InstanceType
                             ArchitectureDiagram = $source.ArchitectureDiagram
-                            SourceParameters = @(
+                            TemplateSources = @(
                                 @{
                                     ParameterName = $source.SourceParameters.ParameterName
                                     SourceId = $source.SourceParameters.SourceId
@@ -215,7 +205,7 @@ try {
         }
 
         if ($deliveryOptionsUpdates.Count -eq 0) {
-            Write-Warning "No updates to apply for product $($productId). Skipping ChangeSet submission."
+            Write-Warning "No updates to apply for product $productId. Skipping ChangeSet submission."
             continue
         }
 
@@ -251,7 +241,7 @@ try {
         # Step 6: Start the ChangeSet
         $clientToken = [guid]::NewGuid().ToString()
         if ($changeType -eq 'AddDeliveryOptions') {
-            $changeSetResponse = Start-MCATChangeSet -Catalog 'AWSMarketplace' -ChangeSet @($change) -ClientRequestToken $clientToken -ChangeSetName "ValidateNewRevision-$productId-$Version-$(Get-Date -Format 'yyyyMMddHHmmss')" -Intent 'Validate'
+            $changeSetResponse = Start-MCATChangeSet -Catalog 'AWSMarketplace' -ChangeSet @($change) -ClientRequestToken $clientToken -ChangeSetName "ValidateNewRevision-$productId-$Version-$(Get-Date -Format 'yyyyMMddHHmmss')"
         } else {
             $changeSetResponse = Start-MCATChangeSet -Catalog 'AWSMarketplace' -ChangeSet @($change) -ClientRequestToken $clientToken -ChangeSetName "UpdateDeliveryOptions-$productId-$Version-$(Get-Date -Format 'yyyyMMddHHmmss')"
         }
@@ -267,10 +257,10 @@ try {
         }
 
         if ($status -eq 'SUCCEEDED') {
-            Write-Host "Update succeeded for product $($productId)."
+            Write-Host "Update succeeded for product $productId."
         } elseif ($status -eq 'FAILED') {
-            Write-Error "Update failed for product $($productId). Failure reason: $($changeSetStatus.FailureDescription)"
-            exit 1
+            Write-Error "Update failed for product $productId. Failure reason: $($changeSetStatus.FailureDescription)"
+            throw
         } else {
             Write-Error "Unexpected status for product $($productId): $status"
             exit 1
@@ -280,5 +270,5 @@ try {
     Write-Host "All products processed successfully."
 } catch {
     Write-Error "Error: $_"
-    exit 1
+    throw
 }
