@@ -109,7 +109,7 @@ try {
         if (-not $versionDetails.DeliveryOptions) {
             throw "No delivery options found for version $($versionDetails.VersionTitle) in product $productId"
         }
-        Write-Host "Delivery Options for version $($versionDetails.VersionTitle) in product $($productId):"
+        Write-Host "Delivery Options for version $($versionDetails.VersionTitle) in product $productId :"
         $versionDetails.DeliveryOptions | ForEach-Object { Write-Host "Delivery Option: $_" }
         $deliveryOptions = $versionDetails.DeliveryOptions
         if (-not $deliveryOptions) {
@@ -120,105 +120,121 @@ try {
         $deliveryOptions | Out-Default | Write-Host
 
         # Step 4: Construct the DetailsDocument
-        $deliveryOptionsUpdates = @()
-        foreach ($deliveryOption in $versionDetails.DeliveryOptions) {
-            Write-Host "Processing Delivery Option ID: $($deliveryOption.Id), Source ID: $($deliveryOption.SourceId)"
-            $details = @{}
-            # Find the source matching the delivery option's SourceId
-            $source = $versionDetails.Sources | Where-Object { $_.Id -eq $deliveryOption.SourceId }
-            if (-not $source) {
-                throw "No source found for SourceId $($deliveryOption.SourceId) in version $($versionDetails.VersionTitle)"
+        if ($changeType -eq 'UpdateDeliveryOptions') {
+            $deliveryOptionsUpdates = @()
+            foreach ($deliveryOption in $versionDetails.DeliveryOptions) {
+                Write-Host "Processing Delivery Option ID: $($deliveryOption.Id), Source ID: $($deliveryOption.SourceId)"
+                if ($deliveryOption.Type -eq 'AmazonMachineImage') {
+                    $details = @{
+                        AmiDeliveryOptionDetails = @{
+                            AmiSource = @{
+                                AmiId = $amiId
+                                AccessRoleArn = $iamRoleArn
+                            }
+                            UsageInstructions = $deliveryOption.Instructions.Usage
+                        }
+                    }
+                    $deliveryOptionsUpdates += @{
+                        Id = $deliveryOption.Id
+                        Details = $details
+                    }
+                }
             }
-            if ($deliveryOption.Type -eq 'AmazonMachineImage') {
-                Write-Host "AMI Source: UserName=$($source.OperatingSystem.Username), OperatingSystemName=$($source.OperatingSystem.Name), OperatingSystemVersion=$($source.OperatingSystem.Version), ScanningPort=$($source.OperatingSystem.ScanningPort)"
-                if ($changeType -eq 'UpdateDeliveryOptions') {
-                    $details = @{
-                        AmiDeliveryOptionDetails = @{
-                            AmiSource = @{
-                                AmiId = $amiId
-                                AccessRoleArn = $iamRoleArn
-                            }
-                            UsageInstructions = $deliveryOption.Instructions.Usage
-                        }
-                    }
-                } else {
-                    # AddDeliveryOptions: Copy all fields
-                    $details = @{
-                        AmiDeliveryOptionDetails = @{
-                            AmiSource = @{
-                                AmiId = $amiId
-                                AccessRoleArn = $iamRoleArn
-                                UserName = $source.OperatingSystem.Username
-                                OperatingSystemName = $source.OperatingSystem.Name
-                                OperatingSystemVersion = $source.OperatingSystem.Version
-                                ScanningPort = $source.OperatingSystem.ScanningPort
-                            }
-                            UsageInstructions = $deliveryOption.Instructions.Usage
-                            RecommendedInstanceType = $deliveryOption.Recommendations.InstanceType
-                            SecurityGroups = $deliveryOption.Recommendations.SecurityGroups
-                        }
-                    }
-                }
-            } elseif ($deliveryOption.Type -eq 'CloudFormationTemplate') {
-                $currentTemplate = $source.Template
-                $matchingTemplate = $templateNames | Where-Object { $currentTemplate -like "*$_" }
-                if (-not $matchingTemplate) {
-                    throw "No matching template found for current template URL $currentTemplate in version $($versionDetails.VersionTitle)"
-                }
-                $templateName = $matchingTemplate
-                $newTemplateUrl = "${baseS3Url}${templateName}"
-                Write-Host "Matching Template: $templateName"
-                Write-Host "New Template URL: $newTemplateUrl"
-                Write-Host "SourceParameters: ParameterName=$($source.SourceParameters.ParameterName), SourceId=$($source.SourceParameters.SourceId)"
-                if ($changeType -eq 'UpdateDeliveryOptions') {
-                    # Skip template update for existing versions
-                    continue
-                } else {
-                    # AddDeliveryOptions: Include Template and all fields
-                    $details = @{
-                        DeploymentTemplateDeliveryOptionDetails = @{
-                            Template = $newTemplateUrl
-                            # DeliveryOptionTitle = $deliveryOption.Title
-                            ShortDescription = $deliveryOption.ShortDescription
-                            LongDescription = $deliveryOption.LongDescription
-                            UsageInstructions = $deliveryOption.Instructions.Usage
-                            RecommendedInstanceType = $deliveryOption.Recommendations.InstanceType
-                            ArchitectureDiagram = $source.ArchitectureDiagram
-                            TemplateSources = @(
-                                @{
-                                    ParameterName = $source.SourceParameters.ParameterName
-                                    SourceId = $source.SourceParameters.SourceId
-                                }
-                            )
-                        }
-                    }
-                }
-            } else {
-                Write-Error "Unsupported delivery option type: $($deliveryOption.Type)"
+            if ($deliveryOptionsUpdates.Count -eq 0) {
+                Write-Warning "No AMI delivery options to update for product $productId. Skipping ChangeSet submission."
                 continue
             }
-
-            $deliveryOptionsUpdates += @{
-                Id = $deliveryOption.Id
-                Details = $details
-            }
-        }
-
-        if ($deliveryOptionsUpdates.Count -eq 0) {
-            Write-Warning "No updates to apply for product $productId. Skipping ChangeSet submission."
-            continue
-        }
-
-        $detailsDocument = if ($changeType -eq 'UpdateDeliveryOptions') {
-            @{
+            $detailsDocument = @{
                 Version = @{
                     ReleaseNotes = "Updated AMI for version $Version on $(Get-Date -Format 'yyyy-MM-dd')"
                 }
                 DeliveryOptions = $deliveryOptionsUpdates
             }
         } else {
-            # AddDeliveryOptions: Copy all fields from latest version, update AMI and templates
-            @{
+            # AddDeliveryOptions: Create full DeliveryOptions array
+            $deliveryOptionsUpdates = @()
+            # First, locate AmiSource details
+            $amiSource = $null
+            foreach ($deliveryOption in $versionDetails.DeliveryOptions) {
+                if ($deliveryOption.Type -eq 'AmazonMachineImage') {
+                    $amiSourceSource = $versionDetails.Sources | Where-Object { $_.Id -eq $deliveryOption.SourceId }
+                    if ($amiSourceSource) {
+                        $amiSource = @{
+                            AmiId = $amiId
+                            AccessRoleArn = $iamRoleArn
+                            UserName = $amiSourceSource.OperatingSystem.Username
+                            OperatingSystemName = $amiSourceSource.OperatingSystem.Name
+                            OperatingSystemVersion = $amiSourceSource.OperatingSystem.Version
+                            ScanningPort = $amiSourceSource.OperatingSystem.ScanningPort
+                        }
+                        break
+                    }
+                }
+            }
+            if (-not $amiSource) {
+                throw "No AMI source details found for product $productId"
+            }
+
+            # Add AMI delivery option
+            $amiDeliveryOption = $versionDetails.DeliveryOptions | Where-Object { $_.Type -eq 'AmazonMachineImage' } | Select-Object -First 1
+            if ($amiDeliveryOption) {
+                $details = @{
+                    DeliveryOptionTitle = if ($amiDeliveryOption.Title) { $amiDeliveryOption.Title } else { "AMI Delivery Option" }
+                    Details = @{
+                        AmiDeliveryOptionDetails = @{
+                            AmiSource = $amiSource
+                            UsageInstructions = $amiDeliveryOption.Instructions.Usage
+                            RecommendedInstanceType = $amiDeliveryOption.Recommendations.InstanceType
+                            SecurityGroups = $amiDeliveryOption.Recommendations.SecurityGroups
+                        }
+                    }
+                }
+                $deliveryOptionsUpdates += $details
+            } else {
+                throw "No AMI delivery option found for product $productId"
+            }
+
+            # Add CFT delivery options for each template
+            foreach ($templateName in $templateNames) {
+                $cftDeliveryOption = $versionDetails.DeliveryOptions | Where-Object { $_.Type -eq 'CloudFormationTemplate' -and $_.SourceId -in ($versionDetails.Sources | Where-Object { $_.Template -like "*$templateName" }).Id } | Select-Object -First 1
+                if ($cftDeliveryOption) {
+                    $source = $versionDetails.Sources | Where-Object { $_.Id -eq $cftDeliveryOption.SourceId }
+                    if (-not $source) {
+                        throw "No source found for template $templateName in version $($versionDetails.VersionTitle)"
+                    }
+                    $newTemplateUrl = "${baseS3Url}${templateName}"
+                    Write-Host "Adding CFT Delivery Option: Template=$newTemplateUrl"
+                    $details = @{
+                        DeliveryOptionTitle = if ($cftDeliveryOption.Title) { $cftDeliveryOption.Title } else { "CFT Delivery Option: $templateName" }
+                        Details = @{
+                            DeploymentTemplateDeliveryOptionDetails = @{
+                                Template = $newTemplateUrl
+                                ShortDescription = $cftDeliveryOption.ShortDescription
+                                LongDescription = $cftDeliveryOption.LongDescription
+                                UsageInstructions = $cftDeliveryOption.Instructions.Usage
+                                RecommendedInstanceType = $cftDeliveryOption.Recommendations.InstanceType
+                                ArchitectureDiagram = $source.ArchitectureDiagram
+                                TemplateSources = @(
+                                    @{
+                                        ParameterName = $source.SourceParameters.ParameterName
+                                        SourceId = $source.SourceParameters.SourceId
+                                        AmiSource = @{
+                                            AmiId = $amiSource.AmiId
+                                            AccessRoleArn = $amiSource.AccessRoleArn
+                                            UserName = $amiSource.UserName
+                                            OperatingSystemName = $amiSource.OperatingSystemName
+                                            OperatingSystemVersion = $amiSource.OperatingSystemVersion
+                                        }
+                                    }
+                                )
+                            }
+                        }
+                    }
+                    $deliveryOptionsUpdates += $details
+                }
+            }
+
+            $detailsDocument = @{
                 Version = @{
                     VersionTitle = $Version
                     ReleaseNotes = "Added version $Version with updated AMI and templates on $(Get-Date -Format 'yyyy-MM-dd')"
@@ -245,7 +261,7 @@ try {
         } else {
             $changeSetResponse = Start-MCATChangeSet -Catalog 'AWSMarketplace' -ChangeSet @($change) -ClientRequestToken $clientToken -ChangeSetName "UpdateDeliveryOptions-$productId-$Version-$(Get-Date -Format 'yyyyMMddHHmmss')"
         }
-        Write-Host "ChangeSet started for product $($productId): ID = $($changeSetResponse.ChangeSetId), ARN = $($changeSetResponse.ChangeSetArn)"
+        Write-Host "ChangeSet started for product $productId : ID = $($changeSetResponse.ChangeSetId), ARN = $($changeSetResponse.ChangeSetArn)"
 
         # Step 7: Poll for ChangeSet status
         $status = 'PREPARING'
@@ -262,7 +278,7 @@ try {
             Write-Error "Update failed for product $productId. Failure reason: $($changeSetStatus.FailureDescription)"
             throw
         } else {
-            Write-Error "Unexpected status for product $($productId): $status"
+            Write-Error "Unexpected status for product $productId : $status"
             exit 1
         }
     }
