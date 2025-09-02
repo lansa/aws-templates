@@ -10,7 +10,7 @@
 
 param (
     [Parameter(Mandatory=$false)]
-    [string]$Version = "15.0.21",
+    [string]$Version = "15.0.22",
     [Parameter(Mandatory=$false)]
     [array]$amiList = @(
         @('w19d-15-0', 'ami-079801eb19b89d0ba'),  # English
@@ -85,6 +85,7 @@ try {
         $versionDetails = $null
         if ($targetVersion) {
             Write-Warning "Version $Version already exists for product $($productId). Template updates are not allowed for existing versions. Skipping template update."
+            throw "Version $Version already exists for product $($productId). Currently it cannot be determined how to structure the JSON to effect an update, even though its possible to do through the MP portal"
             $changeType = 'UpdateDeliveryOptions'
             # Fetch delivery options for the target version
             $versionDetailsResponse = Get-MCATEntity -Catalog 'AWSMarketplace' -EntityId $productId
@@ -125,36 +126,50 @@ try {
         # Step 4: Construct the DetailsDocument
         if ($changeType -eq 'UpdateDeliveryOptions') {
             $deliveryOptionsUpdates = @()
-            foreach ($deliveryOption in $versionDetails.DeliveryOptions) {
-                Write-Host "Processing Delivery Option ID: $($deliveryOption.Id), Source ID: $($deliveryOption.SourceId)"
-                if ($deliveryOption.Type -eq 'AmazonMachineImage') {
+            foreach ($templateName in $templateNames) {
+                $cftDeliveryOption = $versionDetails.DeliveryOptions | Where-Object { $_.Type -eq 'CloudFormationTemplate' -and $_.SourceId -in ($versionDetails.Sources | Where-Object { $_.Template -like "*$templateName" }).Id } | Select-Object -First 1
+                if ($cftDeliveryOption) {
+                    Write-Host "Processing CloudFormation Delivery Option ID: $($cftDeliveryOption.Id), Source ID: $($cftDeliveryOption.SourceId)"
+                    $source = $versionDetails.Sources | Where-Object { $_.Id -eq $cftDeliveryOption.SourceId }
+                    if (-not $source) {
+                        Write-Warning "No source found for template $templateName in version $($versionDetails.VersionTitle) for product $productId. Skipping."
+                        continue
+                    }
+                    $amiSource = @{
+                        AmiId = $amiId
+                        AccessRoleArn = $iamRoleArn
+                    }
                     $details = @{
-                        AmiDeliveryOptionDetails = @{
-                            AmiSource = @{
-                                AmiId = $amiId
-                                AccessRoleArn = $iamRoleArn
-                            }
-                            UsageInstructions = $deliveryOption.Instructions.Usage
+                        DeploymentTemplateDeliveryOptionDetails = @{
+                            TemplateSources = @(
+                                @{
+                                    ParameterName = $source.SourceParameters.ParameterName
+                                    SourceId = $source.SourceParameters.SourceId
+                                    AmiSource = $amiSource
+                                }
+                            )
                         }
                     }
                     $deliveryOptionsUpdates += @{
-                        Id = $deliveryOption.Id
+                        Id = $cftDeliveryOption.Id
                         Details = $details
                     }
+                } else {
+                    Write-Warning "No CloudFormation delivery option found for template $templateName in product $productId. Skipping."
                 }
             }
             if ($deliveryOptionsUpdates.Count -eq 0) {
-                Write-Warning "No AMI delivery options to update for product $productId. Skipping ChangeSet submission."
+                Write-Warning "No CloudFormation delivery options to update for product $productId. Skipping ChangeSet submission."
                 continue
             }
             $detailsDocument = @{
                 Version = @{
-                    ReleaseNotes = "Updated AMI for version $Version on $(Get-Date -Format 'yyyy-MM-dd')"
+                    ReleaseNotes = "Updated CloudFormation template sources for version $Version on $(Get-Date -Format 'yyyy-MM-dd')"
                 }
                 DeliveryOptions = $deliveryOptionsUpdates
             }
         } else {
-            # AddDeliveryOptions: Create full DeliveryOptions array
+            # AddDeliveryOptions: Create full DeliveryOptions array (unchanged)
             $deliveryOptionsUpdates = @()
             # First, locate AmiSource details
             $amiSource = $null
@@ -317,27 +332,32 @@ try {
     # Display summary of all ChangeSet statuses
     Write-Host "`n=== ChangeSet Status Summary ==="
     Write-Host "Timestamp: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') AEST"
-    $summaryTable = $changeSetResponses | ForEach-Object {
-        [PSCustomObject]@{
-            ProductId = $_.ProductId
-            ChangeSetId = $_.ChangeSetResponse.ChangeSetId
-            ChangeType = $_.ChangeType
-            Status = $_.Status
-            FailureDescription = if ($_.FailureDescription) { $_.FailureDescription } else { "N/A" }
+    foreach ($response in $changeSetResponses) {
+        Write-Host "ProductId: $($response.ProductId), ChangeSetId: $($response.ChangeSetResponse.ChangeSetId), ChangeType: $($response.ChangeType)"
+        Write-Host "Status: $($response.Status)"
+        $errorDetails = if ($response.FailureDescription -and $response.ChangeSetResponse.ChangeSetId) {
+            $changeSetStatus = Get-MCATChangeSet -Catalog 'AWSMarketplace' -ChangeSetId $response.ChangeSetResponse.ChangeSetId
+            if ($changeSetStatus.ChangeSet[0].ErrorDetailList) {
+                $changeSetStatus.ChangeSet[0].ErrorDetailList
+            } else {
+                @([PSCustomObject]@{ ErrorCode = 'N/A'; ErrorMessage = $response.FailureDescription })
+            }
+        } else {
+            @([PSCustomObject]@{ ErrorCode = 'N/A'; ErrorMessage = 'N/A' })
         }
+        Write-Host "ErrorDetailList:"
+        foreach ($errorDetail in $errorDetails) {
+            Write-Host "  [$($errorDetail.ErrorCode)] $($errorDetail.ErrorMessage)"
+        }
+        Write-Host "---"
     }
-    $summaryTable | Format-Table -AutoSize | Out-String | Write-Host
+    Write-Host "=== End of Summary ==="
 
     # Check for failed ChangeSets and throw after summary
     $failedChangeSets = $changeSetResponses | Where-Object { $_.Status -eq 'FAILED' }
     if ($failedChangeSets) {
-        $errorMessage = "One or more ChangeSets failed:`n"
-        foreach ($failed in $failedChangeSets) {
-            $errorMessage += "Product $($failed.ProductId), ChangeSet ID $($failed.ChangeSetResponse.ChangeSetId): $($failed.FailureDescription)`n"
-        }
-        throw $errorMessage
+        throw "One or more ChangeSets failed. See above for details"
     }
-
     Write-Host "All products processed successfully."
 } catch {
     Write-Error "Error: $_"
