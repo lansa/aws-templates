@@ -9,18 +9,19 @@
 # - Compatible with PowerShell 5.1.
 
 param (
-    [Parameter(Mandatory=$false)]
+    [Parameter(Mandatory=$true)]
     [string]$Version = "15.0.22",
-    [Parameter(Mandatory=$false)]
+    [Parameter(Mandatory=$true)]
     [array]$amiList = @(
-        @('w19d-15-0', 'ami-079801eb19b89d0ba'),  # English
+        @('w19d-15-0', 'ami-079801eb19b89d0baxxx'),  # English
         @('w19d-15-0j', 'ami-0b8c391f2f8bbxxxx')   # Japanese
     )
 )
 
 # Hardcoded mapping of base names to product IDs
 $productMapping = @(
-    @('w19d-15-0', 'prod-pgisjel5bhxsi'),  # English
+    # @('w19d-15-0', 'prod-pgisjel5bhxsi'),  # English Test Product
+    @('w19d-15-0', 'prod-7c4xdvxkskdfs'),  # English
     @('w19d-15-0j', 'prod-csfkcd5qvncle')   # Japanese
 
     # @('w19d-15-0', 'prod-7c4xdvxkskdfs'),  # English
