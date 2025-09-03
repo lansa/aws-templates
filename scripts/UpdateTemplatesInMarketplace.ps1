@@ -21,11 +21,9 @@ function UpdateMarketplaceProduct{
         [Parameter(Mandatory=$true)]
         [string]$Version = "15.0.22",
         [Parameter(Mandatory=$true)]
-        [array]$amiList = @(
-            @('w19d-15-0', 'ami-079801eb19b89d0baxxx'),  # English
-            @('w19d-15-0j', 'ami-0b8c391f2f8bbxxxx')   # Japanese
-            # Usually receives a single entry, but can handle multiple
-        )
+        [string]$buildName = "w19d-15-0",
+        [Parameter(Mandatory=$true)]
+        [string]$amiId = "ami-079801eb19b89d0baxxx"
     )
 
     # Hardcoded mapping of base names to product IDs
@@ -62,14 +60,12 @@ function UpdateMarketplaceProduct{
         $changeSetResponses = @()
 
         foreach ($amiEntry in $amiList) {
-            $baseName = $amiEntry[0]
-            $amiId = $amiEntry[1]
-            $mapping = $productMapping | Where-Object { $_[0] -eq $baseName }
+            $mapping = $productMapping | Where-Object { $_[0] -eq $buildName }
             if (-not $mapping) {
-                throw "No product ID found for base name $baseName"
+                throw "No product ID found for base name $buildName"
             }
             $productId = $mapping[1]
-            Write-Host "Processing product: $productId (BaseName: $baseName, AMI ID: $amiId)"
+            Write-Host "Processing product: $productId (BaseName: $buildName, AMI ID: $amiId)"
 
             # Step 1: Describe the product entity to get version details
             $entityResponse = Get-MCATEntity -Catalog 'AWSMarketplace' -EntityId $productId
@@ -398,8 +394,9 @@ if (Test-Path $path) {
             $versionBase = $parts[1]  # e.g., 15
             $versionMinor = $parts[2].Replace('j', '')  # e.g., 0, removing 'j' if present
             $version = "$versionBase.$versionMinor.$VersionDigits"  # e.g., "15.0.21"
-            Write-Host "Processing file: $($file.FullName), BuildName: $buildName, Version: $version"
-            UpdateMarketplaceProduct -Version $version -amiList @(@($buildName, (Get-Content $file.FullName).Trim()))
+            $amiId = (Get-Content $file.FullName).Trim()
+            Write-Host "Processing file: $($file.FullName), BuildName: $buildName, Version: $version, Ami ID: $amiId"
+            UpdateMarketplaceProduct -Version $version -buildName $buildName -amiId $amiId
         }
     } catch{
         $_ | Out-Default | Write-Host
