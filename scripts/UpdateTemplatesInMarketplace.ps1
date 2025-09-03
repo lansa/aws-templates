@@ -394,7 +394,7 @@ if (Test-Path $path) {
 
         foreach ($file in $files) {
             $buildName = $file.BaseName  # e.g., "w19d-15-0"
-            $parts = $Version.Split('-')
+            $parts = $buildName.Split('-')
             $versionBase = $parts[1]  # e.g., 15
             $versionMinor = $parts[2].Replace('j', '')  # e.g., 0, removing 'j' if present
             $version = "$versionBase.$versionMinor.$VersionDigits"  # e.g., "15.0.21"
