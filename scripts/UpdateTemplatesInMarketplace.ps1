@@ -55,6 +55,8 @@ function UpdateMarketplaceProduct{
     # Set default region for Marketplace Catalog API
     Set-DefaultAWSRegion -Region 'us-east-1'
 
+    Write-Host "##vso[task.setvariable variable=MarketPlaceUpdateInterventionRequired;isOutput=true]True"
+
     try {
         # Initialize array to collect ChangeSet responses
         $changeSetResponses = @()
@@ -91,7 +93,6 @@ function UpdateMarketplaceProduct{
         $versionDetails = $null
         if ($targetVersion) {
             Write-Warning "Version $Version already exists for product $($productId). Template updates are not allowed for existing versions. Skipping template update. Currently it cannot be determined how to structure the JSON to effect an AMI update, even though its possible to do through the MP portal"
-            Write-Host "##vso[task.setvariable variable=manualMPUpdateRequired]True"
             # ***********************************************************************
             exit(0) # Don't fail the pipeline, just exit successfully. The DevOps variable manualMPUpdateRequired is tested in the pipeline to determine if a manual update is required.
             # ***********************************************************************
@@ -367,6 +368,7 @@ function UpdateMarketplaceProduct{
         if ($failedChangeSets) {
             throw "One or more ChangeSets failed. See above for details"
         }
+        Write-Host "##vso[task.setvariable variable=MarketPlaceUpdateInterventionRequired;isOutput=true]False"
         Write-Host "All products processed successfully."
     } catch {
         Write-Error "Error: $_"
