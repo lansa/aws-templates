@@ -31,6 +31,8 @@ function UpdateMarketplaceProduct{
         # @('w19d-15-0', 'prod-pgisjel5bhxsi'),  # English Test Product
         @('w19d-15-0', 'prod-7c4xdvxkskdfs'),  # English
         @('w19d-15-0j', 'prod-csfkcd5qvncle')   # Japanese
+        @('w19d-16-0', 'prod-7c4xdvxkskdfs'),  # English
+        @('w19d-16-0j', 'prod-csfkcd5qvncle')   # Japanese
 
         # @('w19d-15-0', 'prod-7c4xdvxkskdfs'),  # English
         # @('w19d-15-0j', 'prod-csfkcd5qvncle')   # Japanese
