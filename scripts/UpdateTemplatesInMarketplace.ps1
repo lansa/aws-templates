@@ -380,7 +380,7 @@ function UpdateMarketplaceProduct{
 
 # Main script logic
 
-$path = "$($env:Pipeline_Workspace)/_Build Image Release Artefacts/aws"
+$path = "$($env:Pipeline_Workspace)"
 # $path = 'C:\lansa\tests\AmiList'  # Use this for debugging
 Write-Host "Using $path"
 if (Test-Path $path) {
