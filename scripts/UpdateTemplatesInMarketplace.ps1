@@ -57,8 +57,6 @@ function UpdateMarketplaceProduct{
     # Set default region for Marketplace Catalog API
     Set-DefaultAWSRegion -Region 'us-east-1'
 
-    Write-Host "##vso[task.setvariable variable=MarketPlaceUpdateInterventionRequired;isOutput=true]True"
-
     try {
         # Initialize array to collect ChangeSet responses
         $changeSetResponses = @()
@@ -379,6 +377,7 @@ function UpdateMarketplaceProduct{
 }
 
 # Main script logic
+Write-Host "##vso[task.setvariable variable=MarketPlaceUpdateInterventionRequired;isOutput=true]True"
 
 $path = "$($env:Pipeline_Workspace)\templates\support\scalable\ami-list"
 # $path = 'C:\lansa\tests\AmiList'  # Use this for debugging
