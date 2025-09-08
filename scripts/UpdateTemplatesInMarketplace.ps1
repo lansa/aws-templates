@@ -91,7 +91,7 @@ function UpdateMarketplaceProduct{
         if ($targetVersion) {
             Write-Warning "Version $Version already exists for product $($productId). Template updates are not allowed for existing versions. Skipping template update. Currently it cannot be determined how to structure the JSON to effect an AMI update, even though its possible to do through the MP portal"
             # ***********************************************************************
-            exit(0) # Don't fail the pipeline, just exit successfully. The DevOps variable manualMPUpdateRequired is tested in the pipeline to determine if a manual update is required.
+            return # Don't fail the pipeline, just exit successfully. The DevOps variable manualMPUpdateRequired is tested in the pipeline to determine if a manual update is required.
             # ***********************************************************************
 
             $changeType = 'UpdateDeliveryOptions'
