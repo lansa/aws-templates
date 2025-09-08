@@ -362,7 +362,7 @@ if (Test-Path $path) {
         $response.Status = 'PREPARING'
         Write-Host "Checking status for product $productId, ChangeSet ID: $($changeSetResponse.ChangeSetId)"
         while ($response.Status -eq 'PREPARING' -or $response.Status -eq 'APPLYING') {
-            Start-Sleep -Seconds 10
+            Start-Sleep -Seconds 60 # Wait for 60 seconds before polling again
             $changeSetStatus = Get-MCATChangeSet -Catalog 'AWSMarketplace' -ChangeSetId $changeSetResponse.ChangeSetId
             $response.Status = $changeSetStatus.Status
             $response.FailureDescription = $changeSetStatus.FailureDescription
