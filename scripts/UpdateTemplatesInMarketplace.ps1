@@ -304,7 +304,7 @@ function UpdateMarketplaceProduct{
         Write-Host "ChangeSet started for product $productId : ID = $($changeSetResponse.ChangeSetId), ARN = $($changeSetResponse.ChangeSetArn)"
 
         # Collect ChangeSet response for later polling
-        $changeSetResponses += @{
+        $global:changeSetResponses += @{
             ChangeSetResponse = $changeSetResponse
             ProductId = $productId
             ChangeType = $changeType
@@ -356,6 +356,12 @@ if (Test-Path $path) {
 
     # Step 7: Poll for ChangeSet status for all collected responses and store results
     Write-Host "Polling status for all submitted ChangeSets..."
+    if ($changeSetResponses.Count -eq 0) {
+        Write-Host "No ChangeSets were submitted. Exiting."
+        Write-Host "##vso[task.setvariable variable=MarketPlaceUpdateInterventionRequired;isOutput=true]False"
+        exit 0
+    }
+
     foreach ($response in $changeSetResponses) {
         $changeSetResponse = $response.ChangeSetResponse
         $productId = $response.ProductId
