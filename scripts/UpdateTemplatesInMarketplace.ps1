@@ -27,6 +27,8 @@ function UpdateMarketplaceProduct{
     )
 
     # Hardcoded mapping of base names to product IDs
+    # Note this table is also in Cookbooks/scripts/SetMarketplaceVariables.ps1
+    # Keep both copies in sync
     $productMapping = @(
         # @('w19d-15-0', 'prod-pgisjel5bhxsi'),  # English Test Product
         @('w19d-15-0', 'prod-7c4xdvxkskdfs'),  # English
