@@ -380,7 +380,7 @@ function UpdateMarketplaceProduct{
 
 # Main script logic
 
-$path = "$($env:Pipeline_Workspace)"
+$path = "$($env:Pipeline_Workspace)\templates\support\scalable\ami-list"
 # $path = 'C:\lansa\tests\AmiList'  # Use this for debugging
 Write-Host "Using $path"
 if (Test-Path $path) {
@@ -390,6 +390,11 @@ if (Test-Path $path) {
         # Sort them with the latest windows version and lansa version first e.g. w25d... is before w22d...
         $files = Get-ChildItem -Path $path -Filter "*.txt" |
             Where-Object { $_.BaseName -match '^w\d{2}d-\d{2}-\d{1}.*' } | Sort-Object -Property Name -Descending
+        if ($files.Count -eq 0) {
+            throw "No matching AMI files found in path $path"
+        }
+        Write-Host "Found $($files.Count) matching AMI files:"
+        $files | ForEach-Object { Write-Host " - $($_.FullName)" }
 
         foreach ($file in $files) {
             $buildName = $file.BaseName  # e.g., "w19d-15-0"
