@@ -30,14 +30,14 @@ function UpdateMarketplaceProduct{
     # Note this table is also in Cookbooks/scripts/SetMarketplaceVariables.ps1
     # Keep both copies in sync
     $productMapping = @(
-        # @('w19d-15-0', 'prod-pgisjel5bhxsi'),  # English Test Product
         @('w19d-15-0', 'prod-7c4xdvxkskdfs'),  # English
-        @('w19d-15-0j', 'prod-csfkcd5qvncle')   # Japanese
+        @('w19d-15-0j', 'prod-csfkcd5qvncle'),   # Japanese
         @('w19d-16-0', 'prod-7c4xdvxkskdfs'),  # English
         @('w19d-16-0j', 'prod-csfkcd5qvncle')   # Japanese
-
-        # @('w19d-15-0', 'prod-7c4xdvxkskdfs'),  # English
-        # @('w19d-15-0j', 'prod-csfkcd5qvncle')   # Japanese
+        @('w25d-15-0', 'prod-gquyjeiww36se'),  # English
+        @('w25d-15-0j', 'prod-urhng7afyfwr6'),   # Japanese
+        @('w25d-16-0', 'prod-gquyjeiww36se'),  # English
+        @('w25d-16-0j', 'prod-urhng7afyfwr6')   # Japanese
     )
 
     # Template names (same for all products)
