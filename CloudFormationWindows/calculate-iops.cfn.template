@@ -1,14 +1,5 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
-    "Metadata": {
-        "cfn-lint": {
-            "config": {
-                "ignore_checks": [
-                    "E2533"
-                ]
-            }
-        }
-    },
     "Parameters": {
         "IOPSRatio": {
             "Description": "IOPS Ratio",
