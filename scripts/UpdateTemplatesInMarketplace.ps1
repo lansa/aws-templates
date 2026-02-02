@@ -338,9 +338,14 @@ if (Test-Path $path) {
     try{
         Write-Host("Locate any files in the path $path")
         # Get all .txt files matching the pattern w??d-??-?*.txt
-        # Sort them with the latest windows version and lansa version first e.g. w25d... is before w22d...
+        # Sort them with the oldest windows version and lansa version first e.g. w22d... is before w25d...
+        # and 15.0.xx is before 16.0.xx.
+        # This ensures that when published the Product shows the latest version FIRST in the list
+        # with the version appearing as e.g. "16.0.22 (latest version)", with 15.0.22 below it
+        # and hidden until clicking on the drop down.
+        # This is because the LAST version added to a Product is the latest version. Its not about the numbering.
         $files = Get-ChildItem -Path $path -Filter "*.txt" |
-            Where-Object { $_.BaseName -match '^w\d{2}d-\d{2}-\d{1}.*' } | Sort-Object -Property Name -Descending
+            Where-Object { $_.BaseName -match '^w\d{2}d-\d{2}-\d{1}.*' } | Sort-Object -Property Name -Ascending
         if ($files.Count -eq 0) {
             throw "No matching AMI files found in path $path"
         }
