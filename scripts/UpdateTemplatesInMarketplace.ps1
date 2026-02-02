@@ -97,9 +97,9 @@ function UpdateMarketplaceProduct{
         $changeType = $null
         $versionDetails = $null
         if ($targetVersion) {
-            Write-Warning "Version $Version already exists for product $($productId). Template updates are not allowed for existing versions. Skipping template update. Currently it cannot be determined how to structure the JSON to effect an AMI update, even though its possible to do through the MP portal"
+            Write-Warning "Version $Version already exists for product $($productId). Template updates are not allowed for existing versions. Skipping template update."
             # ***********************************************************************
-            return # Don't fail the pipeline, just exit successfully. The DevOps variable manualMPUpdateRequired is tested in the pipeline to determine if a manual update is required.
+            return $False # Don't fail the pipeline, just exit successfully. The DevOps variable manualMPUpdateRequired is tested in the pipeline to determine if a manual update is required.
             # ***********************************************************************
 
             $changeType = 'UpdateDeliveryOptions'
@@ -319,6 +319,8 @@ function UpdateMarketplaceProduct{
             Status = $null
             FailureDescription = $null
         }
+
+        return $True
     } catch {
         Write-Error "Error: $_"
         throw
@@ -332,7 +334,7 @@ Write-Host "##vso[task.setvariable variable=MarketPlaceUpdateInterventionRequire
 $global:changeSetResponses = @()
 
 $path = "$($env:Pipeline_Workspace)\templates\support\scalable\ami-list"
-# $path = 'C:\lansa\tests\AmiList'  # Use this for debugging
+# $path = 'C:\temp\aws\amilist'  # Use this for debugging
 Write-Host "Using $path"
 if (Test-Path $path) {
     try{
@@ -345,87 +347,118 @@ if (Test-Path $path) {
         # and hidden until clicking on the drop down.
         # This is because the LAST version added to a Product is the latest version. Its not about the numbering.
         $files = Get-ChildItem -Path $path -Filter "*.txt" |
-            Where-Object { $_.BaseName -match '^w\d{2}d-\d{2}-\d{1}.*' } | Sort-Object -Property Name -Ascending
+            Where-Object { $_.BaseName -match '^w\d{2}d-\d{2}-\d{1}.*$' } | Sort-Object -Property Name
         if ($files.Count -eq 0) {
             throw "No matching AMI files found in path $path"
         }
         Write-Host "Found $($files.Count) matching AMI files:"
         $files | ForEach-Object { Write-Host " - $($_.FullName)" }
 
-        foreach ($file in $files) {
+        $productVersions = @()
+        foreach ($file in $files ) {
             $buildName = $file.BaseName  # e.g., "w19d-15-0"
             $parts = $buildName.Split('-')
+            $isJapanese = $file.BaseName -match '.*j$'
             $versionBase = $parts[1]  # e.g., 15
             $versionMinor = $parts[2].Replace('j', '')  # e.g., 0, removing 'j' if present
-            $version = "$versionBase.$versionMinor.$VersionDigits"  # e.g., "15.0.21"
-            $amiId = (Get-Content $file.FullName).Trim()
-            Write-Host "Processing file: $($file.FullName), BuildName: $buildName, Version: $version, Ami ID: $amiId"
-            UpdateMarketplaceProduct -Version $version -buildName $buildName -amiId $amiId
+
+            $entry = [PSCustomObject]@{
+                buildName = $buildName
+                productId =  if ($isJapanese) { $($file.BaseName).Substring(0, 4) + 'j' } else { $($file.BaseName).Substring(0, 4) } # e.g., "w19d"
+                isJapanese = $isJapanese
+                versionBase = $versionBase
+                versionMinor = $versionMinor
+                version = "$versionBase.$versionMinor.$VersionDigits"  # e.g., "15.0.21"
+                amiId = (Get-Content $file.FullName).Trim()
+            }
+            $productVersions += $entry
+        }
+        $updatesByProduct = $productVersions | Group-Object ProductId
+        # presume there are the same number of versions per product
+        $VersionCount = $ProductIdGroup.Group.Count
+        for ($VersionNumber = 0; $VersionNumber -lt $VersionCount; $VersionNumber++) {
+            Write-Host "Updating Marketplace Products for Version $($ProductIdGroup.Group[$VersionNumber].version)..."
+
+            foreach ($ProductIdGroup in $updatesByProduct) {
+                Write-Host "ProductId: $($ProductIdGroup[$VersionNumber].Name)"
+                $buildName = $ProductIdGroup.Group[$VersionNumber].buildName
+                $version = $ProductIdGroup.Group[$VersionNumber].version
+                $amiId = $ProductIdGroup.Group[$VersionNumber].amiId
+
+                Write-Host "Processing ProductId: $($ProductIdGroup.Name), BuildName: $buildName, Version: $version, Ami ID: $amiId"
+                # if (UpdateMarketplaceProduct -Version $version -buildName $buildName -amiId $amiId) {
+                #     Write-Host "ChangeSet submitted successfully for product $($ProductIdGroup.Name) to version $version."
+                # } else {
+                #     Write-Error "ChangeSet skipped for product $($ProductIdGroup.Name) to version $version."
+                # }
+            }
+
+            # Step 7: Poll for ChangeSet status for all collected responses and store results
+            Write-Host "Polling status for all submitted ChangeSets..."
+            if ($changeSetResponses.Count -eq 0) {
+                Write-Host "No ChangeSets were submitted. Exiting."
+                Write-Host "##vso[task.setvariable variable=MarketPlaceUpdateInterventionRequired;isOutput=true]False"
+                continue # Next version
+            }
+
+            foreach ($response in $changeSetResponses) {
+                $changeSetResponse = $response.ChangeSetResponse
+                $productId = $response.ProductId
+                $response.Status = 'PREPARING'
+                Write-Host "Checking status for product $productId, ChangeSet ID: $($changeSetResponse.ChangeSetId)"
+                while ($response.Status -eq 'PREPARING' -or $response.Status -eq 'APPLYING') {
+                    Start-Sleep -Seconds 60 # Wait for 60 seconds before polling again
+                    $changeSetStatus = Get-MCATChangeSet -Catalog 'AWSMarketplace' -ChangeSetId $changeSetResponse.ChangeSetId
+                    $response.Status = $changeSetStatus.Status
+                    $response.FailureDescription = $changeSetStatus.FailureDescription
+                    Write-Host "Current status for product $productId : $($response.Status)"
+                }
+                Write-Host "Final status for product $productId : $($response.Status)"
+                if ($response.Status -eq 'SUCCEEDED') {
+                    Write-Host "Update succeeded for product $productId."
+                } elseif ($response.Status -eq 'FAILED') {
+                    Write-Error "Update failed for product $productId. Failure reason: $($response.FailureDescription)"
+                } else {
+                    Write-Error "Unexpected status for product $productId : $($response.Status)"
+                }
+            }
+
+            # Display summary of all ChangeSet statuses
+            Write-Host "`n=== ChangeSet Status Summary ==="
+            Write-Host "Timestamp: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') AEST"
+            foreach ($response in $changeSetResponses) {
+                Write-Host "ProductId: $($response.ProductId), ChangeSetId: $($response.ChangeSetResponse.ChangeSetId), ChangeType: $($response.ChangeType)"
+                Write-Host "Status: $($response.Status)"
+                $errorDetails = if ($response.FailureDescription -and $response.ChangeSetResponse.ChangeSetId) {
+                    $changeSetStatus = Get-MCATChangeSet -Catalog 'AWSMarketplace' -ChangeSetId $response.ChangeSetResponse.ChangeSetId
+                    if ($changeSetStatus.ChangeSet[0].ErrorDetailList) {
+                        $changeSetStatus.ChangeSet[0].ErrorDetailList
+                    } else {
+                        @([PSCustomObject]@{ ErrorCode = 'N/A'; ErrorMessage = $response.FailureDescription })
+                    }
+                } else {
+                    @([PSCustomObject]@{ ErrorCode = 'N/A'; ErrorMessage = 'N/A' })
+                }
+                Write-Host "ErrorDetailList:"
+                foreach ($errorDetail in $errorDetails) {
+                    Write-Host "  [$($errorDetail.ErrorCode)] $($errorDetail.ErrorMessage)"
+                }
+                Write-Host "---"
+            }
+            Write-Host "=== End of Summary ==="
+
+            # Check for failed ChangeSets and throw after summary
+            $failedChangeSets = $changeSetResponses | Where-Object { $_.Status -eq 'FAILED' }
+            if ($failedChangeSets) {
+                throw "One or more ChangeSets failed. See above for details"
+            }
         }
     } catch{
         $_ | Out-Default | Write-Host
         Throw "Failed to add MP Version"
     }
 
-    # Step 7: Poll for ChangeSet status for all collected responses and store results
-    Write-Host "Polling status for all submitted ChangeSets..."
-    if ($changeSetResponses.Count -eq 0) {
-        Write-Host "No ChangeSets were submitted. Exiting."
-        Write-Host "##vso[task.setvariable variable=MarketPlaceUpdateInterventionRequired;isOutput=true]False"
-        exit 0
-    }
 
-    foreach ($response in $changeSetResponses) {
-        $changeSetResponse = $response.ChangeSetResponse
-        $productId = $response.ProductId
-        $response.Status = 'PREPARING'
-        Write-Host "Checking status for product $productId, ChangeSet ID: $($changeSetResponse.ChangeSetId)"
-        while ($response.Status -eq 'PREPARING' -or $response.Status -eq 'APPLYING') {
-            Start-Sleep -Seconds 60 # Wait for 60 seconds before polling again
-            $changeSetStatus = Get-MCATChangeSet -Catalog 'AWSMarketplace' -ChangeSetId $changeSetResponse.ChangeSetId
-            $response.Status = $changeSetStatus.Status
-            $response.FailureDescription = $changeSetStatus.FailureDescription
-            Write-Host "Current status for product $productId : $($response.Status)"
-        }
-        Write-Host "Final status for product $productId : $($response.Status)"
-        if ($response.Status -eq 'SUCCEEDED') {
-            Write-Host "Update succeeded for product $productId."
-        } elseif ($response.Status -eq 'FAILED') {
-            Write-Error "Update failed for product $productId. Failure reason: $($response.FailureDescription)"
-        } else {
-            Write-Error "Unexpected status for product $productId : $($response.Status)"
-        }
-    }
-
-    # Display summary of all ChangeSet statuses
-    Write-Host "`n=== ChangeSet Status Summary ==="
-    Write-Host "Timestamp: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') AEST"
-    foreach ($response in $changeSetResponses) {
-        Write-Host "ProductId: $($response.ProductId), ChangeSetId: $($response.ChangeSetResponse.ChangeSetId), ChangeType: $($response.ChangeType)"
-        Write-Host "Status: $($response.Status)"
-        $errorDetails = if ($response.FailureDescription -and $response.ChangeSetResponse.ChangeSetId) {
-            $changeSetStatus = Get-MCATChangeSet -Catalog 'AWSMarketplace' -ChangeSetId $response.ChangeSetResponse.ChangeSetId
-            if ($changeSetStatus.ChangeSet[0].ErrorDetailList) {
-                $changeSetStatus.ChangeSet[0].ErrorDetailList
-            } else {
-                @([PSCustomObject]@{ ErrorCode = 'N/A'; ErrorMessage = $response.FailureDescription })
-            }
-        } else {
-            @([PSCustomObject]@{ ErrorCode = 'N/A'; ErrorMessage = 'N/A' })
-        }
-        Write-Host "ErrorDetailList:"
-        foreach ($errorDetail in $errorDetails) {
-            Write-Host "  [$($errorDetail.ErrorCode)] $($errorDetail.ErrorMessage)"
-        }
-        Write-Host "---"
-    }
-    Write-Host "=== End of Summary ==="
-
-    # Check for failed ChangeSets and throw after summary
-    $failedChangeSets = $changeSetResponses | Where-Object { $_.Status -eq 'FAILED' }
-    if ($failedChangeSets) {
-        throw "One or more ChangeSets failed. See above for details"
-    }
     Write-Host "##vso[task.setvariable variable=MarketPlaceUpdateInterventionRequired;isOutput=true]False"
     Write-Host "All products processed successfully."
 } else {
