@@ -334,7 +334,7 @@ Write-Host "##vso[task.setvariable variable=MarketPlaceUpdateInterventionRequire
 $global:changeSetResponses = @()
 
 $path = "$($env:Pipeline_Workspace)\templates\support\scalable\ami-list"
-# $path = 'C:\temp\aws\amilist'  # Use this for debugging
+$path = 'C:\temp\aws\amilist'  # Use this for debugging
 Write-Host "Using $path"
 if (Test-Path $path) {
     try{
@@ -375,9 +375,9 @@ if (Test-Path $path) {
         }
         $updatesByProduct = $productVersions | Group-Object ProductId
         # presume there are the same number of versions per product
-        $VersionCount = $ProductIdGroup.Group.Count
+        $VersionCount = $updatesByProduct.Group.Count
         for ($VersionNumber = 0; $VersionNumber -lt $VersionCount; $VersionNumber++) {
-            Write-Host "Updating Marketplace Products for Version $($ProductIdGroup.Group[$VersionNumber].version)..."
+            Write-Host "Updating Marketplace Products for Version $($updatesByProduct.Group[$VersionNumber].version)..."
 
             foreach ($ProductIdGroup in $updatesByProduct) {
                 Write-Host "ProductId: $($ProductIdGroup[$VersionNumber].Name)"
@@ -386,11 +386,11 @@ if (Test-Path $path) {
                 $amiId = $ProductIdGroup.Group[$VersionNumber].amiId
 
                 Write-Host "Processing ProductId: $($ProductIdGroup.Name), BuildName: $buildName, Version: $version, Ami ID: $amiId"
-                # if (UpdateMarketplaceProduct -Version $version -buildName $buildName -amiId $amiId) {
-                #     Write-Host "ChangeSet submitted successfully for product $($ProductIdGroup.Name) to version $version."
-                # } else {
-                #     Write-Error "ChangeSet skipped for product $($ProductIdGroup.Name) to version $version."
-                # }
+                if (UpdateMarketplaceProduct -Version $version -buildName $buildName -amiId $amiId) {
+                    Write-Host "ChangeSet submitted successfully for product $($ProductIdGroup.Name) to version $version."
+                } else {
+                    Write-Error "ChangeSet skipped for product $($ProductIdGroup.Name) to version $version."
+                }
             }
 
             # Step 7: Poll for ChangeSet status for all collected responses and store results
