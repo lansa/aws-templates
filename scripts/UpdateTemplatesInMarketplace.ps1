@@ -334,7 +334,7 @@ Write-Host "##vso[task.setvariable variable=MarketPlaceUpdateInterventionRequire
 $global:changeSetResponses = @()
 
 $path = "$($env:Pipeline_Workspace)\templates\support\scalable\ami-list"
-$path = 'C:\temp\aws\amilist'  # Use this for debugging
+# $path = 'C:\temp\aws\amilist'  # Use this for debugging
 Write-Host "Using $path"
 if (Test-Path $path) {
     try{
