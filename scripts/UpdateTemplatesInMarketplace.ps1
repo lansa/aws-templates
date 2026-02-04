@@ -389,7 +389,7 @@ if (Test-Path $path) {
                 if (UpdateMarketplaceProduct -Version $version -buildName $buildName -amiId $amiId) {
                     Write-Host "ChangeSet submitted successfully for product $($ProductIdGroup.Name) to version $version."
                 } else {
-                    Write-Error "ChangeSet skipped for product $($ProductIdGroup.Name) to version $version."
+                    Write-Host "ChangeSet skipped for product $($ProductIdGroup.Name) to version $version."
                 }
             }
 
