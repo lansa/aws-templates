@@ -334,7 +334,10 @@ Write-Host "##vso[task.setvariable variable=MarketPlaceUpdateInterventionRequire
 $global:changeSetResponses = @()
 
 $path = "$($env:Pipeline_Workspace)\templates\support\scalable\ami-list"
-# $path = 'C:\temp\aws\amilist'  # Use this for debugging
+if (-not (Test-Path $path)) {
+    $path = 'C:\temp\aws\amilist'  # Use this for debugging
+}
+
 Write-Host "Using $path"
 if (Test-Path $path) {
     try{
@@ -380,7 +383,11 @@ if (Test-Path $path) {
             Write-Host "Updating Marketplace Products for Version $($updatesByProduct.Group[$VersionNumber].version)..."
 
             foreach ($ProductIdGroup in $updatesByProduct) {
-                Write-Host "ProductId: $($ProductIdGroup[$VersionNumber].Name)"
+                if ( $null -eq $ProductIdGroup.Group[$VersionNumber]) {
+                    Write-Warning "No entry found for ProductId $($ProductIdGroup.Name) at index $VersionNumber. Skipping."
+                    continue
+                }
+                Write-Host "ProductId: $($ProductIdGroup.Name)"
                 $buildName = $ProductIdGroup.Group[$VersionNumber].buildName
                 $version = $ProductIdGroup.Group[$VersionNumber].version
                 $amiId = $ProductIdGroup.Group[$VersionNumber].amiId
