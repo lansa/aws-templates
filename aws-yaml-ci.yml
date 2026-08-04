@@ -35,7 +35,7 @@ jobs:
   displayName: 'Test Template CI'
   timeoutInMinutes: 360
   pool:
-    vmImage: windows-latest
+    name: Default
 
   steps:
   - checkout: self
