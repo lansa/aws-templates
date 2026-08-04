@@ -51,36 +51,28 @@ jobs:
       awsCredentials: $(awsCredentials)
       regionName: $(regionName)
       scriptType: inline
-      inlineScript: >-
-        try{
+      inlineScript: |
+        try {
+          Get-CFNStack -StackName $(stackname)
+          Remove-CFNStack -StackName $(stackname) -Force
 
-        Get-CFNStack -StackName $(stackname)
+          $count =0
 
-        Remove-CFNStack -StackName $(stackname) -Force
+          while($count -lt 20){
+            try{
+              Get-CFNStack -StackName $(stackname)
+              Start-Sleep -Seconds 200
+              Write-Host "Deleting stack"
+              $count = $count +1
+            } catch {
+              Write-Host "Stack Deleted"
+              break
+            }
+          }
 
-        $count =0
-
-        while($count -lt 20){
-           try{
-                 Get-CFNStack -StackName $(stackname)
-                 Start-Sleep -Seconds 200
-                 Write-Host "Deleting stack"
-                 $count = $count +1
-               }
-            catch{
-                 Write-Host "Stack Deleted"
-                 break
-                  }
-             }
-
-        Write-Host "Stack deleted"
-
-        }
-
-        catch{
-
-        Write-Host "There is no stack or it was deleted"
-
+          Write-Host "Stack deleted"
+        } catch {
+          Write-Host "There is no stack or it was deleted"
         }
 
   - task: AmazonWebServices.aws-vsts-tools.CloudFormationCreateOrUpdateStack.CloudFormationCreateOrUpdateStack@1
@@ -193,4 +185,33 @@ jobs:
     inputs:
       ArtifactName: Solution Template
       FileCopyOptions: ''
-...
+
+  - task: AmazonWebServices.aws-vsts-tools.AWSPowerShellModuleScript.AWSPowerShellModuleScript@1
+    displayName: 'Delete existing stack : BakingDP'
+    inputs:
+      awsCredentials: $(awsCredentials)
+      regionName: $(regionName)
+      scriptType: inline
+      inlineScript: |
+        try {
+          Get-CFNStack -StackName $(stackname)
+          Remove-CFNStack -StackName $(stackname) -Force
+
+          $count =0
+
+          while($count -lt 20){
+            try{
+              Get-CFNStack -StackName $(stackname)
+              Start-Sleep -Seconds 200
+              Write-Host "Deleting stack"
+              $count = $count +1
+            } catch {
+              Write-Host "Stack Deleted"
+              break
+            }
+          }
+
+          Write-Host "Stack deleted"
+        } catch {
+          Write-Host "There is no stack or it was deleted"
+        }
